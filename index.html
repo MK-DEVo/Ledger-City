@@ -111,7 +111,7 @@ tr.pop td{animation:rowflash .6s ease-out}
 /* fight and figure */
 .arena{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:end;position:relative;padding:14px;background:#10151a;border:1px solid var(--line);border-radius:4px}
 .fwrap{position:relative;display:grid;gap:6px;justify-items:center;align-content:end}.fwrap.solo{max-width:230px;margin:auto}.fwrap .row,.fwrap .track{width:100%}
-.fig{width:100%;max-width:170px;height:auto}.fwrap.solo .fig{max-width:210px}
+.fig{width:100%;max-width:170px;height:auto}.fig.flip{transform:scaleX(-1)}.npc{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#ffffff14)}.npcf{width:64px;flex:none}.npcf .fig{max-width:64px}.npci{flex:1;min-width:0;display:grid;gap:4px}.fwrap.solo .fig{max-width:210px}
 .fwrap.hit .fig{animation:hitshake .45s}
 @keyframes hitshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px);filter:drop-shadow(0 0 8px #e0443a)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
 .arena.hurt{animation:hurtbg .55s}
@@ -404,6 +404,14 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 .nav .gi button:hover{padding-left:15px}
 @media(max-width:860px){.nav .ngw{display:contents}.nav .ng{display:none}.nav .gi{display:contents}.nav .nfoot{border:0;margin:0;padding:0}.nav .nb{display:none}.nav .gi button{padding:8px 11px;gap:7px}.nav .gi button:hover{padding-left:11px}}
 
+
+.mtrs{display:grid;gap:6px}.mtr{display:flex;flex-direction:column;gap:2px;text-align:left;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#10151a;cursor:pointer}.mtr small{color:var(--muted);font-size:12px}.mtr.on{border-color:var(--brass);background:rgba(224,174,74,.1)}.mtr:hover{border-color:#5a6a78}
+/* v59 performance: no endless animations or blur over the animated background (fixes integrated GPU load) */
+.f,.f.low,.track i.f::after{animation:none!important}
+#bg .stars i,#bg .lay,#bg .wk,#bg .coins b{animation:none!important}#bg .coins{display:none}
+.panel,.top{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.panel{background:rgba(24,32,40,.94)}.top{background:rgba(19,26,33,.96)}
+.f.low{filter:brightness(1.25) saturate(1.2)}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
  <div><div class="nm"><b id="hName">Newcomer</b><span class="chip" id="hRank"></span><span class="chip bt" id="hBeat" hidden>&#9733; The Beater</span><button class="chip godchip" id="hGod" data-act="godoff" hidden title="Click to turn god mode off">GOD MODE</button><span class="chip warn" id="hBehind" hidden>Behind on rent</span><span class="chip warn" id="hJail" hidden>In jail</span><button class="chip" id="hCd" data-act="cdlist" hidden title="Items that cannot be used again yet">Cooldowns</button><button class="chip warn" id="hHosp" data-act="tab" data-tab="hospital" hidden>In hospital</button></div><div class="sub" id="hDay"></div></div>
@@ -448,7 +456,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='57',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='59',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -527,10 +535,10 @@ const SHOPS=[
  {id:'pharm',n:'Pharmacy',show:3,off:[5,20],blurb:'Bandages, medkits and morphine for the hurt and the careful.',items:['bandage','smallkit','medkit','morphine']}];
 const JOBS={
  farming:{n:'Farming',cost:3,lvl:1,edu:null,blurb:'Steady food and goods. Most of what you grow can be eaten. Your first job.',
-  tools:[['Hand hoe',0],['Chicken coop',275],['Milking stall',1400],['Beehives',2500]],
+  tools:[['Hand hoe',0],['Chicken coop',275],['Milking stall',1120],['Beehives',2000]],
   drops:[['wheat',[60,42,32,26]],['veg',[40,34,30,28]],['eggs',[0,24,22,22]],['milk',[0,0,16,18]],['honey',[0,0,0,6]]]},
  foraging:{n:'Foraging',cost:3,lvl:5,edu:null,blurb:'Wander the outskirts for wood, cloth, berries and herbs. Opens at level 5.',
-  tools:[['Wicker basket',0],['Hatchet and shears',220],['Field kit',1400],["Surveyor's pack",5000]],
+  tools:[['Wicker basket',0],['Hatchet and shears',220],['Field kit',1120],["Surveyor's pack",4000]],
   drops:[['wood',[46,34,28,24]],['cloth',[32,28,24,21]],['berries',[22,18,17,15]],['herbs',[0,20,22,22]],['resin',[0,0,9,13]],['amber',[0,0,0,5]]]},
  mining:{n:'Mining',cost:3,lvl:10,edu:null,blurb:'Dig the quarry. The best paying ore job, but it opens at level 10. Better tools push coal out and rare ore in.',
   tools:[['Wooden pickaxe',0],['Iron pickaxe',300],['Steel pickaxe',1500],['Pneumatic drill',8000],['Diamond-tip drill',25000]],
@@ -572,7 +580,7 @@ const RECIPES=[{id:'bandage',inp:{cloth:2,zinc:1},out:'bandage',n:1,cost:5},{id:
 const RANKS=[[1,'Newcomer'],[3,'Laborer'],[5,'Tradesperson'],[8,'Foreman'],[12,'Contractor'],[16,'Broker'],[20,'Magnate'],[30,'Tycoon']];
 const rankOf=l=>RANKS.filter(r=>l>=r[0]).pop()[1];
 const FOCUS_ITEMS={farming:['wheat','veg'],foraging:['wood','cloth','berries'],mining:['coal','copper','iron']},FOCUS_ENERGY=15,FOCUS_UP=.10;
-const skillNeed=l=>Math.max(1,Math.round(1.92*l*l));
+const SK_NEED=[1,2,8,17,31,45,50,55,60,65,70],skillNeed=l=>SK_NEED[l]||70;
 const SK_TIERS=[{n:'Novice',from:1,min:1,max:2},{n:'Beginner',from:2,min:1,max:3},{n:'Skilled',from:5,min:2,max:6},{n:'Expert',from:10,min:2,max:10}];
 const tierOf=l=>{let k=0;SK_TIERS.forEach((t,i)=>{if(l>=t.from)k=i});const t=SK_TIERS[k],nx=SK_TIERS[k+1];return{n:t.n,min:t.min,max:t.max,next:nx?nx.from:null,nx:nx||null}};
 function plevel(sp){let L=1,need=100;while(sp>=need){sp-=need;L++;need=Math.round(100*Math.pow(1.18,L-1))}return{L,cur:sp,need}}
@@ -590,6 +598,12 @@ const miningDone=()=>S.skills.mining.xp>0||S.skills.mining.lvl>1;
 const doneMods=()=>Object.values(S.edu.prog||{}).reduce((x,y)=>x+y,0);
 const maxSkill=()=>Math.max(...Object.values(S.skills).map(k=>k.lvl));
 const J=['jobs','Open Jobs'],CT=['city','Open City'],MK=['market','Open Market'],INV=['inventory','Open Inventory'],LO=['loadout','Open Loadout'],BR=['brawl','Open Brawl'];
+const mb=id=>{if(!S.mb)S.mb={};if(!S.mb[id])S.mb[id]={s:S.stats.sales,b:S.stats.mbuys||0};return S.mb[id]};
+const mkDone=()=>{const m=mb('mkreg');return [Math.min(30,S.stats.sales-m.s),Math.min(10,(S.stats.mbuys||0)-m.b)]};
+const readAny=()=>(S.intel||0)>=1||Object.keys(S.bookCd||{}).length>0;
+const merSpent=()=>Object.values((S.mer&&S.mer.lv)||{}).reduce((a,b)=>a+b,0);
+const achDone=()=>Object.keys((S.ach&&S.ach.done)||{}).length;
+const LIBT=['library','Open Library'],ACHT=['ach','Open Achievements'],HS=['housing','Open Housing'],RT=['rentals','Open Rentals'];
 const MISSIONS=[
  {id:'welcome',t:'Welcome to Ledger City',reward:{cash:10000,energy:10},
   body:`You step off the bus with $50 and a bunk in a shared room. Everything here starts with work. Each shift costs Effort, a small bar that refills every 5 minutes, and pays in goods you can eat or sell. Farming is your first job.`,
@@ -642,7 +656,7 @@ const MISSIONS=[
  {id:'punch',t:'Throw a punch',reward:{cash:40000,energy:25},
   body:()=>`The Brawl tab is a small preview of the player fights to come. The dummy fights back and shows its next move each round. Win within ten rounds. Every fight costs ${BRAWL_COST} energy.`,
   steps:()=>[['Equip a weapon first (recommended)',armed(),LO],['Have '+BRAWL_COST+' energy, then start a fight in the Brawl tab and win it',S.brawl.wins>=1,BR]],
-  tip:()=>S.brawl.wins>=1?'':'Read the dummy. Haymaker: Rush in to cut it short. Guard: Hide to heal for free. Jab: Shoot from range.',
+  tip:()=>S.brawl.wins>=1?'':'Read the dummy. Haymaker: Rush in to cut it short. Guard: a safe round to reload or bandage. Jab: Shoot from range.',
   bar:()=>[S.brawl.wins,1],cond:()=>S.brawl.wins>=1},
  {id:'gym',t:'Hit the gym',reward:{cash:45000,energy:25},
   body:`Strength, defence, speed and dexterity make you a better fighter. Each session costs 5 energy. Players who put energy into the gym get a lasting edge in every fight.`,
@@ -671,8 +685,18 @@ const MISSIONS=[
  {id:'prize',t:'Win the pot',reward:{cash:70000,energy:20},
   body:`Prize fights are the real brawls. Each fighter puts in half the pool and the winner takes it all. Your opponent matches your level and gym stats, so the Back-alley bout is a fair fight.`,
   steps:()=>[['Have '+fmt(PRIZES[0].pool/2)+' for the stake and '+BRAWL_COST+' energy',S.money>=PRIZES[0].pool/2&&S.energy>=BRAWL_COST||S.brawl.pz.w>=1,BR],['Win a prize fight in the Brawl tab',S.brawl.pz.w>=1,BR]],
-  tip:()=>S.brawl.pz.w>=1?'':'Equip your best gear and keep Hide in mind: it heals 10 and makes the next hit count.',
+  tip:()=>S.brawl.pz.w>=1?'':'Equip your best gear and use Dodge to dodge a big hit (it works 4 times in 5) and keep bandages loaded.',
   bar:()=>[Math.min(1,S.brawl.pz.w),1,'Prize fights won'],cond:()=>S.brawl.pz.w>=1},
+ {id:'mkreg',t:'Market regular',reward:{cash:0,energy:150},
+  body:`The Market is where Ledger City sets its prices, and traders who watch it earn more than people who only work. Make 30 sales and 10 purchases there. Counting starts when this mission begins, so earlier trades do not count.`,
+  steps:()=>{const d=mkDone();return [['Make 30 market sales ('+d[0]+' of 30)',d[0]>=30,MK],['Make 10 market purchases ('+d[1]+' of 10)',d[1]>=10,MK]]},
+  tip:()=>'Buy cheap from sell listings and sell to buy orders. Quick sell and Quick buy both count.',
+  bar:()=>{const d=mkDone();return [d[0]+d[1],40,'Trades made']},cond:()=>{const d=mkDone();return d[0]>=30&&d[1]>=10}},
+ {id:'ring',t:'Fight night',reward:{cash:0,energy:150},
+  body:`Word spreads fast in the Brawl tab. Fight 20 brawls in total, win or lose. Fights you have already had count, and prize fights count too.`,
+  steps:()=>[['Fight 20 brawls ('+Math.min(20,S.brawl.n)+' of 20)',S.brawl.n>=20,BR]],
+  tip:()=>S.brawl.n>=20?'':'Losing still counts, but every loss means a trip to the hospital. Use Dodge and bandages to stay on your feet.',
+  bar:()=>[Math.min(20,S.brawl.n),20,'Fights fought'],cond:()=>S.brawl.n>=20},
  {id:'dig',t:'Dig deep',reward:{cash:80000,energy:15,effort:5},
   body:`Mining is the best paying job in the city, with ore worth far more than crops or kindling. It opens at player level 10. Start with coal, copper and iron, then buy better picks to push the common ore out and the rare ore in.`,
   steps:()=>[['Reach player level 10 to unlock Mining',plevel(S.spent).L>=10,J],['Work a mining shift',miningDone(),J]],
@@ -683,6 +707,21 @@ const MISSIONS=[
   steps:()=>[['Finish all 5 Business Basics modules in the Education tab',!!S.edu.done.biz,['education','Open Education']]],
   tip:()=>S.edu.done.biz?'':'You have finished '+modsDone('biz')+' of 5. Each module takes 3 game hours, and you can keep playing meanwhile.',
   bar:()=>[modsDone('biz'),5,'Modules finished'],cond:()=>!!S.edu.done.biz},
+ {id:'lib',t:'Public Library',reward:{cash:50000,energy:60},
+  body:`The Public Library sells books that make you smarter. Every book adds Intelligence, and Intelligence shortens your Education courses at set milestones. Books are real items, so you can resell them on the Market too. The library opens at player level 10.`,
+  steps:()=>[['Buy a book at the Public Library in the City tab',S.inv.b1>0||readAny(),LIBT],['Read it from the Library or your Inventory',readAny(),LIBT]],
+  tip:()=>readAny()?'':'The Common Sense Primer costs $250 and needs no Intelligence. Each book has a cooldown after reading.',
+  bar:()=>[readAny()?1:(S.inv.b1>0?.5:0),1,'Progress'],cond:()=>readAny()},
+ {id:'merit',t:'Earn a merit',reward:{cash:100000,energy:60},
+  body:`Achievements are goals you complete just by playing. Every achievement you finish earns merits, and merits buy permanent upgrades on the same tab. Complete one achievement, then spend a merit.`,
+  steps:()=>[['Complete any achievement in the Achievements tab',achDone()>=1,ACHT],['Spend a merit on an enhancement',merSpent()>=1,ACHT]],
+  tip:()=>achDone()>=1?'Open Achievements, choose Enhancements and upgrade a card.':'Check the list for one that is close. Selling 100 items or owning a home are easy ones.',
+  bar:()=>[(achDone()>=1?1:0)+(merSpent()>=1?1:0),2,'Steps'],cond:()=>achDone()>=1&&merSpent()>=1},
+ {id:'landlord',t:'Landlord',reward:{cash:150000,energy:60},
+  body:`A home you own can earn money while you are away. Buy a home, keep living where you like, and list the property for rent. Tenants pay you every day and you cover the upkeep.`,
+  steps:()=>[['Buy a home in the Housing tab',Object.keys(S.owned).length>=1,HS],['Rent it out in the Rentals tab (not the one you live in)',Object.values(S.rent||{}).some(r=>r.on)||S.rentTot>0,RT]],
+  tip:()=>Object.keys(S.owned).length?'Rentals shows your properties. Press List for rent on one you are not living in.':'The Studio is the cheapest home you can buy.',
+  bar:()=>[(Object.keys(S.owned).length>=1?1:0)+(Object.values(S.rent||{}).some(r=>r.on)||S.rentTot>0?1:0),2,'Steps'],cond:()=>Object.values(S.rent||{}).some(r=>r.on)||S.rentTot>0},
  {id:'street',t:'Word on the street',reward:{cash:100000,energy:30},unlock:'criminal',
   body:`People are noticing you. Someone slides a note across the bar: there is easy money in the junkyards for people who do not ask questions. Reach level 15 and the Criminal path opens up.`,
   steps:()=>[['Reach player level 15',plevel(S.spent).L>=15,J]],
@@ -719,9 +758,9 @@ function restock(st,first){if(!st.shop)st.shop={};SHOPS.forEach(sh=>{let cur=st.
  const items={};sh.items.filter(i=>cur.includes(i)).forEach(i=>items[i]={n:ri(80,300),off:ri(...(sh.off||[10,40]))});st.shop[sh.id]={items}})}
 function fresh(){const st={v:2,name:'Newcomer',t:480,real:Date.now(),speed:20,money:5000,energy:100,hunger:100,life:100,effort:25,spent:0,
  skills:{farming:{lvl:1,xp:0},foraging:{lvl:1,xp:0},mining:{lvl:1,xp:0},teacher:{lvl:1,xp:0}},tools:{farming:0,foraging:0,mining:0,teacher:0},inv:{},home:'room',owned:{},behind:false,mis:0,foodSlot:null,eCool:0,paths:{unlocked:{gather:true,criminal:false,entre:false,enf:false},active:'gather',used:false},crime:{ce:0,wins:0,fails:0,last:null},jail:{until:0,reason:'',mins:0,price:0,inmates:[],seq:1},enf:{cd:{},last:null,wins:0,shifts:0},
- bs:{str:10,def:10,spd:10,dex:10},gym:0,gyms:[true],loadout:{gun:null,melee:null,head:null,body:null,legs:null},edu:{done:{},cur:null,prog:{}},brawl:{wins:0,losses:0,last:null,pz:{w:0,l:0,t:0}},shop:{},shopBuys:{},visits:{},focus:{},beat:null,god:null,cont:[],contNext:0,hosp:null,lib:{bought:0,card:false},intel:0,books:{},bookCd:{},medCd:{},drug:{until:0,tox:0,at:0},misV:1,
+ bs:{str:10,def:10,spd:10,dex:10},gym:0,gyms:[true],loadout:{gun:null,melee:null,head:null,body:null,legs:null},edu:{done:{},cur:null,prog:{}},brawl:{wins:0,losses:0,n:0,last:null,pz:{w:0,l:0,t:0}},daily:{last:'',streak:0},bandKit:0,rent:{},rentTot:0,mb:{},shop:{},shopBuys:{},visits:{},focus:{},beat:null,god:null,cont:[],contNext:0,hosp:null,lib:{bought:0,card:false},intel:0,books:{},bookCd:{},medCd:{},drug:{until:0,tox:0,at:0},misV:2,
  ach:{done:{}},mer:{lv:{}},mv:3,stay:{},profile:{bio:'',motto:'',title:'',skin:2,shirt:0,acc:0,pins:[],id:1000+Math.floor(Math.random()*9000),since:480},
- stats:{shifts:0,gathered:0,sales:0,sold:0,bought:0,meals:0,earned:0,spentCash:0,tax:0,donated:0,contracts:0,meds:0,admits:0,rent:0,trained:0,gear:0,crafted:0,bails:0,taught:0,deals:0},
+ stats:{shifts:0,gathered:0,sales:0,sold:0,bought:0,meals:0,earned:0,spentCash:0,tax:0,donated:0,contracts:0,meds:0,admits:0,rent:0,trained:0,gear:0,crafted:0,bails:0,taught:0,deals:0,mbuys:0},
  log:[{t:480,m:'You arrive in Ledger City with $50.00 and a bunk in a shared room.'}]};
  initMarket(st);restock(st,true);return st}
 function ensure(st){if(!st.misV){if(st.mis>=15)st.mis++;st.misV=1}if(st.hosp===undefined)st.hosp=null;if(st.intel===undefined)st.intel=0;if(st.mk&&!st.mk.bk){st.mk.bk=1;['b1','b2','b3'].forEach(k=>{if(ITEMS[k]){st.mk.price[k]=Math.round(ITEMS[k].base*1.6);st.mk.stock[k]=Math.round(eqOf(k)/1.8)}})}if(!st.lib)st.lib={bought:0,card:false};if(st.books){Object.keys(st.books).forEach(k=>{if(st.books[k])st.inv[k]=(st.inv[k]||0)+1});delete st.books}if(!st.bookCd)st.bookCd={};if(!st.medCd)st.medCd={};if(!st.drug)st.drug={until:0,tox:0,at:0};if(st.beat===undefined)st.beat=null;if(st.god===undefined)st.god=null;if(st.stats&&st.stats.donated===undefined)st.stats.donated=0;if(!st.focus)st.focus={};if(!st.visits)st.visits={};if(!st.shopBuys)st.shopBuys={};for(const id in ITEMS){if(!st.mk.price[id]){st.mk.price[id]=ITEMS[id].base;st.mk.book[id]=null}}
@@ -732,7 +771,8 @@ function ensure(st){if(!st.misV){if(st.mis>=15)st.mis++;st.misV=1}if(st.hosp===u
  for(const k in JOBS){if(!st.skills[k])st.skills[k]={lvl:1,xp:0};if(st.tools[k]===undefined)st.tools[k]=0}
  if(!st.edu.prog)st.edu.prog={};COURSES.forEach(c=>{if(st.edu.done[c.id])st.edu.prog[c.id]=c.mods.length;else if(st.edu.prog[c.id]>=c.mods.length)st.edu.done[c.id]=true});
  if(st.edu.cur&&st.edu.cur.mod===undefined){st.edu.cur.mod=st.edu.prog[st.edu.cur.id]||0}
- if(!st.brawl.pz)st.brawl.pz={w:0,l:0,t:0};
+ if(!st.brawl.pz)st.brawl.pz={w:0,l:0,t:0};if(st.brawl.n===undefined)st.brawl.n=(st.brawl.wins||0)+(st.brawl.losses||0);if(st.bandKit===undefined)st.bandKit=0;if(!st.daily)st.daily={last:'',streak:0};if(!st.rent)st.rent={};if(!st.rentTot)st.rentTot=0;if(!st.mb)st.mb={};
+ if(st.misV<2){const OLD=['welcome','sell','eat','skill','roof','slot','tool','gear','deal','loadout','punch','gym','books','trade','brawler','aid','prize','dig','biz','street','pick','first','bail','teach'];const cur=OLD[st.mis];st.mis=cur?Math.max(0,MISSIONS.findIndex(m=>m.id===cur)):MISSIONS.length;st.misV=2}
  let sh=st.shop;if(!sh||SHOPS.some(s=>!sh[s.id]||!sh[s.id].items))restock(st,true);
  return st}
 let S;
@@ -863,11 +903,11 @@ function cancelListing(lid){const i=S.mk.listings.findIndex(l=>l.id===lid);if(i<
 function buyQuote(id,n){let left=n,cost=0;const parts=[];for(const o of askList(id)){if(left<=0)break;const t=Math.min(left,o.q);parts.push({o,take:t});cost+=t*o.p;left-=t}return{parts,cost,short:left}}
 function buy(id,n){n=qty(n,9999);const q=buyQuote(id,n);
  if(q.short>0)return toast('Only '+(n-q.short)+' available.','bad');if(q.cost>S.money)return toast('Not enough cash.','bad');if(used()+n>store())return toast('Not enough storage.','bad');
- q.parts.forEach(x=>x.o.q-=x.take);pay(q.cost);S.inv[id]=(S.inv[id]||0)+n;S.stats.bought+=n;impact(id,n,1);reqNote(id);
+ q.parts.forEach(x=>x.o.q-=x.take);pay(q.cost);S.inv[id]=(S.inv[id]||0)+n;S.stats.bought+=n;S.stats.mbuys=(S.stats.mbuys||0)+1;impact(id,n,1);reqNote(id);
  addLog('Bought '+n+' '+ITEMS[id].n+' for '+fmt(q.cost)+'.');toast('Bought '+n+' '+ITEMS[id].n+' for '+fmt(q.cost))}
 function placeOrder(id,n,p){n=qty(n,9999);if(!(p>=1))return toast('Enter a price.','bad');if(p*n>S.money)return toast('Not enough cash to cover the order.','bad');
  pay(p*n);let left=n,got=0;
- for(const o of askList(id)){if(left<=0||o.p>p)break;const t=Math.min(left,o.q);o.q-=t;left-=t;got+=t;S.money+=(p-o.p)*t;S.inv[id]=(S.inv[id]||0)+t;S.stats.bought+=t;impact(id,t,1)}
+ for(const o of askList(id)){if(left<=0||o.p>p)break;const t=Math.min(left,o.q);o.q-=t;left-=t;got+=t;S.money+=(p-o.p)*t;S.inv[id]=(S.inv[id]||0)+t;S.stats.bought+=t;S.stats.mbuys=(S.stats.mbuys||0)+1;impact(id,t,1)}
  if(left>0)S.mk.orders.push({id:S.mk.seq++,item:id,qty:left,got:0,price:p});
  toast(got?('Bought '+got+' instantly'+(left?', order placed for '+left:'')):'Buy order placed for '+left+' '+ITEMS[id].n)}
 function cancelOrder(oid){const i=S.mk.orders.findIndex(o=>o.id===oid);if(i<0)return;const o=S.mk.orders[i];S.money+=o.price*(o.qty-o.got);S.mk.orders.splice(i,1);toast('Order cancelled. Cash returned.')}
@@ -885,7 +925,7 @@ function marketHour(){const pf=S.paths.active==='entre'?1.2:1;
  S.mk.listings=keep;const ko=[];
  for(const O of S.mk.orders){const med=S.mk.price[O.item],rem=O.qty-O.got,a=clamp((O.price/med-0.8)/0.4*pf,0,1);
   const n=Math.min(rem,Math.floor(rem*a*0.35+Math.random()*Math.min(1,a*1.5)));
-  if(n>0){O.got+=n;S.inv[O.item]=(S.inv[O.item]||0)+n;S.stats.bought+=n;impact(O.item,n,1);addLog('Buy order filled: '+n+' '+ITEMS[O.item].n+' at '+fmt(O.price)+' each.')}if(O.got<O.qty)ko.push(O)}
+  if(n>0){O.got+=n;S.inv[O.item]=(S.inv[O.item]||0)+n;S.stats.bought+=n;S.stats.mbuys=(S.stats.mbuys||0)+1;impact(O.item,n,1);addLog('Buy order filled: '+n+' '+ITEMS[O.item].n+' at '+fmt(O.price)+' each.')}if(O.got<O.qty)ko.push(O)}
  S.mk.orders=ko;ui.dirty=true}
 
 /* loadout, brawl, gym */
@@ -926,11 +966,11 @@ const sellNet=h=>{const p=Math.round(h.price*0.9);return p-Math.round(p*taxR())}
 const homeOpen=h=>h.id==='room'||S.home===h.id||!!S.owned[h.id]||plevel(S.spent).L>=h.lvl||(S.stay[h.prev]||0)>=1;
 const homeNeed=h=>'Reach level '+h.lvl+', or live one full day in the '+HOMES.find(x=>x.id===h.prev).n+'.';
 function rentHome(id){const h=HOMES.find(x=>x.id===id);if(!homeOpen(h))return toast(h.n+' is locked. '+homeNeed(h),'bad');if(S.money<h.rent)return toast('Not enough cash for the first day.','bad');pay(h.rent);S.stats.rent+=h.rent;S.home=id;S.behind=false;S.energy=Math.min(S.energy,cap());addLog('Moved into the '+h.n+' (rent '+fmt(h.rent)+' per day).');toast('Moved into the '+h.n)}
-function buyHome(id){const h=HOMES.find(x=>x.id===id);if(!homeOpen(h))return toast(h.n+' is locked. '+homeNeed(h),'bad');if(S.money<h.price)return toast('Not enough cash.','bad');pay(h.price);S.owned[id]=true;S.home=id;S.behind=false;addLog('Bought the '+h.n+' for '+fmt(h.price)+'.');toast('You own the '+h.n)}
-function moveIn(id){S.home=id;S.energy=Math.min(S.energy,cap());toast('Moved in.')}
-function sellHome(id){const h=HOMES.find(x=>x.id===id);delete S.owned[id];if(S.home===id)S.home='room';gain(sellNet(h));S.energy=Math.min(S.energy,cap());addLog('Sold the '+h.n+' for '+fmt(sellNet(h))+' after tax.');toast('Sold the '+h.n)}
+function buyHome(id){const h=HOMES.find(x=>x.id===id);if(!homeOpen(h))return toast(h.n+' is locked. '+homeNeed(h),'bad');if(S.money<h.price)return toast('Not enough cash.','bad');pay(h.price);S.owned[id]=true;addLog('Bought the '+h.n+' for '+fmt(h.price)+'.');toast('You own the '+h.n+'. Move in, or rent it out.','gold')}
+function moveIn(id){if(S.rent&&S.rent[id]&&S.rent[id].on)evictTenant(id,true);S.home=id;S.behind=false;S.energy=Math.min(S.energy,cap());addLog('Moved into the '+(HOMES.find(x=>x.id===id)||{}).n+'.');toast('Moved in.')}
+function sellHome(id){const h=HOMES.find(x=>x.id===id);if(S.rent&&S.rent[id])evictTenant(id,true);delete S.owned[id];if(S.home===id)S.home='room';gain(sellNet(h));S.energy=Math.min(S.energy,cap());addLog('Sold the '+h.n+' for '+fmt(sellNet(h))+' after tax.');toast('Sold the '+h.n)}
 function payNow(){const h=H(),a=S.owned[h.id]?upkeep(h):h.rent;if(S.money<a)return toast('Not enough cash.','bad');pay(a);S.stats.rent+=a;S.behind=false;toast('Upkeep paid. Bonuses are back.')}
-function dayRollover(){S.shopBuys={};S.lib={bought:0,card:false};const h=H(),own=!!S.owned[h.id],a=own?upkeep(h):h.rent;
+function dayRollover(){S.shopBuys={};S.lib={bought:0,card:false};try{rentDay()}catch(e){}const h=H(),own=!!S.owned[h.id],a=own?upkeep(h):h.rent;
  if(S.money>=a){pay(a);S.stats.rent+=a;S.behind=false;S.stay[h.id]=(S.stay[h.id]||0)+1;addLog((own?'Upkeep ':'Rent ')+fmt(a)+' paid for the '+h.n+'.')}
  else if(!own&&h.id!=='room'){S.home='room';addLog('Could not pay rent. You were moved to the shared room.');toast('Could not pay rent. Moved to the shared room.','bad')}
  else if(own){S.behind=true;addLog('Could not pay upkeep. Home bonuses are paused.');toast('Upkeep unpaid. Home bonuses paused.','bad')}
@@ -948,7 +988,7 @@ function stepTime(mins){const target=S.t+mins;
  S.t=target}
 
 /* missions */
-const rw=r=>fmt(r.cash)+(r.energy?' + '+r.energy+' energy':'')+(r.effort?' + '+r.effort+' effort':'');
+const rw=r=>(r.cash?fmt(r.cash)+(r.energy||r.effort?' + ':''):'')+(r.energy?r.energy+' energy':'')+(r.effort?(r.cash||r.energy?' + ':'')+r.effort+' effort':'');
 function claim(){if(S.mis>=MISSIONS.length)return;const m=MISSIONS[S.mis];if(!m.cond())return;gain(m.reward.cash);if(m.reward.energy)S.energy+=m.reward.energy;if(m.reward.effort)S.effort+=m.reward.effort;
  if(m.unlock){S.paths.unlocked[m.unlock]=true;toast('New path unlocked: '+PATHS.find(p=>p.id===m.unlock).n)}S.mis++;addLog('Mission complete: '+m.t+'. Reward '+rw(m.reward)+'.');toast('Mission complete. '+rw(m.reward),'gold');fxFlash('level');
  if(S.mis===5)toast('You know the basics. It is up to you to decide your path.')}
@@ -1074,6 +1114,7 @@ function itemInfo(id){const x=ITEMS[id],l=[];
 const infoBox=()=>ui.info?`<section class="panel"><h2><span>Item details</span><button class="btn sm" data-act="info" data-id="${ui.info}">Close</button></h2><div class="body">${itemInfo(ui.info)}</div></section>`:'';
 function updateCd(){const r=(60-S.t%60)/S.speed*60;document.querySelectorAll('.cdShop').forEach(e=>e.textContent='Restocks in '+mm(r));
  const c=S.edu.cur;document.querySelectorAll('.cdEdu').forEach(e=>e.textContent=c?mm((c.end-S.t)/S.speed*60)+' left':'');document.querySelectorAll('.cdJail').forEach(e=>e.textContent=jailed()?mm((S.jail.until-S.t)/S.speed*60)+' left':'');document.querySelectorAll('.cdHosp').forEach(e=>e.textContent=hospitalised()?mm((S.hosp.until-S.t)/S.speed*60)+' left':'')}
+function refreshWork(){document.querySelectorAll('.wmax').forEach(e=>{const id=e.dataset.id;if(!JOBS[id])return;const cost=jobCost(id),fi=JOBS[id].special?null:focusItem(id),can=Math.min(Math.floor(S.effort/cost),fi?Math.floor(S.energy/FOCUS_ENERGY):1e9),t=e.dataset.lbl+' max ('+can+')';if(e.textContent!==t)e.textContent=t})}
 function setT(id,v){const e=document.getElementById(id);if(e&&e.textContent!==v)e.textContent=v}
 function renderHeader(){
  const pl=plevel(S.spent),b=hb(),c=cap(),ml=maxLife(),m=S.hunger>70?1.25:1,left=(15-S.t%15)/S.speed*60;
@@ -1085,7 +1126,7 @@ function renderHeader(){
  setT('hLf',Math.floor(S.life)+' / '+ml);$('#hLfF').style.width=Math.min(100,S.life/ml*100)+'%';setT('hLfS',S.life>ml?'Boosted above maximum':S.life>=ml?'Healthy':'Recovering');
  setT('hLv','Level '+pl.L);setT('hXp',Math.floor(pl.cur)+' / '+Math.floor(pl.need));$('#hXpF').style.width=pl.cur/pl.need*100+'%';setT('hXpS',Math.ceil(pl.need-pl.cur)+' energy to next level');
  [['hLfF',S.life/ml<.25],['hHuF',S.hunger<20],['hEnF',S.energy/c<.1]].forEach(([i,on])=>$('#'+i).classList.toggle('low',on));
- cashSet();const sp=$('#speed');if(sp&&sp.value!==String(S.speed)&&document.activeElement!==sp)sp.value=String(S.speed);updateCd();renderTracker();bgUpdate()}
+ cashSet();const sp=$('#speed');if(sp&&sp.value!==String(S.speed)&&document.activeElement!==sp)sp.value=String(S.speed);updateCd();refreshWork();renderTracker();bgUpdate()}
 function groups(){const P=S.paths.unlocked,law=[];if(P.criminal)law.push(['crime','Crime']);if(P.enf)law.push(['bounties','Enforcer']);law.push(['jail','Jail']);
  return [['',[['home','Home'],['guide','How to play'],['profile','Profile'],['settings','Settings']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]]].concat(law.length?[['Crime and law',law]]:[],[['Living',[['housing','Housing'],['paths','Paths'],['ach','Achievements'],['charity','Charity'],['hospital','Hospital'],['library','Library']]]])}
 function navFocus(){const n=$('#nav'),o=n&&n.querySelector('.on');if(o&&innerWidth<=860)n.scrollTo({left:Math.max(0,o.offsetLeft-60)})}
@@ -1132,7 +1173,7 @@ function teacherCard(id){
  const rq=`<ul class="reqs">${reqs.map(r=>`<li class="${r[1]?'ok':''}"><i>${r[1]?'&#10003;':'&#9679;'}</i><span>${r[0]}</span><em>${r[1]?'Done':r[2]}</em></li>`).join('')}</ul>`;
  if(!ok)return `<section class="panel locked"><h2><span>${j.n}</span><span class="chip warn">Locked</span></h2><div class="body"><p class="muted">${j.blurb}</p><div class="sec">Requirements</div>${rq}<div class="btns"><button class="btn sm" data-act="tab" data-tab="education">Open Education</button></div></div></section>`;
  return `<section class="panel"><h2><span>${j.n}</span><span class="chip">${effNum(cost)} effort per class</span></h2><div class="body"><p class="muted">${j.blurb}</p>
- <div class="btns"><button class="btn pri" data-act="work" data-id="${id}" data-n="1">Teach 1 class</button><button class="btn" data-act="work" data-id="${id}" data-n="5">Teach 5</button><button class="btn" data-act="work" data-id="${id}" data-n="999">Teach max (${can})</button></div>
+ <div class="btns"><button class="btn pri" data-act="work" data-id="${id}" data-n="1">Teach 1 class</button><button class="btn" data-act="work" data-id="${id}" data-n="5">Teach 5</button><button class="btn wmax" data-lbl="Teach" data-id="${id}" data-act="work" data-n="999">Teach max (${can})</button></div>
  <div class="small muted">${ui.last[id]||'No classes yet.'}</div><div class="sec">Pay depends on the grades</div>
  <div class="tblwrap"><table class="tbl"><thead><tr><th>Result</th><th class="num">Chance</th><th class="num">Pay</th></tr></thead><tbody>${out}</tbody></table></div>
  <div class="small muted">Average about ${fmt(Math.round(ev))} per class.</div></div></section>`}
@@ -1148,7 +1189,7 @@ function jobCard(id){
  const effNote=perk('eff_'+id)>0?`<span class="chip ok">Course bonus -${effNum(perk('eff_'+id))}</span>`:'';
  return `<section class="panel"><h2><span>${j.n}</span><span class="chip">${effNum(cost)} effort per shift</span></h2><div class="body">
  <p class="muted">${j.blurb} ${effNote}</p>
- <div class="btns"><button class="btn pri" data-act="work" data-id="${id}" data-n="1">Work 1 shift</button><button class="btn" data-act="work" data-id="${id}" data-n="5">Work 5</button><button class="btn" data-act="work" data-id="${id}" data-n="999">Work max (${can})</button></div>
+ <div class="btns"><button class="btn pri" data-act="work" data-id="${id}" data-n="1">Work 1 shift</button><button class="btn" data-act="work" data-id="${id}" data-n="5">Work 5</button><button class="btn wmax" data-lbl="Work" data-id="${id}" data-act="work" data-n="999">Work max (${can})</button></div>
  <div class="small muted">${ui.last[id]||'No shifts yet.'}</div>
  <div class="skillbox"><div class="row"><span><b>Skill level ${k.lvl}</b> <span class="muted">${tr.n}</span></span><b>${k.lvl>=10?'Max level':k.xp+' / '+skillNeed(k.lvl)+' shifts'}</b></div><div class="track"><i class="f xp" style="width:${k.lvl>=10?100:k.xp/skillNeed(k.lvl)*100}%"></i></div>
  <div class="small muted">Stacks of <b>${tr.min} to ${tr.max}</b> items${tr.nx?', growing to <b>'+tr.nx.min+' to '+tr.nx.max+'</b> at level '+tr.nx.from:', the biggest there are'}. Average haul about <b>${fmt(Math.round(evOf(id)))}</b> per shift.</div></div>
@@ -1212,6 +1253,7 @@ const PLACES=[
  ['tab:ach','Hall of fame','City Centre','Services','cup','Achievements and merits.'],
  ['tab:profile','Citizen records','City Centre','Services','user','Your public profile.'],
  ['tab:housing','Estate agent','Residential','Services','house','Rent or buy a home.'],
+ ['tab:rentals','Rentals office','Residential','Services','house','Let out the homes you own.'],
  ['shop:farm','Farmers market','North Side','Shops','farm','Fresh food, rotating discounts.'],
  ['tab:workshop','Workshop','North Side','Work','gear','Craft goods from raw materials.'],
  ['shop:guns','Weapons store','East Side','Shops','gun','Weapons, rotating discounts.'],
@@ -1384,47 +1426,65 @@ function tabAch(){const done=ACH.filter(x=>S.ach.done[x.id]).length,v=ui.achView
 /* turn-based brawl, character figure, loadout */
 const FIRE={pistol:[6,12],shotgun:[4,8],rifle:[5,10]};
 const MOVES={jab:{n:'Quick jab',dmg:14,tip:'is winding up a quick jab.',hint:'Shooting from range halves the damage and adds 20% to your hit. Rushing trades blows.'},
- hay:{n:'Haymaker',dmg:34,tip:'is winding up a heavy haymaker.',hint:'Rush in to cut it short for a bonus hit, or hide to soften the blow.'},
- guard:{n:'Guard',dmg:0,tip:'is raising its guard.',hint:'Melee is halved and bullets lose a quarter. It will not attack, so hiding is a free heal.'}};
+ hay:{n:'Haymaker',dmg:34,tip:'is winding up a heavy haymaker.',hint:'Rush in to cut it short for a bonus hit, or dodge it. A dodge still fails 1 time in 5.'},
+ guard:{n:'Guard',dmg:0,tip:'is raising its guard.',hint:'Melee is halved and bullets lose a quarter. It will not attack, so this is a safe round to bandage or reload.'}};
 const DUMMY_HP=110,B_ROUNDS=10,WIN_CASH=10000,RELOAD_COST=2000;
 function combatStats(){const b=S.bs;return{gunAcc:clamp(.45+b.dex/250,.45,.92),mAcc:clamp(.55+b.dex/300,.55,.93),gStr:1+b.str/300,mStr:1+b.str/100,defR:b.def/(b.def+200),extra:b.spd/(b.spd+120)}}
 const PRIZES=[{id:'p100',n:'Back-alley bout',pool:10000,tier:0},{id:'p500',n:'Warehouse match',pool:50000,tier:1},{id:'p1000',n:'High-roller fight',pool:100000,tier:2}];
-function oppScale(tier){const b=S.bs,avg=(b.str+b.def+b.spd+b.dex)/4,L=plevel(S.spent).L;return clamp(.85+tier*.15+(avg-10)/140+(L-1)*.01,.85,2.3)}
-const oppDs=s=>.9+(s-.9)*.5;
+const NPCS=[
+ {id:'n1',p:0,n:'John Reed',skin:1,shirt:7,hp:95,atk:.8,g:{head:'cap',melee:'bat'},bio:'Works nights and fights for beer money.'},
+ {id:'n2',p:0,n:'Dave Hollis',skin:3,shirt:3,hp:108,atk:.9,g:{body:'hoodie',melee:'bat'},bio:'A big lad with a wooden bat.'},
+ {id:'n3',p:0,n:'Mike Doyle',skin:5,shirt:2,hp:120,atk:1,g:{head:'cap',body:'hoodie',melee:'knife'},bio:'Quick with a knife, slow with the rent.'},
+ {id:'n4',p:1,n:'Carlos Vega',skin:4,shirt:5,hp:150,atk:1.12,arm:.08,g:{body:'jacket',legs:'combat',melee:'knife'},bio:'Warehouse regular. Takes a punch.'},
+ {id:'n5',p:1,n:'Tyrone Banks',skin:5,shirt:6,hp:166,atk:1.2,arm:.1,g:{head:'hardhat',body:'vest',melee:'bat'},bio:'Dock worker in a stolen vest.'},
+ {id:'n6',p:1,n:'Sam Brook',skin:0,shirt:1,hp:176,atk:1.28,arm:.12,g:{head:'helmet',body:'jacket',legs:'combat',melee:'knife'},bio:'Ex-security. Reads fighters well.'},
+ {id:'n7',p:2,n:'Viktor Kane',skin:1,shirt:7,hp:215,atk:1.4,arm:.17,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete'},bio:'Hits slow, hits hard.'},
+ {id:'n8',p:2,n:'Marcus Cole',skin:4,shirt:0,hp:235,atk:1.5,arm:.2,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete'},bio:'Undefeated in the high-roller room.'},
+ {id:'n9',p:2,n:'Big Lou Santoro',skin:2,shirt:2,hp:255,atk:1.6,arm:.22,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete',gun:'shotgun'},bio:'The house champion. Beatable, just.'}];
+const npcOf=id=>NPCS.find(x=>x.id===id);
+const npcProt=n=>['head','body','legs'].reduce((a,s)=>a+(n.g[s]?ITEMS[n.g[s]].prot:0),0);
+function oppScale(){const b=S.bs,avg=(b.str+b.def+b.spd+b.dex)/4,L=plevel(S.spent).L;return 1+clamp((avg-10)/260+(L-1)*.006,0,.55)}
+const npcHp=n=>Math.round(n.hp*oppScale()),npcAtk=n=>n.atk*(1+(oppScale()-1)*.6);
+const npcLab=n=>{const k=n.hp*n.atk;return k<110?'Easy':k<190?'Fair':k<260?'Tough':k<340?'Hard':'Very hard'};
 const pct=x=>Math.round(x*100)+'%';
+const BAND_HEAL=10;
 function rollIntent(prev){const r=Math.random()*100;let k=r<40?'jab':r<75?'hay':'guard';if(k==='guard'&&prev==='guard')k='jab';return k}
-function fightNew(pid){const pr=PRIZES.find(x=>x.id===pid)||null;if(hospBlock())return;if(jailed())return toast('You are in jail.','bad');if(S.life<1)return toast('You are too hurt to fight. Use a bandage or wait for your life to recover.','bad');
- if(S.energy<BRAWL_COST)return toast('Fighting costs '+BRAWL_COST+' energy. You have '+Math.floor(S.energy)+'.','bad');const L0=plevel(S.spent).L;if(pr&&S.money<pr.pool/2)return toast('The stake for this fight is '+fmt(pr.pool/2)+'. You do not have enough cash.','bad');S.energy-=BRAWL_COST;S.spent+=BRAWL_COST;if(pr){pay(pr.pool/2);S.brawl.pz.t++}levelCheck(L0);const sc=pr?oppScale(pr.tier):1,eh=Math.round(DUMMY_HP*sc);
- const g=S.loadout.gun;ui.fight={r:1,php:Math.min(S.life,maxLife()),pmax:maxLife(),ehp:eh,emax:eh,prize:pr,ds:pr?oppDs(sc):1,name:pr?'Challenger':'Training dummy',ammo:g?(FIRE[g]||[5,10])[1]:0,buff:1,intent:rollIntent(),log:[],over:false,res:null,dealt:0,took:0,fx:null}}
+function equipBand(){const n=S.inv.bandage||0;if(!n)return toast('You have no bandages. Buy some at the Pharmacy in the City tab.','bad');takeInv('bandage',n);S.bandKit=(S.bandKit||0)+n;toast('Loaded '+n+' bandage'+(n>1?'s':'')+' into your loadout.')}
+function unequipBand(){const n=S.bandKit||0;if(!n)return;S.bandKit=0;S.inv.bandage=(S.inv.bandage||0)+n;toast('Returned '+n+' bandage'+(n>1?'s':'')+' to your inventory.')}
+function fightNew(pid,nid){const pr=PRIZES.find(x=>x.id===pid)||null,np=pr?(npcOf(nid)||NPCS.find(x=>x.p===pr.tier)):null;if(hospBlock())return;if(jailed())return toast('You are in jail.','bad');if(S.life<1)return toast('You are too hurt to fight. Use a bandage or wait for your life to recover.','bad');
+ if(S.energy<BRAWL_COST)return toast('Fighting costs '+BRAWL_COST+' energy. You have '+Math.floor(S.energy)+'.','bad');const L0=plevel(S.spent).L;if(pr&&S.money<pr.pool/2)return toast('The stake for this fight is '+fmt(pr.pool/2)+'. You do not have enough cash.','bad');S.energy-=BRAWL_COST;S.spent+=BRAWL_COST;S.brawl.n=(S.brawl.n||0)+1;if(pr){pay(pr.pool/2);S.brawl.pz.t++}levelCheck(L0);const eh=np?npcHp(np):DUMMY_HP;
+ const g=S.loadout.gun;ui.fight={r:1,php:Math.min(S.life,maxLife()),pmax:maxLife(),ehp:eh,emax:eh,prize:pr,npc:np,ds:np?npcAtk(np):1,arm:np?(np.arm||0):0,name:np?np.n:'Training dummy',ammo:g?(FIRE[g]||[5,10])[1]:0,buff:1,intent:rollIntent(),log:[],over:false,res:null,dealt:0,took:0,fx:null}}
+const foe=f=>f.npc?f.npc.n:'The dummy';
 function fightEnd(f,res){f.over=true;f.res=res;const L0=plevel(S.spent).L;
- if(res==='win'){const pay_=f.prize?f.prize.pool:WIN_CASH;S.brawl.wins++;if(f.prize)S.brawl.pz.w++;gain(pay_);S.spent+=5;S.life=Math.max(1,f.php);f.earned=pay_;toast('Victory! You earned '+fmt(pay_)+(f.prize?' from the prize pool.':'.'),'gold');addLog((f.prize?f.prize.n+' won':'Brawl won')+' in '+f.r+' rounds. Earned '+fmt(pay_)+'.');fxFlash('win')}
- else if(res==='loss'){S.brawl.losses++;if(f.prize)S.brawl.pz.l++;S.life=Math.max(1,maxLife()*.25);hospitalise(1,'Knocked out in a fight');toast((f.prize?'Your opponent':'The dummy')+' knocked you out.'+(f.prize?' You lost your '+fmt(f.prize.pool/2)+' stake.':''),'bad');fxFlash('hurt');addLog('Brawl lost in '+f.r+' rounds.')}
- else{S.life=Math.max(1,f.php);if(f.prize)S.brawl.pz.l++;toast('Time ran out. Your opponent is still standing.'+(f.prize?' You lost your stake.':''),'bad');addLog('Brawl ended with the dummy still standing.')}
+ if(res==='win'){const pay_=f.prize?f.prize.pool:WIN_CASH;S.brawl.wins++;if(f.prize)S.brawl.pz.w++;gain(pay_);S.spent+=5;S.life=Math.max(1,f.php);f.earned=pay_;toast('Victory! You earned '+fmt(pay_)+(f.prize?' from the prize pool.':'.'),'gold');addLog((f.prize?f.prize.n+' won against '+foe(f):'Brawl won')+' in '+f.r+' rounds. Earned '+fmt(pay_)+'.');fxFlash('win')}
+ else if(res==='loss'){S.brawl.losses++;if(f.prize)S.brawl.pz.l++;S.life=Math.max(1,maxLife()*.25);hospitalise(1,'Knocked out in a fight');toast(foe(f)+' knocked you out.'+(f.prize?' You lost your '+fmt(f.prize.pool/2)+' stake.':''),'bad');fxFlash('hurt');addLog('Brawl lost to '+foe(f)+' in '+f.r+' rounds.')}
+ else{S.life=Math.max(1,f.php);if(f.prize)S.brawl.pz.l++;toast('Time ran out. '+foe(f)+' is still standing.'+(f.prize?' You lost your stake.':''),'bad');addLog('Brawl ended with '+foe(f)+' still standing.')}
  S.brawl.last={res,r:f.r,dealt:Math.round(f.dealt),took:Math.round(f.took)};levelCheck(L0)}
-function fightAct(k){const f=ui.fight;if(!f||f.over)return;const cs=combatStats(),it=f.intent,mv=MOVES[it];let d=0,cancel=false,inc=1,parts=[];const fx={pl:null,en:null,pd:0,ed:0};
- if(k==='shoot'){const g=S.loadout.gun;if(!g)return toast('Equip a gun in the Loadout tab first.','bad');if(f.ammo<=0)return toast('Out of ammo. Rush or hide instead.','bad');
+function fightAct(k){const f=ui.fight;if(!f||f.over)return;const cs=combatStats(),it=f.intent,mv=MOVES[it],fo=foe(f);let d=0,cancel=false,inc=1,parts=[],dodged=false;const fx={pl:null,en:null,pd:0,ed:0};
+ if(k==='shoot'){const g=S.loadout.gun;if(!g)return toast('Equip a gun in the Loadout tab first.','bad');if(f.ammo<=0)return toast('Out of ammo. Rush or dodge instead.','bad');
   const n=Math.min((FIRE[g]||[5,10])[0],f.ammo);f.ammo-=n;let h=0;for(let i=0;i<n;i++)if(Math.random()<cs.gunAcc)h++;
   d=h*ITEMS[g].dmg/3*cs.gStr*(.9+Math.random()*.2);parts.push('Fired '+n+' rounds: '+h+' hit, '+(n-h)+' missed.');
   if(it==='guard'){d*=.75;parts.push('Its guard soaked some of it.')}if(it==='jab'){d*=1.2;inc=.5;parts.push('You kept your distance.')}}
  else if(k==='rush'){const m=S.loadout.melee,base=m?ITEMS[m].dmg:3;let h=0;for(let i=0;i<3;i++)if(Math.random()<cs.mAcc)h++;
   d=h*base*cs.mStr*(.9+Math.random()*.2);parts.push('You rushed in with '+(m?ITEMS[m].n:'your fists')+': 3 swings, '+h+' hit, '+(3-h)+' missed.');
   if(it==='guard'){d*=.5;parts.push('Its guard blocked half.')}if(it==='hay'){cancel=true;d*=1.25;parts.push('You cut the haymaker short.')}}
- else if(k==='reload'){const g=S.loadout.gun;if(!g)return toast('Equip a gun in the Loadout tab first.','bad');const mag=(FIRE[g]||[5,10])[1];if(f.ammo>=mag)return toast('Your magazine is already full.','bad');if(S.money<RELOAD_COST)return toast('Ammo costs '+fmt(RELOAD_COST)+'.','bad');pay(RELOAD_COST);f.ammo=mag;parts.push('You paid '+fmt(RELOAD_COST)+' for ammo and reloaded. The dummy used the gap.')}
- else{f.php=Math.min(f.pmax,f.php+10);inc=.3;f.buff=1.3;parts.push('You hid and recovered 10 life. Your next attack hits harder.')}
+ else if(k==='reload'){const g=S.loadout.gun;if(!g)return toast('Equip a gun in the Loadout tab first.','bad');const mag=(FIRE[g]||[5,10])[1];if(f.ammo>=mag)return toast('Your magazine is already full.','bad');if(S.money<RELOAD_COST)return toast('Ammo costs '+fmt(RELOAD_COST)+'.','bad');pay(RELOAD_COST);f.ammo=mag;parts.push('You paid '+fmt(RELOAD_COST)+' for ammo and reloaded. '+fo+' used the gap.')}
+ else if(k==='bandage'){if(!(S.bandKit>0))return toast('No bandages in your loadout. Load some in the Loadout tab.','bad');if(f.php>=f.pmax)return toast('You are already at full life.','bad');S.bandKit--;f.php=Math.min(f.pmax,f.php+BAND_HEAL);parts.push('You wrapped a bandage and healed '+BAND_HEAL+' ('+S.bandKit+' left).')}
+ else{dodged=Math.random()<.8;parts.push(dodged?'You dodged.':'You tried to dodge but were caught.')}
  if(k==='shoot'||k==='rush'){d*=f.buff;if(f.buff>1)parts.push('Focus bonus applied.');f.buff=1;
-  if(Math.random()<cs.extra){d*=1.35;parts.push('Quick reflexes gave you a bonus hit.')}}
+  if(Math.random()<cs.extra){d*=1.35;parts.push('Quick reflexes gave you a bonus hit.')}if(f.arm){d*=1-f.arm;parts.push('Its armour absorbed '+Math.round(f.arm*100)+'%.')}}
  d=Math.round(d);f.ehp=Math.max(0,f.ehp-d);f.dealt+=d;if(d>0){fx.en='hit';fx.ed=d}
- if(f.ehp<=0){f.log.unshift('Round '+f.r+': '+parts.join(' ')+' '+d+' damage. The dummy falls.');f.fx=fx;return fightEnd(f,'win')}
- if(!cancel&&it!=='guard'){const raw=mv.dmg*f.ds*(.9+Math.random()*.2),take=Math.round(raw*inc*(1-prot()/100)*(1-cs.defR));f.php=Math.max(0,f.php-take);f.took+=take;fx.pl='hit';fx.pd=take;
-  parts.push('The '+mv.n.toLowerCase()+' landed for '+take+'.')}
- else if(it==='guard')parts.push('The dummy stayed behind its guard.');
+ if(f.ehp<=0){f.log.unshift('Round '+f.r+': '+parts.join(' ')+' '+d+' damage. '+fo+' falls.');f.fx=fx;return fightEnd(f,'win')}
+ if(!cancel&&it!=='guard'){if(k==='dodge'&&dodged){parts.push(fo+' swung and missed.')}else{const raw=mv.dmg*f.ds*(.9+Math.random()*.2),take=Math.round(raw*inc*(1-prot()/100)*(1-cs.defR));f.php=Math.max(0,f.php-take);f.took+=take;fx.pl='hit';fx.pd=take;
+  parts.push('The '+mv.n.toLowerCase()+' landed for '+take+'.')}}
+ else if(it==='guard')parts.push(fo+' stayed behind a guard.');
  f.log.unshift('Round '+f.r+': '+parts.join(' ')+(d?' You dealt '+d+'.':''));f.fx=fx;
  if(f.php<=0)return fightEnd(f,'loss');
  if(f.r>=B_ROUNDS)return fightEnd(f,'timeout');
  f.r++;f.intent=rollIntent(it)}
 /* figure */
-function figure(L,o={}){const sk=SKINS[S.profile.skin]||'#c8a07c',ln='#0d1115',C=id=>ITEMS[id].c,hd=L.head,bd=L.body,lg=L.legs,gn=L.gun,ml=L.melee;
- const shirt=SHIRTS[S.profile.shirt]||'#44525f',pants='#33404c',sleeve=bd&&(bd==='hoodie'||bd==='jacket')?C(bd):shirt,legC=lg?C(lg):pants,P=s=>o.pulse===s?' pulse':'';
+function figure(L,o={}){const sk=SKINS[o.skin!==undefined?o.skin:S.profile.skin]||'#c8a07c',ln='#0d1115',C=id=>ITEMS[id].c,hd=L.head,bd=L.body,lg=L.legs,gn=L.gun,ml=L.melee;
+ const shirt=SHIRTS[o.shirt!==undefined?o.shirt:S.profile.shirt]||'#44525f',pants='#33404c',sleeve=bd&&(bd==='hoodie'||bd==='jacket')?C(bd):shirt,legC=lg?C(lg):pants,P=s=>o.pulse===s?' pulse':'';
  let s=`<svg viewBox="0 0 140 230" class="fig" role="img" aria-label="Character with equipped gear">`;
  s+=`<g class="g-legs${P('legs')}"><rect x="44" y="124" width="22" height="86" rx="6" fill="${legC}" stroke="${ln}" stroke-width="2"/><rect x="74" y="124" width="22" height="86" rx="6" fill="${legC}" stroke="${ln}" stroke-width="2"/>`;
  if(lg==='combat')s+=`<rect x="46" y="152" width="9" height="14" rx="2" fill="#00000040"/><rect x="85" y="152" width="9" height="14" rx="2" fill="#00000040"/>`;
@@ -1449,46 +1509,47 @@ function figure(L,o={}){const sk=SKINS[S.profile.skin]||'#c8a07c',ln='#0d1115',C
  if(ml==='bat')s+=`<rect x="26" y="78" width="9" height="58" rx="4" fill="${C(ml)}" stroke="${ln}" stroke-width="1.5" transform="rotate(-10 30 110)"/>`;
  if(ml==='knife')s+=`<path d="M26 128 L30 92 L35 128 Z" fill="${C(ml)}" stroke="${ln}" stroke-width="1.5"/><rect x="25" y="126" width="11" height="9" rx="2" fill="#3a2f26"/>`;
  if(ml==='machete')s+=`<path d="M24 128 L28 70 L38 128 Z" fill="${C(ml)}" stroke="${ln}" stroke-width="1.5"/><rect x="23" y="126" width="16" height="10" rx="2" fill="#3a2f26"/>`;
- s+=`</g></svg>`;return s}
+ s+=`</g>${o.guard?'<rect x="30" y="62" width="80" height="70" rx="12" fill="none" stroke="#74a4e0" stroke-width="3" stroke-dasharray="6 4"/>':''}</svg>`;return o.flip?s.replace('class="fig"','class="fig flip"'):s}
 function dummyFig(guard){return `<svg viewBox="0 0 140 230" class="fig" role="img" aria-label="Training dummy"><rect x="66" y="60" width="8" height="150" fill="#6b5a45"/><rect x="38" y="208" width="64" height="11" rx="4" fill="#4a3f31"/>
  <rect x="26" y="80" width="88" height="11" rx="5" fill="#cfa86a" stroke="#0d1115" stroke-width="2"/><ellipse cx="70" cy="112" rx="30" ry="44" fill="#cfa86a" stroke="#0d1115" stroke-width="2"/>
  <circle cx="70" cy="112" r="26" fill="#d9d2c4"/><circle cx="70" cy="112" r="19" fill="#c0504a"/><circle cx="70" cy="112" r="11" fill="#d9d2c4"/><circle cx="70" cy="112" r="5" fill="#c0504a"/>
  <circle cx="70" cy="42" r="19" fill="#cfa86a" stroke="#0d1115" stroke-width="2"/><path d="M60 40 L66 44 M66 40 L60 44 M74 40 L80 44 M80 40 L74 44" stroke="#0d1115" stroke-width="1.8"/>
  ${guard?'<rect x="34" y="62" width="72" height="62" rx="12" fill="none" stroke="#74a4e0" stroke-width="3" stroke-dasharray="6 4"/>':''}</svg>`}
-const hpBar=(v,m,cls)=>`<div class="row small"><span>${cls==='lf'?'You':'Dummy'}</span><b>${Math.ceil(v)} / ${m}</b></div><div class="track"><i class="f ${cls}" style="width:${Math.max(0,v/m*100)}%"></i></div>`;
+const hpBar=(v,m,cls,nm)=>`<div class="row small"><span>${cls==='lf'?'You':(nm||'Dummy')}</span><b>${Math.ceil(v)} / ${m}</b></div><div class="track"><i class="f ${cls}" style="width:${Math.max(0,v/m*100)}%"></i></div>`;
 function actCard(k,t,sub,dis){return `<button class="act ${dis?'dis':''}" data-act="bact" data-k="${k}"><b>${t}</b><span>${sub}</span></button>`}
-function prizeCards(){const sc=PRIZES.map(p=>{const s=oppScale(p.tier),hp=Math.round(DUMMY_HP*s),hit=Math.round(34*oppDs(s)),my=Math.round(60+cs0().power),lab=s<1.05?'Even match':s<1.3?'Tough':'Very tough';
- return `<div class="prize"><div class="ph"><b>${p.n}</b><span class="chip">${lab}</span></div><div class="pp">${fmt(p.pool)}<small>prize pool</small></div><div class="small muted">Each fighter puts in ${fmt(p.pool/2)}. Winner takes the pool. Your opponent has about ${hp} health and its haymaker hits for about ${hit}. It matches your level and gym stats.</div><button class="btn pri sm" data-act="fnew" data-p="${p.id}">Enter for ${fmt(p.pool/2)}</button></div>`}).join('');
- const z=S.brawl.pz;return `<section class="panel" style="grid-column:1/-1"><h2><span>Prize fights</span><span class="chip">Record ${z.w} won / ${z.l} lost</span></h2><div class="body"><p class="muted">Put up half the pool and fight a challenger who grows with your level and stats. Win and you take the whole pool. Lose or run out of rounds and your stake is gone. Every fight also costs ${BRAWL_COST} energy.</p><div class="prizes">${sc}</div></div></section>`}
+function npcRow(n,p){const gear=[n.g.melee,n.g.gun,n.g.head,n.g.body,n.g.legs].filter(Boolean).map(i=>ITEMS[i].n).join(', '),lab=npcLab(n);
+ return `<div class="npc"><div class="npcf">${figure(n.g,{skin:n.skin,shirt:n.shirt})}</div><div class="npci"><div class="row"><b>${n.n}</b><span class="chip ${lab==='Easy'?'ok':lab==='Hard'||lab==='Very hard'?'warn':''}">${lab}</span></div><div class="small muted">${n.bio}</div><div class="small muted">About ${npcHp(n)} health. Haymaker about ${Math.round(34*npcAtk(n))}. Armour ${npcProt(n)}%. Carries: ${gear}.</div><button class="btn pri sm" data-act="fnew" data-p="${p.id}" data-n="${n.id}">Fight ${n.n.split(' ')[0]} for ${fmt(p.pool/2)}</button></div></div>`}
+function prizeCards(){const sc=PRIZES.map(p=>`<div class="prize"><div class="ph"><b>${p.n}</b><span class="chip">${NPCS.filter(n=>n.p===p.tier).length} fighters</span></div><div class="pp">${fmt(p.pool)}<small>prize pool</small></div><div class="small muted">Each fighter puts in ${fmt(p.pool/2)}. Winner takes the pool. Pick who you want to face.</div>${NPCS.filter(n=>n.p===p.tier).map(n=>npcRow(n,p)).join('')}</div>`).join('');
+ const z=S.brawl.pz;return `<section class="panel" style="grid-column:1/-1"><h2><span>Prize fights</span><span class="chip">Record ${z.w} won / ${z.l} lost</span></h2><div class="body"><p class="muted">Nine named fighters across three pools. The better the pool, the better their gear and the harder they hit. Put up half the pool and win to take it all. Lose or run out of rounds and your stake is gone. Every fight also costs ${BRAWL_COST} energy.</p><div class="prizes">${sc}</div></div></section>`}
 const cs0=()=>({power:0});
 function tabBrawl(){const f=ui.fight,cs=combatStats(),g=S.loadout.gun,m=S.loadout.melee,l=S.brawl.last;
- const head=pageHead('Brawl','Fight the training dummy in ten decisions. Read what it is about to do, then pick the move that counters it. Your gear and gym stats decide how hard you hit, how often you hit and how much you take.');
+ const head=pageHead('Brawl','Fight in ten decisions. Read what it is about to do, then pick the move that counters it. Your gear and gym stats decide how hard you hit, how often you hit and how much you take.');
  if(!f){return head+`<div class="grid2"><section class="panel"><h2><span>Training dummy</span><span class="chip">Win pays ${fmt(WIN_CASH)}</span></h2><div class="body"><div class="btns"><button class="btn pri" data-act="fnew">Start fight (${BRAWL_COST} energy)</button>${S.inv.bandage?`<button class="btn" data-act="eat" data-id="bandage">Use bandage (${S.inv.bandage})</button>`:''}<button class="btn" data-act="tab" data-tab="loadout">Change loadout</button></div>
-  ${det('brawl-rules','How this fight works',`<p class="muted small">The dummy has ${DUMMY_HP} health and fights back. Each round it telegraphs a move. You have ${B_ROUNDS} rounds to knock it down, and ammo is limited, so you can pay ${fmt(RELOAD_COST)} to reload mid-fight. Run out of rounds and it is still standing, run out of life and you are knocked out. ${BRAWL_COST?'Each fight costs '+BRAWL_COST+' energy.':'Fights are free for now.'}</p>`,false)}
+  ${det('brawl-rules','How this fight works',`<p class="muted small">The dummy has ${DUMMY_HP} health and fights back. The named fighters in the prize pools hit harder and wear armour. Each round it telegraphs a move. You have ${B_ROUNDS} rounds to knock it down, and ammo is limited, so you can pay ${fmt(RELOAD_COST)} to reload mid-fight. Run out of rounds and it is still standing, run out of life and you are knocked out. ${BRAWL_COST?'Each fight costs '+BRAWL_COST+' energy.':'Fights are free for now.'}</p>`,false)}
   <div class="arena mini"><div class="fwrap">${figure(S.loadout)}<div class="small muted">You</div></div><div class="fwrap">${dummyFig(false)}<div class="small muted">Training dummy</div></div></div>
-  <div class="pins"><span class="chip">Gun: ${g?ITEMS[g].n+' ('+(FIRE[g]||[5,10])[1]+' rounds)':'None'}</span><span class="chip">Melee: ${m?ITEMS[m].n:'Fists'}</span><span class="chip">Protection ${prot()}%</span><span class="chip">${S.brawl.wins} won / ${S.brawl.losses} lost</span></div></div></section>
+  <div class="pins"><span class="chip">Gun: ${g?ITEMS[g].n+' ('+(FIRE[g]||[5,10])[1]+' rounds)':'None'}</span><span class="chip">Melee: ${m?ITEMS[m].n:'Fists'}</span><span class="chip">Protection ${prot()}%</span><span class="chip">Bandages: ${S.bandKit||0}</span><span class="chip">${S.brawl.wins} won / ${S.brawl.losses} lost</span></div></div></section>
   ${prizeCards()}
-  <section class="panel"><h2>How the fight works</h2><div class="body"><div class="goal"><b>Shoot</b><span>Fires a volley. Accuracy comes from Dexterity, damage from the gun and a little Strength. Ammo is limited.</span></div><div class="goal"><b>Rush</b><span>Three melee swings. Strength adds damage. Rushing cuts a haymaker short.</span></div><div class="goal"><b>Reload</b><span>Out of bullets? Pay ${fmt(RELOAD_COST)} for a full magazine. Reloading takes your turn.</span></div><div class="goal"><b>Hide</b><span>Recover 10 life, take far less damage and hit harder next turn.</span></div>
+  <section class="panel"><h2>How the fight works</h2><div class="body"><div class="goal"><b>Shoot</b><span>Fires a volley. Accuracy comes from Dexterity, damage from the gun and a little Strength. Ammo is limited.</span></div><div class="goal"><b>Rush</b><span>Three melee swings. Strength adds damage. Rushing cuts a haymaker short.</span></div><div class="goal"><b>Reload</b><span>Out of bullets? Pay ${fmt(RELOAD_COST)} for a full magazine. Reloading takes your turn.</span></div><div class="goal"><b>Dodge</b><span>Skip your attack and try to avoid the next hit. It works 4 times in 5.</span></div><div class="goal"><b>Bandage</b><span>Heal ${BAND_HEAL} life and use up one bandage from your loadout. The enemy still attacks.</span></div>
   ${kv([['Gun accuracy',pct(cs.gunAcc)],['Melee accuracy',pct(cs.mAcc)],['Strength bonus',pct(cs.mStr-1)+' melee, '+pct(cs.gStr-1)+' guns'],['Defence cut',pct(cs.defR)],['Bonus hit chance',pct(cs.extra)]])}
   <p class="small muted">Train Strength, Defence, Speed and Dexterity in the Gym to win more often.</p>${l?`<div class="small muted">Last fight: ${l.res==='win'?'won':l.res==='loss'?'lost':'timed out'} in ${l.r} rounds, ${l.dealt} dealt, ${l.took} taken.</div>`:''}</div></section></div>`}
  const fx=f.fx||{};f.fx=null;const it=MOVES[f.intent],can=g&&f.ammo>0,rp=g?(FIRE[g]||[5,10])[0]:0;
  const arena=`<div class="arena ${fx.pl==='hit'?'hurt':''}"><div class="fwrap ${fx.pl==='hit'?'hit':''}">${figure(S.loadout)}${fx.pd?`<i class="dmg">-${fx.pd}</i>`:''}${hpBar(f.php,f.pmax,'lf')}</div>
-  <div class="fwrap ${fx.en==='hit'?'hit':''}">${dummyFig(f.intent==='guard'&&!f.over)}${fx.ed?`<i class="dmg out">-${fx.ed}</i>`:''}${hpBar(f.ehp,f.emax,'ef')}</div></div>`;
- const intent=f.over?`<div class="intent ${f.res==='win'?'win':'lose'}"><b>${f.res==='win'?'Victory':f.res==='loss'?'Knocked out':'Time ran out'}</b><span>${f.res==='win'?'Your opponent is down. You earned '+fmt(f.earned)+'.':f.res==='loss'?'You took too much damage.':(f.prize?'Your opponent':'The dummy')+' is still standing. Hit harder or counter smarter.'}</span></div>`
-  :`<div class="intent ${f.intent}"><b>${f.prize?'Your opponent':'The dummy'} ${it.tip}</b><span>${it.hint}</span></div>`;
- const acts=f.over?`<div class="btns"><button class="btn pri" data-act="fnew" data-p="${f.prize?f.prize.id:''}">Fight again (${BRAWL_COST} energy${f.prize?' + '+fmt(f.prize.pool/2)+' stake':''})</button><button class="btn" data-act="fend">Back</button>${S.inv.bandage?`<button class="btn" data-act="eat" data-id="bandage">Use bandage (${S.inv.bandage})</button>`:''}</div>`
-  :`<div class="acts">${actCard('shoot','Shoot',g?(can?rp+' rounds at '+pct(cs.gunAcc)+' each. '+f.ammo+' rounds left.':'Out of ammo.'):'No gun equipped.',!can)}${actCard('rush','Rush','3 melee swings at '+pct(cs.mAcc)+' each with '+(m?ITEMS[m].n:'fists')+'.',false)}${actCard('hide','Hide','Heal 10, take 70% less, hit harder next turn.',false)}${g&&f.ammo<(FIRE[g]||[5,10])[1]?actCard('reload','Buy ammo and reload',fmt(RELOAD_COST)+' for a full magazine. It costs your turn.',S.money<RELOAD_COST):''}</div>`;
+  <div class="fwrap ${fx.en==='hit'?'hit':''}">${f.npc?figure(f.npc.g,{skin:f.npc.skin,shirt:f.npc.shirt,flip:1,guard:f.intent==='guard'&&!f.over}):dummyFig(f.intent==='guard'&&!f.over)}${fx.ed?`<i class="dmg out">-${fx.ed}</i>`:''}${hpBar(f.ehp,f.emax,'ef',f.name)}</div></div>`;
+ const intent=f.over?`<div class="intent ${f.res==='win'?'win':'lose'}"><b>${f.res==='win'?'Victory':f.res==='loss'?'Knocked out':'Time ran out'}</b><span>${f.res==='win'?foe(f)+' is down. You earned '+fmt(f.earned)+'.':f.res==='loss'?'You took too much damage.':foe(f)+' is still standing. Hit harder or counter smarter.'}</span></div>`
+  :`<div class="intent ${f.intent}"><b>${foe(f)} ${it.tip}</b><span>${it.hint}</span></div>`;
+ const acts=f.over?`<div class="btns"><button class="btn pri" data-act="fnew" data-p="${f.prize?f.prize.id:''}" data-n="${f.npc?f.npc.id:''}">Fight again (${BRAWL_COST} energy${f.prize?' + '+fmt(f.prize.pool/2)+' stake':''})</button><button class="btn" data-act="fend">Back</button>${S.inv.bandage?`<button class="btn" data-act="eat" data-id="bandage">Use bandage (${S.inv.bandage})</button>`:''}</div>`
+  :`<div class="acts">${actCard('shoot','Shoot',g?(can?rp+' rounds at '+pct(cs.gunAcc)+' each. '+f.ammo+' rounds left.':'Out of ammo.'):'No gun equipped.',!can)}${actCard('rush','Rush','3 melee swings at '+pct(cs.mAcc)+' each with '+(m?ITEMS[m].n:'fists')+'.',false)}${actCard('dodge','Dodge','No attack this round. '+(it.dmg?'80% to avoid the hit.':'Nothing to dodge.'),false)}${actCard('bandage','Bandage',(S.bandKit||0)+' in your loadout. Heals '+BAND_HEAL+'.',!(S.bandKit>0)||f.php>=f.pmax)}${g&&f.ammo<(FIRE[g]||[5,10])[1]?actCard('reload','Buy ammo and reload',fmt(RELOAD_COST)+' for a full magazine. It costs your turn.',S.money<RELOAD_COST):''}</div>`;
  return head+`<section class="panel"><h2><span>${f.name}</span><span class="chip">${f.prize?'Pool '+fmt(f.prize.pool)+' &middot; ':''}Round ${f.r} of ${B_ROUNDS}</span></h2><div class="body">${arena}${intent}${acts}
-  ${f.buff>1&&!f.over?'<div class="small" style="color:var(--brass)">Focus: your next attack hits 30% harder.</div>':''}
+  
   <div class="sec">Fight log</div><div class="log">${f.log.map(x=>`<div><em style="font-style:normal">${x}</em></div>`).join('')||'<div class="muted">Choose your first move.</div>'}</div></div></section>`}
 function tabLoadout(){const w=weaponFor('auto'),cs=combatStats(),pu=ui.pulse;ui.pulse=null;
  const cards=SLOTS.map(([k,l])=>{const eq=S.loadout[k],opts=Object.keys(S.inv).filter(i=>ITEMS[i].slot===k);
   return `<section class="panel"><h2>${l}</h2><div class="body">${eq?`<div class="row"><span>${sw(eq)}${ITEMS[eq].n}<br><span class="small muted">${effectLine(eq)}</span></span><button class="btn sm" data-act="unequip" data-slot="${k}">Unequip</button></div>`:'<p class="muted">Nothing equipped.</p>'}
-  <div class="sec">In your inventory</div>${opts.length?opts.map(i=>`<div class="row"><span>${sw(i)}${ITEMS[i].n} x${S.inv[i]} <span class="small muted">${effectLine(i)}</span></span><button class="btn sm" data-act="equip" data-id="${i}">Equip</button></div>`).join(''):'<p class="small muted">No gear for this slot. Buy some in the City tab.</p>'}</div></section>`}).join('');
+  <div class="sec">In your inventory</div>${opts.length?opts.map(i=>`<div class="row"><span>${sw(i)}${ITEMS[i].n} x${S.inv[i]} <span class="small muted">${effectLine(i)}</span></span><button class="btn sm" data-act="equip" data-id="${i}">Equip</button></div>`).join(''):'<p class="small muted">No gear for this slot. Buy some in the City tab.</p>'}</div></section>`}).join('')+`<section class="panel"><h2><span>Bandages</span><span class="chip">${S.bandKit||0} loaded</span></h2><div class="body"><p class="muted small">Bandages in your loadout can be used mid-fight to heal ${BAND_HEAL} life. Each use takes your turn and uses one up.</p><div class="btns"><button class="btn sm pri" data-act="bandload">Load all (${S.inv.bandage||0} in inventory)</button><button class="btn sm" data-act="bandunload" ${S.bandKit?'':'disabled'}>Unload all</button></div></div></section>`;
  return pageHead('Loadout','Equip weapons and armour. Guns and melee weapons add damage. Head, body and legs add protection. Equipped items leave your inventory.')+
  `<div class="loadgrid"><div class="slots">${cards}</div><div class="loadside"><section class="panel"><h2>You</h2><div class="body"><div class="fwrap solo">${figure(S.loadout,{pulse:pu})}</div>
  ${kv([['Gun',S.loadout.gun?ITEMS[S.loadout.gun].n:'None'],['Melee',S.loadout.melee?ITEMS[S.loadout.melee].n:'Fists'],['Head',S.loadout.head?ITEMS[S.loadout.head].n:'None'],['Body',S.loadout.body?ITEMS[S.loadout.body].n:'None'],['Legs',S.loadout.legs?ITEMS[S.loadout.legs].n:'None']])}</div></section>
- <section class="panel"><h2>Combat summary</h2><div class="body">${kv([['Best weapon',w.n+' ('+w.dmg+' damage)'],['Total protection',prot()+'%'],['Gun accuracy (Dexterity)',pct(cs.gunAcc)],['Melee accuracy (Dexterity)',pct(cs.mAcc)],['Melee damage bonus (Strength)','+'+pct(cs.mStr-1)],['Gun damage bonus (Strength)','+'+pct(cs.gStr-1)],['Damage cut (Defence)',pct(cs.defR)],['Bonus hit chance (Speed)',pct(cs.extra)]])}
+ <section class="panel"><h2>Combat summary</h2><div class="body">${kv([['Best weapon',w.n+' ('+w.dmg+' damage)'],['Total protection',prot()+'%'],['Gun accuracy (Dexterity)',pct(cs.gunAcc)],['Melee accuracy (Dexterity)',pct(cs.mAcc)],['Melee damage bonus (Strength)','+'+pct(cs.mStr-1)],['Gun damage bonus (Strength)','+'+pct(cs.gStr-1)],['Damage cut (Defence)',pct(cs.defR)],['Bonus hit chance (Speed)',pct(cs.extra)],['Bandages loaded',S.bandKit||0]])}
  <p class="small muted">These numbers come from your gym stats and gear, and they drive the Brawl fight.</p></div></section></div></div>`}
 
 
@@ -1634,10 +1695,11 @@ const GUIDE=[
  ['home','Homes and rent',()=>[
   ['Why live somewhere better?','Each home adds energy cap, energy regeneration, hunger resistance and storage. Rent is charged at midnight game time.'],
   ['How do I unlock homes?','Each home needs a player level, or one full day lived in the previous home. You can rent or buy. Buying costs a lot up front but you only pay upkeep afterwards.'],
+  ['Can I rent my home out?','Yes. Buying a home no longer moves you in. Choose Move in, or open Rentals and list it for rent. Tenants pay every midnight in game time, an agent keeps 10% and you pay the upkeep. Higher asking rents earn more but take longer to fill.'],
   ['What if I miss the rent?','You fall behind and lose your home\'s bonuses until you pay.']]],
  ['train','Gym, brawl and loadout',()=>[
   ['What are battle stats?','Strength, Defence, Speed and Dexterity. Train them in the Gym with energy. Better gyms train faster, and the Sports Science course adds up to 15%.'],
-  ['How does the brawl work?','Each fight costs '+BRAWL_COST+' energy. You fight the training dummy for up to ten rounds. It shows what it will do next: jab, haymaker or guard. Shoot to deal ranged damage, Rush to land three melee swings, Hide to heal 10 HP and take much less damage, or Reload. Winning pays $100.'],
+  ['How does the brawl work?','Each fight costs '+BRAWL_COST+' energy. You fight the training dummy for up to ten rounds. It shows what it will do next: jab, haymaker or guard. Shoot to deal ranged damage, Rush to land three melee swings, Dodge to skip your attack and avoid the next hit (it works 4 times in 5), or Bandage to heal 10 life using a bandage from your loadout. Prize fights pit you against nine named fighters in three pools.'],
   ['What are prize fights?','Three matches with a pool of $100, $500 and $1,000. Each fighter puts in half. Your opponent scales with your level and gym stats, so it stays a fair fight, and bigger pools are tougher. Win and you take the whole pool. Lose and your stake is gone.'],
   ['What happens if I lose?','Your life drops to 25% of its maximum. Losing costs nothing else.'],
   ['What is the loadout?','Equip a gun, a melee weapon and armour in the Loadout tab. Your character figure shows what you wear. Better gear means more damage and less damage taken.'],
@@ -1709,6 +1771,8 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
+ ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Big performance fix: removed endless background and progress-bar animations and the blur behind panels, which kept integrated GPUs at 100%'],'The Big Update'],
+ ['58',['Three music tracks to choose from in Settings: Night pads, Lo-fi hours and Rain on glass','Music engine rebuilt to stop the crackle that built up in long sessions']],
  ['57',['Ledger City now has its own address: ledgercity.co.uk. Share links and the QR code use it']],
  ['56',['Restored the previous look']],
  ['54',['Sidebar rebuilt: icons, collapsible groups that remember your choice, live badges (mission, hospital, jail, cooldowns) and Guide and Settings pinned at the bottom','City services group for Library, Hospital and Charity']],
@@ -1725,12 +1789,12 @@ const CHANGES=[
  ['43',['Admin tools and a feedback button on the ending screen']],
  ['21',['Course modules and a new Business teacher job','Prize fights with $100, $500 and $1,000 pools','City shops rotate stock and discounts every hour','23 missions, a reorganised achievements tab and a built-in guide']]];
 const curChange=()=>CHANGES.find(c=>c[0]===VERSION)||CHANGES[0];
-const NEWS=curChange()[1];
+const NEWS=curChange()[1],NEWN=curChange()[2]||'';
 function whatsNew(){let seen=null;try{seen=localStorage.getItem('lc-ver')}catch(e){}if(seen===VERSION)return;try{localStorage.setItem('lc-ver',VERSION)}catch(e){}if(SET&&SET.wn===false)return;
  if(seen===null&&!(S.stats.shifts>0||S.t>480))return;
- const prev=CHANGES.filter(c=>c[0]!==VERSION).slice(0,2).map(c=>`<h4 class="wnh">v${c[0]}</h4><ul class="wnl">${c[1].map(n=>`<li>${n}</li>`).join('')}</ul>`).join('');
- setTimeout(()=>{if(ui.title||ui.end)return;openModal(`<h2>What is new in v${VERSION}</h2><ul class="wnl">${curChange()[1].map(n=>`<li>${n}</li>`).join('')}</ul><details class="wnd"><summary>Earlier updates</summary>${prev}</details><div class="btns"><button class="btn pri" data-act="closemodal">Got it</button></div>`)},1400)}
-const TIPS=['Eat well: above 70% hunger, your energy and effort refill faster.','Shops reshuffle every game hour. Orange badges mean a big discount.','Skill level makes every find come in bigger stacks.','Missions can push your bars above their caps, so nothing is wasted.','Hide in a fight to heal 10 life and hit harder next turn.','Courses are cheaper than they look: every module adds a lasting bonus.','Check the crime forecast before you try a job.'];
+ const prev=CHANGES.filter(c=>c[0]!==VERSION).slice(0,2).map(c=>`<h4 class="wnh">v${c[0]}${c[2]?' '+c[2]:''}</h4><ul class="wnl">${c[1].map(n=>`<li>${n}</li>`).join('')}</ul>`).join('');
+ setTimeout(()=>{if(ui.title||ui.end)return;openModal(`<h2>${curChange()[2]?curChange()[2]+' (v'+VERSION+')':'What is new in v'+VERSION}</h2><ul class="wnl">${curChange()[1].map(n=>`<li>${n}</li>`).join('')}</ul><details class="wnd"><summary>Earlier updates</summary>${prev}</details><div class="btns"><button class="btn pri" data-act="closemodal">Got it</button></div>`)},1400)}
+const TIPS=['Eat well: above 70% hunger, your energy and effort refill faster.','Shops reshuffle every game hour. Orange badges mean a big discount.','Skill level makes every find come in bigger stacks.','Missions can push your bars above their caps, so nothing is wasted.','Load bandages into your Loadout so you can heal mid-fight, and dodge the big haymakers.','Courses are cheaper than they look: every module adds a lasting bonus.','Check the crime forecast before you try a job.'];
 function skyline(){const rnd=(a,b)=>a+Math.random()*(b-a);let h='';[['#0d1319',.55,60,26,52],['#111a22',.7,90,34,70],['#17222c',.9,130,40,90]].forEach(([c,o,maxh,minw,maxw],li)=>{let x=-20,s='',w2='';while(x<1500){const w=rnd(minw,maxw),hh=rnd(maxh*.35,maxh*1.7);s+=`<rect x="${x}" y="${300-hh}" width="${w}" height="${hh}" fill="${c}"/>`;for(let wy=300-hh+10;wy<292;wy+=14)for(let wx=x+6;wx<x+w-8;wx+=12)if(Math.random()<.16+li*.06)w2+=`<rect x="${wx}" y="${wy}" width="5" height="7" fill="#e0b84a" opacity="${(.25+Math.random()*.5).toFixed(2)}" class="${Math.random()<.12?'wk':''}"/>`;x+=w+rnd(2,8)}
   h+=`<svg class="lay l${li}" viewBox="0 0 1400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${s}<g class="wins">${w2}</g></svg>`});
  let st='';for(let i=0;i<46;i++)st+=`<i style="left:${rnd(0,100).toFixed(1)}%;top:${rnd(0,55).toFixed(1)}%;animation-delay:${rnd(0,4).toFixed(1)}s"></i>`;
@@ -1763,7 +1827,7 @@ function enterGame(){document.body.classList.add('ready');try{whatsNew()}catch(e
 function initTitle(onPlay){
  const T=$('#title');if(!T)return;const hasSave=!!localStorage.getItem(KEY)&&(S.stats.shifts>0||S.t>480);let pending=false;
  $('#ttSky').innerHTML=skyline();
- $('#ttNews').innerHTML=NEWS.map(n=>`<li>${n}</li>`).join('');$('#ttNewsH').textContent='What is new in v'+VERSION;
+ $('#ttNews').innerHTML=NEWS.map(n=>`<li>${n}</li>`).join('');$('#ttNewsH').textContent=(NEWN?NEWN+' (v'+VERSION+')':'What is new in v'+VERSION);
  let ti=Math.floor(Math.random()*TIPS.length);const tip=()=>{$('#ttTip').textContent='Tip: '+TIPS[ti%TIPS.length];ti++};tip();setInterval(()=>{if(!T.hidden)tip()},6000);
  if(hasSave){const pl=plevel(S.spent).L;$('#ttSave').innerHTML=`<div class="save"><span><b>${esc(S.name)}</b>Level ${pl} &middot; ${esc(H().n)}</span><span style="text-align:right"><b>${fmt(S.money)}</b>${fmtT(S.t)}</span></div>`;$('#playBtn').textContent='Continue';$('#newBtn').hidden=false}
  $('#ttVer').textContent='v'+VERSION+' beta';if(CREATOR)$('#ttBy').textContent='Made by '+CREATOR+', solo developer';
@@ -1897,7 +1961,8 @@ function adminPanel(){const pl=plevel(S.spent);openModal(`<h2>Admin</h2><p class
 <div class="admsec"><h4>Cash (permanent)</h4><div class="btns">${admB('cash','+$1,000',100000)}${admB('cash','+$100,000',10000000)}${admB('cash','+$1M',100000000)}${admB('cash','+$100M',10000000000)}${admB('cash0','Set cash to $0')}</div></div>
 <div class="admsec"><h4>Level and XP (permanent) &middot; now level ${pl.L}</h4><div class="btns">${admB('xp','+1,000 XP',1000)}${admB('xp','+5,000 XP',5000)}${admB('xp','+25,000 XP',25000)}${admB('lvl25','Jump to level 25')}</div></div>
 <div class="admsec"><h4>Time</h4><div class="btns">${admB('time','+1 hour',60)}${admB('time','+1 day',1440)}${admB('time','+1 week',10080)}</div></div>
-<div class="admsec"><h4>Needs and status</h4><div class="btns">${admB('refill','Refill effort, energy, hunger, life')}${admB('unjail','Clear jail and rent debt')}</div></div>
+<div class="admsec"><h4>Needs and status</h4><div class="btns">${admB('refill','Refill effort, energy, hunger, life')}${admB('dayreset','Reset daily reward')}${admB('unjail','Clear jail and rent debt')}</div></div>
+<div class="admsec"><h4>Hospital and drugs (permanent) &middot; toxicity ${Math.round(toxNow())}</h4><div class="btns">${admB('hosp','Hospitalise me')}${admB('disch','Discharge me')}${admB('tox','Set toxicity to 90')}${admB('notox','Clear toxicity and drug effects')}</div></div>
 <div class="admsec"><h4>Items (permanent)</h4><div class="btns">${admB('items','+100 of every item')}${admB('clearinv','Empty inventory')}</div></div>
 <div class="admsec"><h4>Missions &middot; on ${Math.min(S.mis+1,MISSIONS.length)} of ${MISSIONS.length}</h4><div class="btns">${admB('mis','Skip current mission (no reward)')}</div></div>
 <div class="admsec"><h4>Beater badge and previews</h4><div class="btns">${admB('badge','Grant Beater badge')}${admB('unbadge','Remove Beater badge')}<button class="btn" data-act="admend">Preview the ending</button><button class="btn" data-act="admgold">${ui.previewGold?'Turn off':'Turn on'} golden theme preview</button></div></div>`)}
@@ -1910,6 +1975,8 @@ function admX(x,v){v=+v;switch(x){
  case 'items':for(const id in ITEMS)S.inv[id]=(S.inv[id]||0)+100;break;
  case 'clearinv':S.inv={};break;
  case 'mis':if(S.mis<MISSIONS.length)S.mis++;break;
+ case 'hosp':hospitalise(1,'Admin');break;case 'disch':discharge();break;case 'tox':S.drug.tox=90;S.drug.at=S.t;break;case 'notox':S.drug.tox=0;S.drug.until=0;break;
+ case 'dayreset':S.daily={last:'',streak:0};break;
  case 'badge':S.beat={at:S.t,seen:false};break;
  case 'unbadge':S.beat=null;break}
  toast('Admin: done.');commit();applyBeat();adminPanel()}
@@ -2093,14 +2160,14 @@ function cdHdr(){const c=$('#hCd');if(!c)return;const n=cdList().length;c.hidden
 
 /* settings and audio: synthesised sound effects and a quiet ambient loop, no files */
 var SET=null;
-const SET_DEF={master:80,sfx:70,music:35,mute:false,musicOn:true,clicks:true,bgPause:true,txt:'m',calm:false,fx:true,cashanim:true,toast:'n',wn:true};
+const SET_DEF={master:80,sfx:70,music:35,mute:false,musicOn:true,clicks:true,bgPause:true,txt:'m',calm:false,fx:true,cashanim:true,toast:'n',wn:true,track:'night'};
 function loadSet(){const o=Object.assign({},SET_DEF);try{Object.assign(o,JSON.parse(localStorage.getItem('lc-set')||'{}'))}catch(e){}
  if(!localStorage.getItem('lc-set')){try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)o.calm=true}catch(e){}}SET=o}
 loadSet();
 function saveSet(){try{localStorage.setItem('lc-set',JSON.stringify(SET))}catch(e){}}
 function toastX(){return SET?({s:.6,n:1,l:1.9})[SET.toast]||1:1}
-let _bus=null,_mus=null;
-function audioOut(){const a=auCtx();if(!a)return null;if(!_bus){const m=a.createGain(),s=a.createGain(),u=a.createGain();s.connect(m);u.connect(m);m.connect(a.destination);_bus={m,s,u};applyAudio()}return _bus.s}
+let _bus=null,_mus=null,_gest=false;
+function audioOut(){const a=auCtx();if(!a)return null;if(!_bus){const m=a.createGain(),s=a.createGain(),u=a.createGain();s.connect(m);u.connect(m);const cp=a.createDynamicsCompressor();cp.threshold.value=-16;cp.knee.value=6;cp.ratio.value=10;cp.attack.value=.004;cp.release.value=.25;m.connect(cp);cp.connect(a.destination);_bus={m,s,u};applyAudio()}return _bus.s}
 function musBus(){audioOut();return _bus&&_bus.u}
 function applyAudio(){if(!_bus||!SET)return;const a=auCtx(),t=a.currentTime,q=v=>Math.pow(v/100,2);
  _bus.m.gain.setTargetAtTime(SET.mute?0:q(SET.master),t,.03);_bus.s.gain.setTargetAtTime(q(SET.sfx),t,.03);_bus.u.gain.setTargetAtTime(q(SET.music)*1.05,t,.05)}
@@ -2120,20 +2187,39 @@ function play(k){if(!SET||SET.mute||SET.sfx<=0||SET.master<=0)return;const now=p
   win:()=>{[392,523,659,784,1047].forEach((f,i)=>{tn(f,t+i*.08,.5,'triangle',.07)})},
   hurt:()=>{tn(150,t,.3,'sawtooth',.05,60)}};
  (S_[k]||S_.tick)()}catch(e){}}
-/* ambient music: slow pads, a soft bass and sparse bell notes through a small reverb */
+/* music: three synthesised tracks. Notes are scheduled from the audio clock a few seconds ahead, so a throttled timer can never pile up or fall behind. */
+const TRACKS={night:{n:'Night pads',d:'Slow ambient pads with soft bells. The original.',lp:1500},lofi:{n:'Lo-fi hours',d:'Mellow keys, a soft kick and brushed hats at a slow pace.',lp:4500},rain:{n:'Rain on glass',d:'Quiet rain with a few piano notes now and then.',lp:5200}};
 const PROG=[[110,164.81,196,246.94,329.63],[87.31,130.81,174.61,220,261.63],[130.81,196,246.94,329.63,392],[98,146.83,196,246.94,329.63]],BELLS=[440,523.25,587.33,659.25,783.99,880,1046.5];
-function irBuf(a){const n=Math.floor(a.sampleRate*2.6),b=a.createBuffer(2,n,a.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.6)}return b}
-function musicStart(){if(_mus||!SET||!SET.musicOn)return;const a=auCtx(),bus=musBus();if(!a||!bus)return;try{if(a.state==='suspended')a.resume();
- const sess=a.createGain();sess.gain.value=0;sess.gain.linearRampToValueAtTime(1,a.currentTime+3);const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1500;lp.Q.value=.3;
- const dry=a.createGain(),wet=a.createGain(),cv=a.createConvolver();cv.buffer=irBuf(a);dry.gain.value=.7;wet.gain.value=.55;sess.connect(lp);lp.connect(dry);lp.connect(cv);cv.connect(wet);dry.connect(bus);wet.connect(bus);
- _mus={a,sess,i:0,next:a.currentTime+.2,tm:0,nodes:[dry,wet,cv,lp]};
- const bar=()=>{if(!_mus)return;const m=_mus,t0=Math.max(m.next,a.currentTime+.1),ch=PROG[m.i%PROG.length];m.i++;m.next=t0+8;
-  ch.forEach((f,i)=>{[-3,3].forEach(dt=>{const o=a.createOscillator();o.type=i<1?'sine':'triangle';o.frequency.value=f;o.detune.value=dt+ (Math.random()*4-2);const g=a.createGain(),pk=i<1?.05:.02;g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(pk,t0+2.6);g.gain.linearRampToValueAtTime(pk*.7,t0+6);g.gain.linearRampToValueAtTime(.0001,t0+9.5);o.connect(g);g.connect(sess);o.start(t0);o.stop(t0+9.7)})});
-  const nb=2+Math.floor(Math.random()*3);for(let k=0;k<nb;k++){const bt=t0+1+Math.random()*6,f=BELLS[Math.floor(Math.random()*BELLS.length)],o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,bt);g.gain.exponentialRampToValueAtTime(.018,bt+.02);g.gain.exponentialRampToValueAtTime(.0001,bt+2.4);o.connect(g);g.connect(sess);o.start(bt);o.stop(bt+2.5)}
-  m.tm=setTimeout(bar,7000)};bar()}catch(e){_mus=null}}
-function musicStop(){if(!_mus)return;const m=_mus;_mus=null;clearTimeout(m.tm);try{m.sess.gain.cancelScheduledValues(m.a.currentTime);m.sess.gain.setTargetAtTime(0,m.a.currentTime,.4);setTimeout(()=>{try{m.sess.disconnect();m.nodes.forEach(n=>n.disconnect())}catch(e){}},2500)}catch(e){}}
+const LOFI=[[146.83,174.61,220,261.63,329.63],[196,246.94,293.66,329.63,349.23],[130.81,164.81,196,246.94,293.66],[220,246.94,261.63,329.63,392]],LOFI_BASS=[73.42,98,65.41,55],PENT=[293.66,349.23,392,440,523.25,587.33,698.46];
+let _nbuf=null;
+function noiseBuf(a){if(!_nbuf||_nbuf.sampleRate!==a.sampleRate){const n=a.sampleRate*2,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;_nbuf=b}return _nbuf}
+function irBuf(a){const n=Math.floor(a.sampleRate*1.8),b=a.createBuffer(2,n,a.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.8)}return b}
+/* one note: attack, then exponential-ish decay to silence, then stop */
+function mNote(m,f,t0,dur,type,pk,att,det){const a=m.a,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;if(det)o.detune.value=det;g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(pk,t0+att);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);o.connect(g);g.connect(m.sess);o.start(t0);o.stop(t0+dur+.05)}
+function mNoise(m,t0,dur,type,f,pk,Q){const a=m.a,s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=noiseBuf(a);fl.type=type;fl.frequency.value=f;if(Q)fl.Q.value=Q;g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(pk,t0+.004);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);s.connect(fl);fl.connect(g);g.connect(m.sess);s.start(t0,Math.random()*1.5);s.stop(t0+dur+.05)}
+const CHUNK={
+ night(m,t){const ch=PROG[m.i%PROG.length];ch.forEach((f,i)=>{[-3,3].forEach(dt=>{const o=m.a.createOscillator(),g=m.a.createGain(),pk=i<1?.03:.011;o.type=i<1?'sine':'triangle';o.frequency.value=f;o.detune.value=dt+(Math.random()*4-2);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(pk,t+2.6);g.gain.linearRampToValueAtTime(pk*.7,t+6);g.gain.linearRampToValueAtTime(.0001,t+8.8);o.connect(g);g.connect(m.sess);o.start(t);o.stop(t+8.9)})});
+  const nb=2+Math.floor(Math.random()*3);for(let k=0;k<nb;k++)mNote(m,BELLS[Math.floor(Math.random()*BELLS.length)],t+1+Math.random()*6,2.2,'sine',.012,.02);return 8},
+ lofi(m,t){const bt=.8333,ch=LOFI[m.i%4],root=LOFI_BASS[m.i%4];
+  ch.forEach((f,i)=>{const s=t+i*.03+Math.random()*.01;mNote(m,f,s,2.2,'triangle',.011,.012);mNote(m,f*2,s,1.1,'sine',.004,.01)});
+  mNote(m,root,t,1.3,'sine',.05,.02);mNote(m,root,t+bt*2.6,.9,'sine',.04,.02);
+  [0,2.5].forEach(b=>{const s=t+bt*b,o=m.a.createOscillator(),g=m.a.createGain();o.type='sine';o.frequency.setValueAtTime(125,s);o.frequency.exponentialRampToValueAtTime(42,s+.2);g.gain.setValueAtTime(.0001,s);g.gain.linearRampToValueAtTime(.075,s+.005);g.gain.exponentialRampToValueAtTime(.0001,s+.26);o.connect(g);g.connect(m.sess);o.start(s);o.stop(s+.3)});
+  [1,3].forEach(b=>mNoise(m,t+bt*b,.13,'bandpass',1900,.03,.7));
+  [.5,1.5,2.5,3.5].forEach((b,i)=>mNoise(m,t+bt*(b+(i%2?.06:0)),.04,'highpass',3800,.014));
+  if(Math.random()<.6)mNote(m,PENT[Math.floor(Math.random()*PENT.length)]*(Math.random()<.5?1:2),t+bt*(1+Math.floor(Math.random()*3)),1.6,'sine',.011,.01);return bt*4},
+ rain(m,t){const n=1+Math.floor(Math.random()*3);for(let k=0;k<n;k++){const f=PENT[Math.floor(Math.random()*PENT.length)],s=t+.5+Math.random()*5;mNote(m,f,s,3.2,'sine',.02,.006);mNote(m,f*2,s,1.4,'triangle',.004,.006)}return 6}};
+function rainBed(m){const a=m.a,mk=(f,type,pk,Q)=>{const s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=noiseBuf(a);s.loop=true;fl.type=type;fl.frequency.value=f;if(Q)fl.Q.value=Q;g.gain.value=pk;s.connect(fl);fl.connect(g);g.connect(m.sess);s.start(a.currentTime,Math.random()*1.5);m.srcs.push(s);return g};
+ const hi=mk(1300,'bandpass',.05,.5),lo=mk(220,'lowpass',.04),lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.09;lg.gain.value=.012;lfo.connect(lg);lg.connect(hi.gain);lfo.start();m.srcs.push(lfo)}
+function musicStart(force){if(_mus||!SET||(!force&&!SET.musicOn))return;const a=auCtx(),bus=musBus();if(!a||!bus)return;try{if(a.state==='suspended')a.resume();
+ const id=TRACKS[SET.track]?SET.track:'night',sess=a.createGain();sess.gain.value=0;sess.gain.linearRampToValueAtTime(1,a.currentTime+3);const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=TRACKS[id].lp;lp.Q.value=.3;
+ const dry=a.createGain(),wet=a.createGain(),cv=a.createConvolver();cv.buffer=irBuf(a);dry.gain.value=.7;wet.gain.value=id==='rain'?.7:.5;sess.connect(lp);lp.connect(dry);lp.connect(cv);cv.connect(wet);dry.connect(bus);wet.connect(bus);
+ const m=_mus={a,sess,id,i:0,next:a.currentTime+.3,iv:0,srcs:[],nodes:[dry,wet,cv,lp]};if(id==='rain')rainBed(m);
+ const pump=()=>{if(_mus!==m||a.state!=='running')return;let guard=0;while(m.next<a.currentTime+9&&guard++<6){m.next+=CHUNK[id](m,m.next);m.i++}};
+ m.iv=setInterval(pump,1000);pump()}catch(e){_mus=null}}
+function musicStop(){if(!_mus)return;const m=_mus;_mus=null;clearInterval(m.iv);try{m.sess.gain.cancelScheduledValues(m.a.currentTime);m.sess.gain.setTargetAtTime(0,m.a.currentTime,.4);setTimeout(()=>{try{m.srcs.forEach(s=>{try{s.stop()}catch(e){}});m.sess.disconnect();m.nodes.forEach(n=>n.disconnect())}catch(e){}},2800)}catch(e){}}
+let _pv=0;
+function musicTrack(id){SET.track=id;saveSet();musicStop();if(SET.mute)return;if(SET.musicOn){if(_gest)musicStart()}else{musicStart(true);clearTimeout(_pv);_pv=setTimeout(()=>{if(!SET.musicOn||SET.mute)musicStop()},14000)}}
 function audioSync(){applyAudio();if(SET.musicOn&&!SET.mute&&SET.music>0&&_gest)musicStart();else musicStop()}
-let _gest=false;
 function firstGesture(){if(_gest)return;_gest=true;const a=auCtx();if(a&&a.state==='suspended')a.resume();audioOut();audioSync()}
 ['pointerdown','keydown'].forEach(e=>addEventListener(e,firstGesture,{once:false,passive:true}));
 document.addEventListener('visibilitychange',()=>{const a=_au;if(!a||!SET.bgPause)return;if(document.hidden)a.suspend();else if(_gest)a.resume()});
@@ -2150,7 +2236,7 @@ function tabSettings(){
  return pageHead('Settings','Sound, display and game options. These are saved on this device and are not part of your save file.')+
  `<div class="grid2"><section class="panel"><h2><span>Sound</span><span class="chip ${SET.mute?'warn':'ok'}">${SET.mute?'Muted':'On'}</span></h2><div class="body">
  ${tgl('mute','Mute everything','Silences all sound and music at once.')}${sld('master','Master volume')}${sld('sfx','Sound effects','Clicks, coins, level ups and warnings.')}${sld('music','Music','A quiet ambient loop. Keep it low if you like.')}
- ${tgl('musicOn','Background music')}${tgl('clicks','Button click sounds')}${tgl('bgPause','Pause sound in background tabs','Stops sound when you switch to another tab.')}
+ ${tgl('musicOn','Background music')}<div class="setrow col"><div class="setl"><b>Music track</b></div><small class="muted">Pick the one you like. Choosing a track plays it, even with music off, for a few seconds.</small><div class="mtrs">${Object.entries(TRACKS).map(([k,t])=>`<button class="mtr ${SET.track===k?'on':''}" data-setk="track" data-setv="${k}"><b>${t.n}</b><small>${t.d}</small></button>`).join('')}</div></div>${tgl('clicks','Button click sounds')}${tgl('bgPause','Pause sound in background tabs','Stops sound when you switch to another tab.')}
  <div class="btns" style="margin-top:10px"><button class="btn sm" data-setk="test" data-setv="coin">Test coin</button><button class="btn sm" data-setk="test" data-setv="gold">Test sparkle</button><button class="btn sm" data-setk="test" data-setv="level">Test level up</button></div>
  <p class="small muted">Browsers only allow sound after your first click or tap on the page.</p></div></section>
  <section class="panel"><h2>Display</h2><div class="body">
@@ -2167,6 +2253,7 @@ document.addEventListener('input',e=>{const t=e.target;if(!t||!t.dataset||!t.dat
 document.addEventListener('change',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.setr){if(t.dataset.setr==='sfx')play('coin');else if(t.dataset.setr==='master')play('ok');audioSync()}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-setk]');if(!b)return;const k=b.dataset.setk,v=b.dataset.setv;
  if(k==='test'){play(v);return}
+ if(k==='track'){musicTrack(v);commit();return}
  if(k==='reset'){SET=Object.assign({},SET_DEF);saveSet();applyLook();audioSync();commit();toast('Settings reset.');return}
  if(k==='speed'){S.speed=+v;const sp=$('#speed');if(sp)sp.value=String(S.speed);save();commit();return}
  if(b.dataset.settog){SET[k]=!SET[k]}else SET[k]=isNaN(+v)||v===''?v:(k==='txt'||k==='toast'?v:+v);
@@ -2181,11 +2268,11 @@ Object.assign(PI,{cog:'<path fill-rule="evenodd" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.
  badge:'<path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8L2.2 9.1l6.9-.8z"/>',
  lock:'<path fill-rule="evenodd" d="M7 10V7a5 5 0 0 1 10 0v3h2v12H5V10zm2 0h6V7a3 3 0 0 0-6 0z"/>',
  path:'<path d="M12 2l5 5h-4v5.6l5.7 5.7L21 16v6h-6l2.3-2.3L12 14.4l-5.3 5.3L9 22H3v-6l2.3 2.3L11 12.6V7H7z"/>'});
-const NAVI={home:'house',guide:'info',profile:'user',settings:'cog',jobs:'brief',education:'edu',workshop:'wrench',city:'hall',market:'market',inventory:'bag',library:'book',charity:'heart',hospital:'cross',gym:'gym',loadout:'shield',brawl:'fist',crime:'skull',bounties:'badge',jail:'lock',housing:'house',paths:'path',ach:'cup'};
+const NAVI={home:'house',guide:'info',profile:'user',settings:'cog',jobs:'brief',education:'edu',workshop:'wrench',city:'hall',market:'market',inventory:'bag',library:'book',charity:'heart',hospital:'cross',gym:'gym',loadout:'shield',brawl:'fist',crime:'skull',bounties:'badge',jail:'lock',housing:'house',rentals:'house',paths:'path',ach:'cup'};
 const nic=k=>`<svg class="ni" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">${PI[NAVI[k]]||''}</svg>`;
 let _navc={};try{_navc=JSON.parse(localStorage.getItem('lc-navc')||'{}')}catch(e){}
 groups=function(){const P=S.paths.unlocked,law=[];if(P.criminal)law.push(['crime','Crime']);if(P.enf)law.push(['bounties','Enforcer']);law.push(['jail','Jail']);
- return [['',[['home','Home'],['profile','Profile']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['City services',[['library','Library'],['hospital','Hospital'],['charity','Charity']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]],['Crime and law',law],['Living',[['housing','Housing'],['paths','Paths'],['ach','Achievements']]]]};
+ return [['',[['home','Home'],['profile','Profile']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['City services',[['library','Library'],['hospital','Hospital'],['charity','Charity']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]],['Crime and law',law],['Living',[['housing','Housing'],['rentals','Rentals'],['paths','Paths'],['ach','Achievements']]]]};
 function navBadge(k,ms,done){
  if(k==='home'&&done)return '<i class="dot" title="Mission ready"></i>';
  if(k==='hospital'&&hospitalised())return '<span class="nb bad">Admitted</span>';
@@ -2200,6 +2287,51 @@ function renderNav(){const ms=S.mis<MISSIONS.length?MISSIONS[S.mis]:null,done=ms
   return g?`<div class="ngw ${open?'':'shut'}"><button class="ng" data-act="navg" data-g="${g}" aria-expanded="${open}"><span>${g}</span>${!open&&pend?'<i class="dot"></i>':''}<svg class="chv" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="gi">${body}</div></div>`:`<div class="ngw ntop"><div class="gi">${body}</div></div>`}).join('');
  const foot=[['guide','How to play'],['settings','Settings']].map(it=>item(it,'')).join('');
  $('#nav').innerHTML=main+`<div class="ngw nfoot"><div class="gi">${foot}</div></div>`;navFocus()}
+
+/* rentals: let out homes you own to NPC tenants */
+const RENT_FEE=.10,TENANTS=['Mara Quinn','Tom Okafor','Priya Nair','Sam Whitlock','Lena Brandt','Joel Mercer','Ayesha Khan','Dev Patel','Nina Rossi','Kofi Mensah','Ruth Calloway','Iain Fraser','Zoe Hartley','Marcus Bell'];
+const rentable=h=>h.id!=='room'&&!!S.owned[h.id]&&S.home!==h.id;
+function rentSeed(id,off){const d=Math.floor(S.t/1440)+(off||0),h=[...id].reduce((a,c)=>a*31+c.charCodeAt(0),7),x=Math.sin(d*12.9898+h*78.233)*43758.5453;return x-Math.floor(x)}
+const rentDemand=id=>.8+.4*rentSeed(id);
+const rentMarket=id=>Math.round(HOMES.find(h=>h.id===id).rent*rentDemand(id));
+const rentAsk=id=>Math.round(rentMarket(id)*((S.rent[id]||{pct:100}).pct/100));
+const rentChance=id=>clamp((.7-((S.rent[id].pct-100)/100)*1.6)*(.6+rentDemand(id)*.5),.05,.9);
+const rentNet=a=>Math.round(a*(1-RENT_FEE));
+function evictTenant(id,quiet){const r=S.rent&&S.rent[id];if(!r)return;if(r.ten&&!quiet)toast(r.ten.n+' moved out.');r.on=false;r.ten=null}
+function listHome(id){const h=HOMES.find(x=>x.id===id);if(!h||!rentable(h))return toast(S.home===id?'You live there. Move out first.':'You do not own that home.','bad');
+ const r=S.rent[id]||{pct:100,earned:0,days:0};r.on=true;r.ten=null;S.rent[id]=r;addLog('Listed the '+h.n+' for rent.');toast('Listed the '+h.n+' for rent. Tenants usually arrive within a day or two.')}
+function rentPct(id,p){const r=S.rent[id];if(!r||![70,85,100,115,130].includes(p))return;r.pct=p;toast('Asking '+fmt(rentAsk(id))+' per day.')}
+function rentStop(id){const h=HOMES.find(x=>x.id===id);if(!S.rent[id]||!S.rent[id].on)return;evictTenant(id,false);addLog('Took the '+h.n+' off the rental market.');toast('Taken off the market.')}
+function rentDay(){let tot=0;for(const id in S.rent){const r=S.rent[id],h=HOMES.find(x=>x.id===id);if(!r.on||!h)continue;
+  if(!S.owned[id]||S.home===id){evictTenant(id,true);continue}
+  const up=Math.min(S.money,upkeep(h));if(up>0){pay(up);S.stats.rent+=up}
+  if(r.ten){const a=r.ten.rent,n=rentNet(a);gain(n);S.rentTot+=n;r.earned=(r.earned||0)+n;r.days=(r.days||0)+1;tot+=n-up;r.ten.left--;addLog(r.ten.n+' paid '+fmt(a)+' rent for the '+h.n+'. You received '+fmt(n)+' after the agent fee.');
+   if(r.ten.left<=0){addLog(r.ten.n+' moved out of the '+h.n+'.');r.ten=null}}
+  else{tot-=up;if(Math.random()<rentChance(id)){const nm=TENANTS[Math.floor(Math.random()*TENANTS.length)];r.ten={n:nm,rent:rentAsk(id),left:3+Math.floor(Math.random()*6)};addLog(nm+' moved into the '+h.n+' at '+fmt(r.ten.rent)+' per day.');toast(nm+' is renting your '+h.n+'.','gold')}}}
+ ui.dirty=true}
+function rentCard(h){const r=S.rent[h.id],on=r&&r.on,live=S.home===h.id,mk=rentMarket(h.id),up=upkeep(h);
+ let st=live?'<span class="chip ok">Living here</span>':!on?'<span class="chip">Not listed</span>':r.ten?'<span class="chip ok">Let to '+esc(r.ten.n)+'</span>':'<span class="chip warn">Vacant</span>';
+ let b='';
+ if(live)b='<p class="small muted">You live here. Move to another home to let this one out.</p>';
+ else if(!on)b=`<button class="btn pri" data-act="rlist" data-id="${h.id}">List for rent</button><button class="btn" data-act="movein" data-id="${h.id}">Move in</button>`;
+ else b=`<div class="small muted">Asking rent (share of the market rate)</div><div class="btns">${[70,85,100,115,130].map(p=>`<button class="btn sm ${r.pct===p?'pri':''}" data-act="rpct" data-id="${h.id}" data-p="${p}">${p}%</button>`).join('')}</div><div class="btns"><button class="btn" data-act="rstop" data-id="${h.id}">Take off the market</button><button class="btn" data-act="movein" data-id="${h.id}">Move in</button></div>`;
+ const ask=on?rentAsk(h.id):mk,rows=[['Market rent today',fmt(mk)+' per day'],[on?'Your asking rent':'You would ask',fmt(ask)+' per day'],['Agent fee',Math.round(RENT_FEE*100)+'%'],['Upkeep you pay',fmt(up)+' per day'],['Income per rented day',fmt(rentNet(ask)-up)]];
+ if(on&&!r.ten)rows.push(['Chance of a tenant tomorrow',Math.round(rentChance(h.id)*100)+'%']);if(on&&r.ten)rows.push(['Lease left',r.ten.left+' day'+(r.ten.left>1?'s':'')]);if(r&&r.earned)rows.push(['Collected so far',fmt(r.earned)]);
+ return `<section class="panel"><h2><span>${h.n}</span>${st}</h2><div class="body">${kv(rows)}<div class="btns">${live?'':''}</div>${b}</div></section>`}
+function tabRentals(){const own=HOMES.filter(h=>S.owned[h.id]&&h.id!=='room'),tot=S.rentTot||0;
+ const board=HOMES.filter(h=>h.id!=='room').map(h=>{const d=rentDemand(h.id),n=2+Math.floor(rentSeed(h.id,50)*13),lab=d>1.1?'High demand':d<.9?'Quiet':'Steady';return `<tr><td>${h.n}</td><td class="num">${n}</td><td class="num">${fmt(rentMarket(h.id))}</td><td><span class="chip ${d>1.1?'ok':d<.9?'warn':''}">${lab}</span></td></tr>`}).join('');
+ return pageHead('Rentals','Own a home you do not live in? Let it out. Tenants pay rent every midnight in game time, the agent keeps '+Math.round(RENT_FEE*100)+'% and you cover the upkeep.')+
+ `<section class="panel"><h2><span>Your properties</span><span class="chip">Collected ${fmt(tot)}</span></h2><div class="body">${own.length?'<p class="muted">Higher asking rents earn more per day but tenants take longer to arrive. Lower rents fill fast. Demand changes every day.</p>':'<p class="muted">You do not own any homes yet. Buy one in the Housing tab, then come back to let it out.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="housing">Open Housing</button></div>'}</div></section>
+ ${own.length?`<div class="grid2">${own.map(rentCard).join('')}</div>`:''}
+ <section class="panel"><h2>Homes to let in Ledger City</h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Home</th><th class="num">Listings</th><th class="num">Market rent per day</th><th>Demand</th></tr></thead><tbody>${board}</tbody></table></div></section>`}
+
+/* daily reward: once per real day, bigger with a streak */
+const dkey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const dyest=()=>{const d=new Date(Date.now()-864e5);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+function dailyInfo(){const d=S.daily||{last:'',streak:0},ready=d.last!==dkey(),next=ready?(d.last===dyest()?Math.min(7,d.streak+1):1):d.streak;return{ready,next,streak:d.streak}}
+const dailyRew=n=>({cash:50000*n,energy:20+10*n});
+function claimDaily(){const i=dailyInfo();if(!i.ready)return toast('Already claimed today. Come back tomorrow.','bad');const r=dailyRew(i.next);gain(r.cash);S.energy+=r.energy;S.daily={last:dkey(),streak:i.next};addLog('Daily reward, day '+i.next+': '+rw(r)+'.');toast('Daily reward: '+rw(r),'gold');fxFlash('rare')}
+function dailyPanel(){const i=dailyInfo(),r=dailyRew(i.next);return `<section class="panel"><h2><span>Daily reward</span><span class="chip ${i.ready?'ok':''}">Streak ${i.streak} of 7</span></h2><div class="body"><div class="row"><span>${i.ready?'Today: day '+i.next+' of 7':'Claimed. Next one tomorrow.'}</span><b>${rw(dailyRew(i.ready?i.next:Math.min(7,i.streak+1)))}</b></div><div class="small muted">Log in on consecutive real days for a bigger reward each day, up to day 7. Missing a day starts again at day 1.</div><div class="btns"><button class="btn ${i.ready?'pri':''}" data-act="daily" ${i.ready?'':'disabled'}>${i.ready?'Claim daily reward':'Claimed today'}</button></div></div></section>`}
 
 
 /* effects: counting cash, floating gains, flashes */
@@ -2298,7 +2430,7 @@ function tabWorkshop(){
 function homeCard(h){
  const cur=S.home===h.id,own=!!S.owned[h.id],ck=k=>ui.confirm===k,lock=!homeOpen(h);let b='';
  if(cur)b+=S.behind?'<button class="btn pri" data-act="paynow">Pay now</button>':'<span class="chip ok">Living here</span>';
- else if(own)b+='<button class="btn pri" data-act="movein" data-id="'+h.id+'">Move in</button>';
+ else if(own)b+='<button class="btn pri" data-act="movein" data-id="'+h.id+'">Move in</button>'+(h.id!=='room'?'<button class="btn" data-act="tab" data-tab="rentals">Rent out</button>':'');
  else if(h.id==='room')b+='<button class="btn" data-act="movein" data-id="room">Move back</button>';
  else if(lock)b+='<span class="chip warn">Locked</span>';
  else b+=`<button class="btn pri" data-act="rent" data-id="${h.id}">Rent ${fmt(h.rent)}/day</button><button class="btn" data-act="buyhome" data-id="${h.id}">Buy ${fmt(h.price)}</button>`;
@@ -2307,9 +2439,9 @@ function homeCard(h){
  ${kv([['Energy cap','+'+h.energy],['Energy regen','+'+Math.round(h.regen*100)+'%'],['Hunger drain','-'+Math.round(h.hunger*100)+'%'],['Storage',h.store+' items']])}
  <div class="small muted">${h.price?`Rent ${fmt(h.rent)}/day. Upkeep if owned ${fmt(upkeep(h))}/day.`:`Rent ${fmt(h.rent)}/day. Not for sale.`}</div><div class="btns">${b}</div></div></section>`}
 function tabHousing(){return pageHead('Housing','Better homes give more energy, faster regeneration and more storage. Each home unlocks at a player level, or after you live one full day in the home before it. Rent and upkeep are charged at midnight game time.')+
- `<div class="grid2">${HOMES.map(homeCard).join('')}</div><section class="panel"><h2>The small print</h2><div class="body"><p class="muted">If you cannot pay rent you move back to the shared room. If you cannot pay upkeep on a home you own, its bonuses pause until you pay. Homes sell for 90% of the price, minus market tax. Renting homes out to other players arrives with multiplayer.</p></div></section>`}
+ `<div class="grid2">${HOMES.map(homeCard).join('')}</div><section class="panel"><h2>The small print</h2><div class="body"><p class="muted">If you cannot pay rent you move back to the shared room. If you cannot pay upkeep on a home you own, its bonuses pause until you pay. Homes sell for 90% of the price, minus market tax. Homes you own but do not live in can be let out in the Rentals tab.</p></div></section>`}
 
-const TABS={home:tabHome,guide:tabGuide,jobs:tabJobs,education:tabEducation,workshop:tabWorkshop,city:tabCity,market:tabMarket,inventory:tabInventory,gym:tabGym,loadout:tabLoadout,brawl:tabBrawl,housing:tabHousing,paths:tabPaths,crime:tabCrime,jail:tabJail,ach:tabAch,charity:tabCharity,hospital:tabHospital,settings:tabSettings,library:tabLibrary,profile:tabProfile,bounties:tabBounties};
+const TABS={home:()=>{const h=tabHome(),k=h.indexOf('<section');return k<0?h:h.slice(0,k)+dailyPanel()+h.slice(k)},guide:tabGuide,jobs:tabJobs,education:tabEducation,workshop:tabWorkshop,city:tabCity,market:tabMarket,inventory:tabInventory,gym:tabGym,loadout:tabLoadout,brawl:tabBrawl,housing:tabHousing,rentals:tabRentals,paths:tabPaths,crime:tabCrime,jail:tabJail,ach:tabAch,charity:tabCharity,hospital:tabHospital,settings:tabSettings,library:tabLibrary,profile:tabProfile,bounties:tabBounties};
 function renderMain(){const m=$('#main');m.classList.remove('enter');m.innerHTML=TABS[ui.tab]();updateCd();if(ui.gymFx&&ui.tab==='gym')gymAnim();
  if(ui.enter){m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter');ui.enter=false}
  if(ui.popSel){try{const e=m.querySelector(ui.popSel);if(e){e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')}}catch(x){}ui.popSel=null}}
@@ -2348,7 +2480,9 @@ function act(a,d){
   case 'shopbuy':shopBuy(d.shop,d.id,+d.n);break;
   case 'equip':equip(d.id);break;
   case 'unequip':unequip(d.slot);break;
-  case 'fnew':fightNew(d.p);break;
+  case 'fnew':fightNew(d.p,d.n);break;
+  case 'bandload':equipBand();break;
+  case 'bandunload':unequipBand();break;
   case 'bact':fightAct(d.k);break;
   case 'fend':ui.fight=null;break;
   case 'train':train(d.stat,+d.n);break;
@@ -2388,7 +2522,11 @@ function act(a,d){
   case 'patrol':patrol();break;
   case 'rent':rentHome(d.id);break;
   case 'buyhome':buyHome(d.id);break;
+  case 'daily':claimDaily();break;
   case 'movein':moveIn(d.id);break;
+  case 'rlist':listHome(d.id);break;
+  case 'rpct':rentPct(d.id,+d.p);break;
+  case 'rstop':rentStop(d.id);break;
   case 'paynow':payNow();break;
   case 'sellhome':if(!need('sell:'+d.id))return;sellHome(d.id);break;
   case 'reset':if(!need('reset'))return;ui.fight=null;S=fresh();fillInmates();selectItem('coal');ui.tab='home';ui.last={};ui.info=null;break;
