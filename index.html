@@ -406,12 +406,14 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 
 
 .mtrs{display:grid;gap:6px}.mtr{display:flex;flex-direction:column;gap:2px;text-align:left;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#10151a;cursor:pointer}.mtr small{color:var(--muted);font-size:12px}.mtr.on{border-color:var(--brass);background:rgba(224,174,74,.1)}.mtr:hover{border-color:#5a6a78}
-/* v59 performance: no endless animations or blur over the animated background (fixes integrated GPU load) */
+/* v59 performance, lighter version: bars static, background drift off, sparkle and glass kept but reduced */
 .f,.f.low,.track i.f::after{animation:none!important}
-#bg .stars i,#bg .lay,#bg .wk,#bg .coins b{animation:none!important}#bg .coins{display:none}
-.panel,.top{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-.panel{background:rgba(24,32,40,.94)}.top{background:rgba(19,26,33,.96)}
 .f.low{filter:brightness(1.25) saturate(1.2)}
+#bg .lay,#bg .wk{animation:none!important}
+#bg .stars i{animation:none!important}#bg .stars i:nth-child(4n){animation:tw 5s ease-in-out infinite!important}
+#bg .coins b{animation-duration:16s!important}#bg .coins b:nth-child(n+7){display:none}
+.panel{background:rgba(24,32,40,.8);backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important}
+.top{background:rgba(19,26,33,.84);backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
  <div><div class="nm"><b id="hName">Newcomer</b><span class="chip" id="hRank"></span><span class="chip bt" id="hBeat" hidden>&#9733; The Beater</span><button class="chip godchip" id="hGod" data-act="godoff" hidden title="Click to turn god mode off">GOD MODE</button><span class="chip warn" id="hBehind" hidden>Behind on rent</span><span class="chip warn" id="hJail" hidden>In jail</span><button class="chip" id="hCd" data-act="cdlist" hidden title="Items that cannot be used again yet">Cooldowns</button><button class="chip warn" id="hHosp" data-act="tab" data-tab="hospital" hidden>In hospital</button></div><div class="sub" id="hDay"></div></div>
@@ -1771,7 +1773,7 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
- ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Big performance fix: removed endless background and progress-bar animations and the blur behind panels, which kept integrated GPUs at 100%'],'The Big Update'],
+ ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance fix: progress bars and the drifting skyline are now still, while the glass panels and the golden sparkle stay in a lighter form so integrated GPUs are not maxed out'],'The Big Update'],
  ['58',['Three music tracks to choose from in Settings: Night pads, Lo-fi hours and Rain on glass','Music engine rebuilt to stop the crackle that built up in long sessions']],
  ['57',['Ledger City now has its own address: ledgercity.co.uk. Share links and the QR code use it']],
  ['56',['Restored the previous look']],
