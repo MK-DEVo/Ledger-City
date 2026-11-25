@@ -414,12 +414,6 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 #bg .coins b{animation-duration:16s!important}#bg .coins b:nth-child(n+7){display:none}
 .panel{background:rgba(24,32,40,.8);backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important}
 .top{background:rgba(19,26,33,.84);backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important}
-html.gfx-high .f{animation:barshine 3.2s linear infinite!important}html.gfx-high .track i.f::after{animation:shine 2.6s ease-in-out infinite!important}
-html.gfx-high #bg .lay.l0{animation:dr 120s linear infinite alternate!important}html.gfx-high #bg .lay.l1{animation:dr 90s linear infinite alternate-reverse!important}html.gfx-high #bg .lay.l2{animation:dr 60s linear infinite alternate!important}
-html.gfx-high #bg .stars i{animation:tw 3.5s ease-in-out infinite!important}html.gfx-high #bg .coins b{animation:rise2 11s ease-in infinite!important;animation-duration:11s!important}html.gfx-high #bg .coins b:nth-child(n+7){display:block}
-html.gfx-high .panel{background:rgba(24,32,40,.86);backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important}
-html.gfx-low #bg .stars i,html.gfx-low #bg .coins b{animation:none!important}html.gfx-low #bg .coins{display:none!important}
-html.gfx-low .panel,html.gfx-low .top{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}html.gfx-low .panel{background:rgba(24,32,40,.9)}html.gfx-low .top{background:rgba(19,26,33,.94)}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
  <div><div class="nm"><b id="hName">Newcomer</b><span class="chip" id="hRank"></span><span class="chip bt" id="hBeat" hidden>&#9733; The Beater</span><button class="chip godchip" id="hGod" data-act="godoff" hidden title="Click to turn god mode off">GOD MODE</button><span class="chip warn" id="hBehind" hidden>Behind on rent</span><span class="chip warn" id="hJail" hidden>In jail</span><button class="chip" id="hCd" data-act="cdlist" hidden title="Items that cannot be used again yet">Cooldowns</button><button class="chip warn" id="hHosp" data-act="tab" data-tab="hospital" hidden>In hospital</button></div><div class="sub" id="hDay"></div></div>
@@ -1779,8 +1773,8 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
- ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','New Graphics setting (High, Balanced, Low) in Settings. Balanced is the default','Music: Rain on glass is much softer, Lo-fi hours is slower, and Night pads has a new chord set, a deep swell and a soft bell melody','Performance fix: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay (the blur behind panels is removed) so integrated GPUs are not maxed out'],'The Big Update'],
- ['58',['Three music tracks to choose from in Settings: Night pads, Lo-fi hours and Rain on glass','Music engine rebuilt to stop the crackle that built up in long sessions']],
+ ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance fix: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay (the blur behind panels is removed) so integrated GPUs are not maxed out'],'The Big Update'],
+ ['58',['Music engine rebuilt to stop the crackle that built up in long sessions']],
  ['57',['Ledger City now has its own address: ledgercity.co.uk. Share links and the QR code use it']],
  ['56',['Restored the previous look']],
  ['54',['Sidebar rebuilt: icons, collapsible groups that remember your choice, live badges (mission, hospital, jail, cooldowns) and Guide and Settings pinned at the bottom','City services group for Library, Hospital and Charity']],
@@ -2168,7 +2162,7 @@ function cdHdr(){const c=$('#hCd');if(!c)return;const n=cdList().length;c.hidden
 
 /* settings and audio: synthesised sound effects and a quiet ambient loop, no files */
 var SET=null;
-const SET_DEF={master:80,sfx:70,music:35,mute:false,musicOn:true,clicks:true,bgPause:true,txt:'m',calm:false,fx:true,cashanim:true,toast:'n',wn:true,track:'night',gfx:'balanced'};
+const SET_DEF={master:80,sfx:70,music:35,mute:false,musicOn:true,clicks:true,bgPause:true,txt:'m',calm:false,fx:true,cashanim:true,toast:'n',wn:true,track:'night'};
 function loadSet(){const o=Object.assign({},SET_DEF);try{Object.assign(o,JSON.parse(localStorage.getItem('lc-set')||'{}'))}catch(e){}
  if(!localStorage.getItem('lc-set')){try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)o.calm=true}catch(e){}}SET=o}
 loadSet();
@@ -2179,7 +2173,7 @@ function audioOut(){const a=auCtx();if(!a)return null;if(!_bus){const m=a.create
 function musBus(){audioOut();return _bus&&_bus.u}
 function applyAudio(){if(!_bus||!SET)return;const a=auCtx(),t=a.currentTime,q=v=>Math.pow(v/100,2);
  _bus.m.gain.setTargetAtTime(SET.mute?0:q(SET.master),t,.03);_bus.s.gain.setTargetAtTime(q(SET.sfx),t,.03);_bus.u.gain.setTargetAtTime(q(SET.music)*1.05,t,.05)}
-function applyLook(){const h=document.documentElement;h.classList.toggle('calm',!!SET.calm);['high','balanced','low'].forEach(g=>h.classList.toggle('gfx-'+g,(SET.gfx||'balanced')===g));h.classList.remove('tz-s','tz-l','tz-x');if(SET.txt!=='m')h.classList.add('tz-'+SET.txt)}
+function applyLook(){const h=document.documentElement;h.classList.toggle('calm',!!SET.calm);h.classList.remove('tz-s','tz-l','tz-x');if(SET.txt!=='m')h.classList.add('tz-'+SET.txt)}
 /* sfx */
 const _last={};
 function play(k){if(!SET||SET.mute||SET.sfx<=0||SET.master<=0)return;const now=performance.now(),gap=k==='tick'?40:k==='coin'||k==='spend'?160:70;if(_last[k]&&now-_last[k]<gap)return;_last[k]=now;
@@ -2196,8 +2190,8 @@ function play(k){if(!SET||SET.mute||SET.sfx<=0||SET.master<=0)return;const now=p
   hurt:()=>{tn(150,t,.3,'sawtooth',.05,60)}};
  (S_[k]||S_.tick)()}catch(e){}}
 /* music: three synthesised tracks. Notes are scheduled from the audio clock a few seconds ahead, so a throttled timer can never pile up or fall behind. */
-const TRACKS={night:{n:'Night pads',d:'Slow ambient pads, a deep swell and a soft bell melody.',lp:1500},lofi:{n:'Lo-fi hours',d:'Mellow keys, a soft kick and brushed hats at a very slow pace.',lp:4500},rain:{n:'Rain on glass',d:'Very soft rain with a few piano notes now and then.',lp:3200}};
-const PROG=[[73.42,146.83,220,277.18,329.63],[61.74,123.47,185,220,293.66],[98,196,246.94,293.66,370],[55,110,164.81,220,277.18]],BELLS=[587.33,659.25,739.99,880,987.77,1108.7],MOTIF=[[0,2,4],[4,2,1],[1,3,5],[5,3,2],[2,4,3]];
+const TRACKS={night:{n:'Night pads',d:'Slow ambient pads with soft bells. The original.',lp:1500},lofi:{n:'Lo-fi hours',d:'Mellow keys, a soft kick and brushed hats at a slow pace.',lp:4500},rain:{n:'Rain on glass',d:'Quiet rain with a few piano notes now and then.',lp:5200}};
+const PROG=[[110,164.81,196,246.94,329.63],[87.31,130.81,174.61,220,261.63],[130.81,196,246.94,329.63,392],[98,146.83,196,246.94,329.63]],BELLS=[440,523.25,587.33,659.25,783.99,880,1046.5];
 const LOFI=[[146.83,174.61,220,261.63,329.63],[196,246.94,293.66,329.63,349.23],[130.81,164.81,196,246.94,293.66],[220,246.94,261.63,329.63,392]],LOFI_BASS=[73.42,98,65.41,55],PENT=[293.66,349.23,392,440,523.25,587.33,698.46];
 let _nbuf=null;
 function noiseBuf(a){if(!_nbuf||_nbuf.sampleRate!==a.sampleRate){const n=a.sampleRate*2,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;_nbuf=b}return _nbuf}
@@ -2206,21 +2200,21 @@ function irBuf(a){const n=Math.floor(a.sampleRate*1.8),b=a.createBuffer(2,n,a.sa
 function mNote(m,f,t0,dur,type,pk,att,det){const a=m.a,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;if(det)o.detune.value=det;g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(pk,t0+att);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);o.connect(g);g.connect(m.sess);o.start(t0);o.stop(t0+dur+.05)}
 function mNoise(m,t0,dur,type,f,pk,Q){const a=m.a,s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=noiseBuf(a);fl.type=type;fl.frequency.value=f;if(Q)fl.Q.value=Q;g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(pk,t0+.004);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);s.connect(fl);fl.connect(g);g.connect(m.sess);s.start(t0,Math.random()*1.5);s.stop(t0+dur+.05)}
 const CHUNK={
- night(m,t){const ch=PROG[m.i%PROG.length];ch.forEach((f,i)=>{[-3,3].forEach(dt=>{const o=m.a.createOscillator(),g=m.a.createGain(),pk=i<1?.03:.011;o.type=i<1?'sine':'triangle';o.frequency.value=f;o.detune.value=dt+(Math.random()*4-2);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(pk,t+3.2);g.gain.linearRampToValueAtTime(pk*.7,t+7.4);g.gain.linearRampToValueAtTime(.0001,t+10.8);o.connect(g);g.connect(m.sess);o.start(t);o.stop(t+10.9)})});
-  const mo=MOTIF[Math.floor(Math.random()*MOTIF.length)],st=t+2.2+Math.random()*1.5;mo.forEach((b,k)=>{mNote(m,BELLS[b],st+k*1.7,3,'sine',.012,.03);mNote(m,BELLS[b]*2,st+k*1.7,1.2,'sine',.0035,.02)});mNote(m,ch[0]/2,t,9.5,'sine',.02,3);return 10},
- lofi(m,t){const bt=1.1,ch=LOFI[m.i%4],root=LOFI_BASS[m.i%4];
+ night(m,t){const ch=PROG[m.i%PROG.length];ch.forEach((f,i)=>{[-3,3].forEach(dt=>{const o=m.a.createOscillator(),g=m.a.createGain(),pk=i<1?.03:.011;o.type=i<1?'sine':'triangle';o.frequency.value=f;o.detune.value=dt+(Math.random()*4-2);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(pk,t+2.6);g.gain.linearRampToValueAtTime(pk*.7,t+6);g.gain.linearRampToValueAtTime(.0001,t+8.8);o.connect(g);g.connect(m.sess);o.start(t);o.stop(t+8.9)})});
+  const nb=2+Math.floor(Math.random()*3);for(let k=0;k<nb;k++)mNote(m,BELLS[Math.floor(Math.random()*BELLS.length)],t+1+Math.random()*6,2.2,'sine',.012,.02);return 8},
+ lofi(m,t){const bt=.8333,ch=LOFI[m.i%4],root=LOFI_BASS[m.i%4];
   ch.forEach((f,i)=>{const s=t+i*.03+Math.random()*.01;mNote(m,f,s,2.2,'triangle',.011,.012);mNote(m,f*2,s,1.1,'sine',.004,.01)});
   mNote(m,root,t,1.3,'sine',.05,.02);mNote(m,root,t+bt*2.6,.9,'sine',.04,.02);
   [0,2.5].forEach(b=>{const s=t+bt*b,o=m.a.createOscillator(),g=m.a.createGain();o.type='sine';o.frequency.setValueAtTime(125,s);o.frequency.exponentialRampToValueAtTime(42,s+.2);g.gain.setValueAtTime(.0001,s);g.gain.linearRampToValueAtTime(.075,s+.005);g.gain.exponentialRampToValueAtTime(.0001,s+.26);o.connect(g);g.connect(m.sess);o.start(s);o.stop(s+.3)});
   [1,3].forEach(b=>mNoise(m,t+bt*b,.13,'bandpass',1900,.03,.7));
   [.5,1.5,2.5,3.5].forEach((b,i)=>mNoise(m,t+bt*(b+(i%2?.06:0)),.04,'highpass',3800,.014));
   if(Math.random()<.6)mNote(m,PENT[Math.floor(Math.random()*PENT.length)]*(Math.random()<.5?1:2),t+bt*(1+Math.floor(Math.random()*3)),1.6,'sine',.011,.01);return bt*4},
- rain(m,t){const n=1+Math.floor(Math.random()*3);for(let k=0;k<n;k++){const f=PENT[Math.floor(Math.random()*PENT.length)],s=t+.5+Math.random()*5;mNote(m,f,s,3.2,'sine',.013,.006);mNote(m,f*2,s,1.4,'triangle',.003,.006)}return 6}};
+ rain(m,t){const n=1+Math.floor(Math.random()*3);for(let k=0;k<n;k++){const f=PENT[Math.floor(Math.random()*PENT.length)],s=t+.5+Math.random()*5;mNote(m,f,s,3.2,'sine',.02,.006);mNote(m,f*2,s,1.4,'triangle',.004,.006)}return 6}};
 function rainBed(m){const a=m.a,mk=(f,type,pk,Q)=>{const s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=noiseBuf(a);s.loop=true;fl.type=type;fl.frequency.value=f;if(Q)fl.Q.value=Q;g.gain.value=pk;s.connect(fl);fl.connect(g);g.connect(m.sess);s.start(a.currentTime,Math.random()*1.5);m.srcs.push(s);return g};
- const hi=mk(1300,'bandpass',.016,.5),lo=mk(220,'lowpass',.012),lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.09;lg.gain.value=.004;lfo.connect(lg);lg.connect(hi.gain);lfo.start();m.srcs.push(lfo)}
+ const hi=mk(1300,'bandpass',.05,.5),lo=mk(220,'lowpass',.04),lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=.09;lg.gain.value=.012;lfo.connect(lg);lg.connect(hi.gain);lfo.start();m.srcs.push(lfo)}
 function musicStart(force){if(_mus||!SET||(!force&&!SET.musicOn))return;const a=auCtx(),bus=musBus();if(!a||!bus)return;try{if(a.state==='suspended')a.resume();
- const id=TRACKS[SET.track]?SET.track:'night',sess=a.createGain();sess.gain.value=0;sess.gain.linearRampToValueAtTime(1,a.currentTime+3);const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=TRACKS[id].lp;lp.Q.value=.3;
- const dry=a.createGain(),wet=a.createGain(),cv=a.createConvolver();cv.buffer=irBuf(a);dry.gain.value=.7;wet.gain.value=id==='rain'?.45:.5;sess.connect(lp);lp.connect(dry);lp.connect(cv);cv.connect(wet);dry.connect(bus);wet.connect(bus);
+ const id='night',sess=a.createGain();sess.gain.value=0;sess.gain.linearRampToValueAtTime(1,a.currentTime+3);const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=TRACKS[id].lp;lp.Q.value=.3;
+ const dry=a.createGain(),wet=a.createGain(),cv=a.createConvolver();cv.buffer=irBuf(a);dry.gain.value=.7;wet.gain.value=id==='rain'?.7:.5;sess.connect(lp);lp.connect(dry);lp.connect(cv);cv.connect(wet);dry.connect(bus);wet.connect(bus);
  const m=_mus={a,sess,id,i:0,next:a.currentTime+.3,iv:0,srcs:[],nodes:[dry,wet,cv,lp]};if(id==='rain')rainBed(m);
  const pump=()=>{if(_mus!==m||a.state!=='running')return;let guard=0;while(m.next<a.currentTime+9&&guard++<6){m.next+=CHUNK[id](m,m.next);m.i++}};
  m.iv=setInterval(pump,1000);pump()}catch(e){_mus=null}}
@@ -2244,11 +2238,10 @@ function tabSettings(){
  return pageHead('Settings','Sound, display and game options. These are saved on this device and are not part of your save file.')+
  `<div class="grid2"><section class="panel"><h2><span>Sound</span><span class="chip ${SET.mute?'warn':'ok'}">${SET.mute?'Muted':'On'}</span></h2><div class="body">
  ${tgl('mute','Mute everything','Silences all sound and music at once.')}${sld('master','Master volume')}${sld('sfx','Sound effects','Clicks, coins, level ups and warnings.')}${sld('music','Music','A quiet ambient loop. Keep it low if you like.')}
- ${tgl('musicOn','Background music')}<div class="setrow col"><div class="setl"><b>Music track</b></div><small class="muted">Pick the one you like. Choosing a track plays it, even with music off, for a few seconds.</small><div class="mtrs">${Object.entries(TRACKS).map(([k,t])=>`<button class="mtr ${SET.track===k?'on':''}" data-setk="track" data-setv="${k}"><b>${t.n}</b><small>${t.d}</small></button>`).join('')}</div></div>${tgl('clicks','Button click sounds')}${tgl('bgPause','Pause sound in background tabs','Stops sound when you switch to another tab.')}
+ ${tgl('musicOn','Background music')}${tgl('clicks','Button click sounds')}${tgl('bgPause','Pause sound in background tabs','Stops sound when you switch to another tab.')}
  <div class="btns" style="margin-top:10px"><button class="btn sm" data-setk="test" data-setv="coin">Test coin</button><button class="btn sm" data-setk="test" data-setv="gold">Test sparkle</button><button class="btn sm" data-setk="test" data-setv="level">Test level up</button></div>
  <p class="small muted">Browsers only allow sound after your first click or tap on the page.</p></div></section>
  <section class="panel"><h2>Display</h2><div class="body">
- <div class="setrow col"><div class="setl"><b>Graphics</b></div><small class="muted">High keeps every effect. Balanced is the default. Low keeps the glass look but drops the sparkle, stars and blur, for weaker graphics chips.</small>${segB('gfx',[['high','High'],['balanced','Balanced'],['low','Low']])}</div>
  <div class="setrow col"><div class="setl"><b>Text size</b></div>${segB('txt',[['s','Small'],['m','Normal'],['l','Large'],['x','Larger']])}</div>
  ${tgl('calm','Reduce motion','Turns off most animations and transitions.')}${tgl('fx','Screen flashes and confetti','Level up and big win effects.')}${tgl('cashanim','Cash count-up animation','Off shows your cash instantly.')}
  <div class="setrow col"><div class="setl"><b>Notification length</b></div><small class="muted">How long pop-up messages stay on screen.</small>${segB('toast',[['s','Short'],['n','Normal'],['l','Long']])}</div></div></section></div>
