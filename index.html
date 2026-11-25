@@ -414,6 +414,11 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 #bg .coins b{animation-duration:16s!important}#bg .coins b:nth-child(n+7){display:none}
 .panel{background:rgba(24,32,40,.8);backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important}
 .top{background:rgba(19,26,33,.84);backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important}
+.cash .rdchip{display:block;margin-top:6px;margin-left:auto}.rdchip{--p:0%;position:relative;overflow:hidden;font:600 12px var(--ui);color:var(--fg);padding:7px 12px 9px;border-radius:8px;border:1px solid var(--line);background:linear-gradient(90deg,rgba(224,174,74,.28) var(--p),rgba(24,32,40,.8) var(--p));cursor:pointer;white-space:nowrap;text-align:left;line-height:1.25}
+.rdchip small{display:block;font:500 10px var(--ui);opacity:.75}
+.rdchip.rdy{border-color:var(--brass);color:var(--brass);background:rgba(224,174,74,.14);box-shadow:0 0 0 1px rgba(224,174,74,.25)}
+.rdchip[hidden]{display:none}
+@media(max-width:700px){.rdchip{order:5}}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
  <div><div class="nm"><b id="hName">Newcomer</b><span class="chip" id="hRank"></span><span class="chip bt" id="hBeat" hidden>&#9733; The Beater</span><button class="chip godchip" id="hGod" data-act="godoff" hidden title="Click to turn god mode off">GOD MODE</button><span class="chip warn" id="hBehind" hidden>Behind on rent</span><span class="chip warn" id="hJail" hidden>In jail</span><button class="chip" id="hCd" data-act="cdlist" hidden title="Items that cannot be used again yet">Cooldowns</button><button class="chip warn" id="hHosp" data-act="tab" data-tab="hospital" hidden>In hospital</button></div><div class="sub" id="hDay"></div></div>
@@ -424,7 +429,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
   <div title="Life is your health. Failed crimes and lost fights cost life. It regenerates over time."><div class="row"><span>Life</span><b id="hLf"></b></div><div class="track"><i class="f lf" id="hLfF"></i></div><div class="sub" id="hLfS"></div></div>
   <div><div class="row"><span id="hLv">Level 1</span><b id="hXp"></b></div><div class="track"><i class="f xp" id="hXpF"></i></div><div class="sub" id="hXpS"></div></div>
  </div>
- <div class="cash"><span class="lbl">Cash</span><b id="hCash"></b></div>
+ <div class="cash"><span class="lbl">Cash</span><b id="hCash"></b><button class="rdchip" id="hRead" data-act="readnext" hidden></button></div>
  <div class="clk"><label for="speed" class="lbl">Time speed</label><select id="speed"><option value="1">Real time</option><option value="10">10x</option><option value="20">20x</option></select></div>
 </div></header>
 <div id="tracker"></div><div class="shell"><nav class="nav" id="nav" aria-label="Game sections"></nav><main id="main"></main></div>
@@ -1773,7 +1778,7 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
- ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance fix: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay (the blur behind panels is removed) so integrated GPUs are not maxed out'],'The Big Update'],
+ ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New book reader chip at the top right: shows when you can read again, with a progress bar, and one click reads your best available book without opening the library','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance fix: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay (the blur behind panels is removed) so integrated GPUs are not maxed out'],'The Big Update'],
  ['58',['Music engine rebuilt to stop the crackle that built up in long sessions']],
  ['57',['Ledger City now has its own address: ledgercity.co.uk. Share links and the QR code use it']],
  ['56',['Restored the previous look']],
@@ -2156,7 +2161,14 @@ function tabLibrary(){const L=plevel(S.spent).L,v=intelVal();
  <div class="lcard"><div><b>Day membership card</b><span class="small muted">Doubles today's limit to ${LIB_LIMIT*2}. Expires at the end of the day. ${cardOk?'':'Unlocks at '+CARD_INTEL+' Intelligence.'}</span></div>${cardOn?'<span class="chip ok">Active</span>':cardOk?`<button class="btn sm pri" data-act="buycard">${fmt(CARD_COST)}</button>`:'<span class="chip warn">&#128274; '+CARD_INTEL+' Intelligence</span>'}</div></div></section></div>`+
  `<section class="panel"><h2><span>Books</span><span class="chip">${libLeft()} left today</span></h2><div class="body"><div class="lbar"><span class="small muted">Buy quantity</span><div class="qrowc">${qb}</div></div><div class="lbooks">${BOOKS.map(bookCard).join('')}</div><p class="small muted">Books are items. Buy them here, or trade them on the Market. Reading uses up one book, and each title has its own cooldown. Level locks can only be opened by levelling up.</p></div></section>`+cdPanel()}
 {const ti=tabInventory;tabInventory=function(){return ti()+cdPanel()}}
-function cdHdr(){const c=$('#hCd');if(!c)return;const n=cdList().length;c.hidden=!n;if(n)c.textContent='Cooldowns '+n}
+function readState(){const own=BOOKS.filter(b=>S.inv[b.id]>0&&intelVal()>=bookOf(b.id).ireq);if(!own.length)return null;
+ const ok=own.filter(b=>(S.bookCd[b.id]||0)<=S.t);if(ok.length){const b=ok.sort((x,y)=>bookOf(y.id).gain-bookOf(x.id).gain)[0];return{ready:true,b:bookOf(b.id)}}
+ const b=own.sort((x,y)=>S.bookCd[x.id]-S.bookCd[y.id])[0];return{ready:false,b:bookOf(b.id),u:S.bookCd[b.id]}}
+function readHdr(){const c=$('#hRead');if(!c)return;const st=readState();if(!st||!c.isConnected){c.hidden=true;return}c.hidden=false;
+ let t,p=0;if(st.ready){t='Read now<small>'+st.b.n+' (+'+st.b.gain+' Int)</small>';c.classList.add('rdy')}else{c.classList.remove('rdy');p=Math.max(0,Math.min(100,(1-(st.u-S.t)/st.b.cd)*100));t='Next read in '+cdTime(st.u)+'<small>'+st.b.n+'</small>'}
+ if(c.dataset.t!==t){c.innerHTML=t;c.dataset.t=t}c.style.setProperty('--p',p.toFixed(1)+'%');c.title=st.ready?'Read this book now':'Book cooldown. Click to open the library'}
+function readNext(){const st=readState();if(st&&st.ready){readBook(st.b.id);ui.dirty=true}else ui.tab='library'}
+function cdHdr(){readHdr();const c=$('#hCd');if(!c)return;const n=cdList().length;c.hidden=!n;if(n)c.textContent='Cooldowns '+n}
 {const rh2=renderHeader;renderHeader=function(){rh2();cdHdr()}}
 {const uc=updateCd;updateCd=function(){uc();let re=false;document.querySelectorAll('.cdv').forEach(e=>{const u=+e.dataset.u;if(u<=S.t){e.textContent='Ready';e.className='chip ok cdv';if(!e.dataset.r){e.dataset.r=1;re=true}}else e.textContent=cdTime(u)});if(re)ui.dirty=true;cdHdr()}}
 
@@ -2525,6 +2537,7 @@ function act(a,d){
   case 'rent':rentHome(d.id);break;
   case 'buyhome':buyHome(d.id);break;
   case 'daily':claimDaily();break;
+  case 'readnext':readNext();break;
   case 'movein':moveIn(d.id);break;
   case 'rlist':listHome(d.id);break;
   case 'rpct':rentPct(d.id,+d.p);break;
