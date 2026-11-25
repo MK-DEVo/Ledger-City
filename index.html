@@ -464,7 +464,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='64',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='65',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -530,7 +530,7 @@ it('phone','Stolen phone','Loot',180,10,'#7e8ea0','A phone lifted from somebody\
 it('buds','Wireless earbuds','Loot',110,12,'#d7dde3','Still in the charging case. Lifted from a bag.');
 it('pills','Black-market pills','Loot',350,6,'#c78fa6','Unlabelled pills that change hands in back rooms. +20 energy, but your gym gains drop 15% for 90 minutes. Easy to overdo.',{drug:{pot:35,energy:20,effort:0,mins:90}});
 it('powder','Cut powder','Loot',900,4,'#d8d0c0','A bag of something illegal. +30 energy and +10 effort, but your gym gains drop 15% for 2 hours. Taking a second hit soon after is how people end up in hospital.',{drug:{pot:60,energy:30,effort:10,mins:120}});
-it('stash','Sealed stash','Loot',3500,2,'#8a6f9e','Pure, high-quality product from a contraband run. +60 energy and a full effort bar, but your gym gains drop 15% for 3 hours. The purity makes a severe overdose a real danger.',{drug:{pot:90,energy:60,effort:99,mins:180,pure:true}});
+it('stash','Sealed stash','Loot',3500,2,'#8a6f9e','Pure, high-quality product from a contraband run. +15 energy and +15 effort, but for 3 hours your gym gains drop 15% and your battle stats count 15% weaker. Both return when it wears off. The purity makes a severe overdose a real danger.',{drug:{pot:90,energy:15,effort:15,mins:180,pure:true,nerf:.15}});
 it('cuffs','Handcuffs','Loot',140,10,'#9aa5b1','Standard issue. Only enforcers collect these.');
 it('radio','Police radio','Loot',260,8,'#6f8fb0','A rugged radio taken in an arrest. Enforcers get them from bounties.');
 it('crate','Seized crate','Loot',1800,2,'#a98a64','A crate of seized goods. A good payday for an enforcer.');
@@ -797,6 +797,7 @@ const MISSIONS=[
   bar:()=>[Math.min(5,S.enf.wins),5,'Bounties collected'],cond:()=>S.enf.wins>=5}];
 
 
+['sell','skill','gear','gym','brawler','prize','dig','biz','first','c_ce100'].forEach(id=>{const m=MISSIONS.find(x=>x.id===id||x.id==='ce100'&&id==='c_ce100');if(m)m.reward.effort=10});
 function initMarket(st){st.mk={bk:1,price:{},book:{},listings:[],orders:[],seq:1,stock:{},dem:{},sup:{},ev:[]};for(const id in ITEMS){const bk=ITEMS[id].book;st.mk.price[id]=Math.round(ITEMS[id].base*(bk?1.6:1));st.mk.stock[id]=bk?Math.round(eqOf(id)/1.8):eqOf(id);st.mk.dem[id]=1;st.mk.sup[id]=1}refreshBooks(st)}
 function refreshBooks(st){for(const id in ITEMS){const x=ITEMS[id],p=st.mk.price[id];
  const eq=eqOf(id),sk=clamp(((st.mk.stock||{})[id]??eq)/eq,.25,3),dk=clamp((st.mk.dem||{})[id]||1,.5,2);
@@ -1057,13 +1058,14 @@ function useMed(id){const x=ITEMS[id],m=x.med;if(!m||!S.inv[id])return;const cd=
  takeInv(id,1);S.medCd[id]=S.t+m.cd;S.stats.meds++;const heal=Math.round(maxLife()*m.pct/100);S.life=Math.min(maxLife(),S.life+heal);const bits=['+'+heal+' life'];
  if(inH){const cut=Math.min(m.cut,S.hosp.until-S.t);S.hosp.until-=m.cut;bits.push('-'+cut+' min in hospital');if(S.hosp.until<=S.t)discharge()}
  addLog('Used '+x.n+' ('+bits.join(', ')+').');toast('Used '+x.n+': '+bits.join(', '));ui.dirty=true}
+const bsEff=()=>{const m=(S.drug&&S.drug.until>S.t&&S.drug.nerf)?1-S.drug.nerf:1,b=S.bs;return m===1?b:{str:b.str*m,def:b.def*m,spd:b.spd*m,dex:b.dex*m}};
 function toxNow(){const d=S.drug;return Math.max(0,(d.tox||0)-(S.t-(d.at||S.t))/60*8)}
 function drugRisk(id){const x=ITEMS[id].drug,t=toxNow()+x.pot;return Math.min(1,Math.max(x.pure?.18:0,(t-100)/60))}
 function useDrug(id){const x=ITEMS[id],dg=x.drug;if(!dg||!S.inv[id])return;if(hospitalised())return toast('You are in hospital.','bad');
  const t=toxNow()+dg.pot,risk=drugRisk(id);takeInv(id,1);S.drug.tox=t;S.drug.at=S.t;S.stats.drugs=(S.stats.drugs||0)+1;
  if(Math.random()<risk){const sec=(dg.pure||t>=170)?3:2;addLog('Overdosed on '+x.n+'.');return hospitalise(sec,sec===3?'Severe overdose on '+x.n:'Overdose on '+x.n)}
- S.energy+=dg.energy;if(dg.effort)S.effort=Math.min(effCap(),S.effort+dg.effort);S.drug.until=S.t+dg.mins;
- addLog('Used '+x.n+' (+'+dg.energy+' energy).');toast('Used '+x.n+': +'+dg.energy+' energy'+(dg.effort?', +effort':'')+'. Gym gains -15% for '+gm(dg.mins)+'.');ui.dirty=true}
+ S.energy+=dg.energy;if(dg.effort)S.effort=Math.min(effCap(),S.effort+dg.effort);S.drug.until=S.t+dg.mins;S.drug.nerf=dg.nerf||0;
+ addLog('Used '+x.n+' (+'+dg.energy+' energy).');toast('Used '+x.n+': +'+dg.energy+' energy'+(dg.effort?', +effort':'')+'. Gym gains -15%'+(dg.nerf?' and battle stats -'+Math.round(dg.nerf*100)+'%':'')+' for '+gm(dg.mins)+'.');ui.dirty=true}
 
 
 /* paths, crime, jail, bounties */
@@ -1099,11 +1101,12 @@ const CRIMES=[
   cash:[50,120000,300000],items:[['chain',25],['ring',17],['painting',8]],events:[['Armed security responded',30],['The police arrived',45],['You were assaulted',60]]}];
 const crimeRate=(c,t)=>Math.min(95,Math.max(30,Math.round(15+80*(0.5+0.5*Math.sin(2*Math.PI*(t/(c.period*60)+c.phase))))+mer('street')));
 const CRIME_STEPS=[[10,'Junkyard search'],[20,'Burglar rank'],[60,'Stock-room raid'],[120,'Heist crew rank'],[150,'Contraband run'],[300,'Jewellery heist']],crimeNext=ce=>CRIME_STEPS.find(s=>ce<s[0])||null;
+const jailP=()=>0.05*(1-mer('clean')*0.1);
 const critTitle=ce=>ce>=120?'Heist crew':ce>=20?'Burglar':'Petty thief';
 const bailCost=m=>Math.round((5000+(m-30)*(15000/90))*100);
 const bailPrice=c=>Math.round(c*(S.paths.active==='enf'?0.75:1));
 const jailed=()=>S.jail.until>S.t;
-const gm=m=>m>=60?Math.floor(m/60)+' h '+Math.round(m%60)+' min':Math.round(m)+' min';
+const gm=m=>{const t=Math.round(m);return t>=60?Math.floor(t/60)+' h '+(t%60)+' min':t+' min'};
 function crimeAct(id){const c=CRIMES.find(x=>x.id===id);
  if(S.paths.active!=='criminal')return toast('Set Criminal as your active path first.','bad');
  if(hospBlock())return;if(jailed())return toast('You are in jail.','bad');
@@ -1118,7 +1121,7 @@ function crimeAct(id){const c=CRIMES.find(x=>x.id===id);
   S.crime.ce+=c.gain;S.crime.wins++;if(!S.crime.by)S.crime.by={};S.crime.by[c.id]=(S.crime.by[c.id]||0)+1;{const nx=crimeNext(S.crime.ce);txt+=' +'+c.gain+' crime XP ('+S.crime.ce+(nx?' / '+nx[0]:' max')+').'}S.crime.last={ok:true,t:txt}}
  else{const loss=ri(c.fail[0],c.fail[1]);if(S.life-loss<=0){S.life=1;hospitalise(1,'Badly hurt on a job')}else S.life-=loss;S.crime.fails++;const ev=c.events[ri(0,c.events.length-1)];
   txt='Failed. '+ev[0]+'. You lost '+loss+' life.';
-  if(Math.random()<0.10-mer('clean')*0.01){const m=Math.min(120,c.base+ev[1]);S.jail.until=S.t+m;S.jail.reason=ev[0];S.jail.mins=m;S.jail.price=bailCost(m);txt+=' You were arrested: '+gm(m)+' in jail.'}
+  if(Math.random()<jailP()){const m=Math.min(120,c.base+ev[1]);S.jail.until=S.t+m;S.jail.reason=ev[0];S.jail.mins=m;S.jail.price=bailCost(m);txt+=' You were arrested: '+gm(m)+' in jail.'}
   S.crime.last={ok:false,t:txt}}
  addLog(c.n+': '+txt);if(rr)fxFlash(rr);toast(txt,S.crime.last.ok?(rr||''):'bad');if(!S.crime.last.ok)fxFlash('hurt');levelCheck(L0)}
 const NAMES=['Dex','Marla','Big Tom','Nico','Sasha','Vince','Rook','Lena','Ivo','Jess'];
@@ -1131,7 +1134,7 @@ function bailOut(id){const i=S.jail.inmates.findIndex(x=>x.id===id);if(i<0)retur
  if(S.money<p)return toast('Bail costs '+fmt(p)+'.','bad');pay(p);S.jail.inmates.splice(i,1);S.stats.bails++;addLog('Bailed out '+m.name+' for '+fmt(p)+'.');toast('Bailed out '+m.name+'. That is '+S.stats.bails+' so far.')}
 
 const BOUNTIES=[{id:'thug',n:'Street thug',hp:80,lo:3,hi:7,ph:.55,cash:150000,cd:60},{id:'gang',n:'Gang enforcer',hp:150,lo:6,hi:12,ph:.6,cash:400000,cd:90},{id:'boss',n:'Crime boss',hp:260,lo:10,hi:20,ph:.65,cash:1000000,cd:120}];
-function duel(mode,tg,maxR){const w=weaponFor(mode),b=S.bs,pr=prot()/100,hit=clamp(.7+(b.dex-10)/(b.dex+100)*.5,.5,.95),extra=clamp((b.spd-10)/(b.spd+40),0,.5);
+function duel(mode,tg,maxR){const w=weaponFor(mode),b=bsEff(),pr=prot()/100,hit=clamp(.7+(b.dex-10)/(b.dex+100)*.5,.5,.95),extra=clamp((b.spd-10)/(b.spd+40),0,.5);
  let hp=tg.hp,dealt=0,took=0,r=0;
  while(r<maxR&&hp>0&&S.life>0){r++;const acts=1+(Math.random()<extra?1:0);
   for(let i=0;i<acts&&hp>0;i++){if(Math.random()<hit){const x=w.dmg*(1+b.str/150)*(.85+Math.random()*.3);hp-=x;dealt+=x}}
@@ -1158,7 +1161,7 @@ const sw=id=>`<span class="ic">${icon(id)}</span>`;
 const kv=r=>`<div class="kv">${r.map(([a,b])=>`<span>${a}</span><b>${b}</b>`).join('')}</div>`;
 const logHtml=n=>`<div class="log">${S.log.slice(0,n).map(l=>`<div><span>${fmtT(l.t)}</span><em style="font-style:normal">${l.m}</em></div>`).join('')}</div>`;
 const pageHead=(t,h)=>`<div class="ph"><h1>${t}</h1><p>${h}</p></div>`;
-function effectLine(id){const x=ITEMS[id],a=[];if(x.food)a.push('+'+x.food+' hunger');if(x.energy)a.push('+'+x.energy+' energy');if(x.heal)a.push('+'+x.heal+' life');if(x.dmg)a.push('Damage '+x.dmg);if(x.prot)a.push('Protection '+x.prot+'%');if(x.book)a.push('+'+x.book.gain+' Intelligence, '+x.book.cd+' min cooldown'+(x.book.ireq?', needs '+x.book.ireq+' Intelligence':''));if(x.med)a.push('+'+x.med.pct+'% life, -'+x.med.cut+' min hospital, '+x.med.cd+' min cooldown');if(x.drug)a.push('+'+x.drug.energy+' energy, gym -15%, overdose risk');if(x.req)a.push('Needs level '+x.req);return a.join(', ')}
+function effectLine(id){const x=ITEMS[id],a=[];if(x.food)a.push('+'+x.food+' hunger');if(x.energy)a.push('+'+x.energy+' energy');if(x.heal)a.push('+'+x.heal+' life');if(x.dmg)a.push('Damage '+x.dmg);if(x.prot)a.push('Protection '+x.prot+'%');if(x.book)a.push('+'+x.book.gain+' Intelligence, '+x.book.cd+' min cooldown'+(x.book.ireq?', needs '+x.book.ireq+' Intelligence':''));if(x.med)a.push('+'+x.med.pct+'% life, -'+x.med.cut+' min hospital, '+x.med.cd+' min cooldown');if(x.drug)a.push('+'+x.drug.energy+' energy'+(x.drug.effort&&x.drug.effort<99?', +'+x.drug.effort+' effort':'')+', gym -15%'+(x.drug.nerf?', fight stats -'+Math.round(x.drug.nerf*100)+'%':'')+', overdose risk');if(x.req)a.push('Needs level '+x.req);return a.join(', ')}
 function itemInfo(id){const x=ITEMS[id],l=[];
  if(x.food)l.push(['Hunger','+'+x.food]);if(x.energy)l.push(['Energy','+'+x.energy+' (30 min cooldown, shared by all energy items)']);if(x.heal)l.push(['Heals','+'+x.heal+' life']);
  if(x.dmg)l.push(['Damage',x.dmg+' ('+x.slot+' slot)']);if(x.prot)l.push(['Protection',x.prot+'% ('+x.slot+' slot)']);if(x.req)l.push(['Required level',x.req+(plevel(S.spent).L<x.req?' (you are level '+plevel(S.spent).L+')':'')]);if(x.med){l.push(['Restores',x.med.pct+'% life']);l.push(['Hospital','-'+x.med.cut+' min per use']);l.push(['Cooldown',x.med.cd+' min'])}if(x.drug){l.push(['Energy','+'+x.drug.energy]);l.push(['Effect','Gym gains -15% for '+gm(x.drug.mins)]);l.push(['Overdose risk if used now',Math.round(drugRisk(id)*100)+'%'])}l.push(['Base value',fmt(x.base)]);
@@ -1346,7 +1349,7 @@ function crimeCard(c){
  <div class="row"><span>Success chance now</span><b>${rate}%</b></div><div class="row"><span>Preparation cost (paid even if you fail)</span><b>${fmt(c.fee)}</b></div>
  <div><div class="fcb" style="display:flex;gap:3px;align-items:flex-end;height:40px">${bars}</div><div class="small muted">Next 12 hours. ${bi===0?'Odds are at their best right now.':'Best odds in '+bi+' h ('+mx+'%).'}</div></div>
  <div class="sec">If you succeed</div><div class="tblwrap"><table class="tbl"><tbody>${rows}</tbody></table></div>
- <div class="small muted">Failing costs ${c.fail[0]} to ${c.fail[1]} life and has a 10% chance of jail.</div>
+ <div class="small muted">Failing costs ${c.fail[0]} to ${c.fail[1]} life and has a ${Math.round(jailP()*1000)/10}% chance of jail.</div>
  <div class="btns">${locked?`<span class="chip warn">Needs ${c.ce} crime experience (you have ${S.crime.ce})</span>`:`<button class="btn pri" data-act="crime" data-id="${c.id}">Attempt (${c.eff} effort, ${fmt(c.fee)})</button>`}</div></div></section>`}
 function tabCrime(){const h=pageHead('Crime','Criminal jobs cost 3 to 5 Effort, a preparation fee ($20 to $500) and '+CRIME_LIFE+' life or more. Crime experience from successful jobs unlocks the junkyard search at 10, the stock-room raid at 60, the contraband run at 150 and the heist at 300. Success rates rise and fall on a fixed schedule but never drop below 30%. Every success pays cash, and some also drop a bonus item. Loot from here can only be found by criminals or bought on the Market.');
  if(!S.paths.unlocked.criminal)return h+`<section class="panel"><h2>Locked</h2><div class="body"><p class="muted">Reach level 10 and finish the mission "Word on the street" to open the Criminal path.</p></div></section>`;
@@ -1444,7 +1447,7 @@ const ENH=[
  {id:'skin',n:'Thick skin',max:10,eff:l=>'+'+l*5+' max life',d:'Raises your life cap.'},
  {id:'gym',n:'Gym gains',max:10,eff:l=>'+'+l*3+'% stat gains',d:'Better returns from every training session.'},
  {id:'street',n:'Street smarts',max:10,eff:l=>'+'+l+'% crime success (max 95%)',d:'Improves every criminal job.'},
- {id:'clean',n:'Clean getaway',max:8,eff:l=>'-'+l+'% jail chance on a failed job',d:'Failed jobs land you in jail less often.'},
+ {id:'clean',n:'Clean getaway',max:8,eff:l=>'-'+(l*10)+'% jail chance on a failed job (from 5%)',d:'Failed jobs land you in jail less often.'},
  {id:'bounty',n:'Better contracts',max:10,eff:l=>'+'+l*5+'% bounty pay',d:'Bounties pay more.'}];
 const enhCost=l=>l+1,enhSpent=()=>ENH.reduce((a,e)=>{const l=mer(e.id);return a+l*(l+1)/2},0);
 const merEarned=()=>ACH.reduce((a,x)=>a+(S.ach.done[x.id]?TIERS[x.t].r:0),0),merFree=()=>merEarned()-enhSpent();
@@ -1483,7 +1486,7 @@ const MOVES={jab:{n:'Quick jab',dmg:14,tip:'is winding up a quick jab.',hint:'Sh
  hay:{n:'Haymaker',dmg:34,tip:'is winding up a heavy haymaker.',hint:'Rush in to cut it short for a bonus hit, or dodge it. A dodge still fails 1 time in 5.'},
  guard:{n:'Guard',dmg:0,tip:'is raising its guard.',hint:'Melee is halved and bullets lose a quarter. It will not attack, so this is a safe round to bandage or reload.'}};
 const DUMMY_HP=110,B_ROUNDS=10,WIN_CASH=10000,RELOAD_COST=2000;
-function combatStats(){const b=S.bs;return{gunAcc:clamp(.45+b.dex/250,.45,.92),mAcc:clamp(.55+b.dex/300,.55,.93),gStr:1+b.str/300,mStr:1+b.str/100,defR:b.def/(b.def+200),extra:b.spd/(b.spd+120)}}
+function combatStats(){const b=bsEff();return{gunAcc:clamp(.45+b.dex/250,.45,.92),mAcc:clamp(.55+b.dex/300,.55,.93),gStr:1+b.str/300,mStr:1+b.str/100,defR:b.def/(b.def+200),extra:b.spd/(b.spd+120)}}
 const PRIZES=[{id:'p100',n:'Back-alley bout',pool:10000,tier:0},{id:'p500',n:'Warehouse match',pool:50000,tier:1},{id:'p1000',n:'High-roller fight',pool:100000,tier:2}];
 const NPCS=[
  {id:'n1',p:0,n:'John Reed',skin:1,shirt:7,hp:95,atk:.8,g:{head:'cap',melee:'bat'},bio:'Works nights and fights for beer money.'},
@@ -1744,7 +1747,7 @@ const GUIDE=[
   ['What about the City shops?','The Farmers market, Weapons store, Clothing store and Pharmacy sell below the player market. Every game hour the stock changes: some items leave, new ones arrive, and each price is 10% to 40% off (5% to 20% at the Pharmacy). Look for the orange discount badges. Every shop shares one limit: each person can buy '+SHOP_LIMIT+' items per day across all city shops, and it resets at midnight.'],
   ['What is Intelligence?','Intelligence is a skill you raise by reading books from the Public Library (open from player level 10). At 30, 150 and 300 Intelligence every Education module finishes 15, 15 and 15 minutes faster. Books are bought once and can be read again after a cooldown. Book 2 needs 30 Intelligence and level 15, book 3 needs 150 and level 20.'],
   ['How does the hospital work?','If you run out of life you are admitted to the Hospital. Stays come in three sections: 20 minutes if you ran out of life, 40 minutes for an overdose and 80 minutes for a severe overdose. You cannot work, train, fight or do crime while admitted. Medkits are the only way to shorten a stay, and they restore life too. Small medkit: 5% life, 20 minutes off, 10 minute cooldown. Medkit: 10% life, 40 minutes off, 15 minute cooldown. Morphine: 15% life, 70 minutes off, 20 minute cooldown. Buy them at the Pharmacy or on the Market.'],
-  ['What do drugs do?','Pills, powder and pure stashes from criminal jobs give you energy when used, but your gym gains drop 15% while you are under the influence. Every dose adds toxicity, which fades by about 8 points an hour. Pile doses on top of each other and you risk an overdose. Pure product can cause a severe overdose even on its own.'],
+  ['What do drugs do?','Pills, powder and pure stashes from criminal jobs give you energy when used, but your gym gains drop 15% while you are under the influence. A sealed stash gives 15 energy and 15 effort, and also makes your battle stats count 15% weaker in fights until it wears off. Every dose adds toxicity, which fades by about 8 points an hour. Pile doses on top of each other and you risk an overdose. Pure product can cause a severe overdose even on its own.'],
   ['Why can I not equip the Riot helmet?','The Riot helmet, Specialist pants and Body armour need player levels 15, 15 and 20. You will see a notice when you buy one early, and the item shows the level it needs.'],
   ['What are rarities?','Items are common, rare or epic. Rare and epic finds flash and sparkle when you get them.']]],
  ['home','Homes and rent',()=>[
@@ -1826,6 +1829,7 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
+ ['65',['Jail chance on a failed crime is now 5% (Clean getaway lowers it by 10% of that per level)','Sealed stash now gives +15 energy and +15 effort. While it lasts (3 hours) your gym gains drop 15% and your battle stats count 15% weaker in fights. Both come back when it wears off','Ten missions now also give +10 effort']],
  ['64',['12 new missions that walk you through the criminal path (crime experience 20, 100, 200, plus the Junkyard search, Stock-room raid, Contraband run and Jewellery heist) and the Enforcer path (unlock, switch, bounties, patrol). Each pays $2,000 and 30 energy','Players who had finished every mission get the new ones','The Enforcer tab now correctly says you need 50 brawl wins']],
  ['63',['Achievements: Gym rat is now 1,500 gym energy, Peak condition 5,000, Iron constitution 2,000 shifts, Get out of jail free 100 prisoners, and Graduate is now an Honor','Fixed Pocket money, which secretly needed $5,000,000 instead of $50,000','New optional rank: Beta Tester, white and shiny, unlocked at level 20. Pick it in your Profile under Title','Crime preparation fees are 50% cheaper']],
  ['62',['Missions: the Teaching course is no longer a mission. Teaching stays optional','Crime pays double. Every successful job now always pays cash, with a higher minimum, and some jobs also drop a bonus item. When no item drops the cash is likely to be bigger','Crime success chance never drops below 30%']],
@@ -2150,7 +2154,7 @@ function tabGym(){const g=GYMS[S.gym],dr=S.drug.until>S.t,run=ui.gymRun;
   return `<div class="statcard gs-${k}" data-stat="${k}"><span class="lbl">${n}</span><b class="gnum" data-stat="${k}">${shown.toFixed(1)}</b><span class="small muted">${d}</span><div class="btns"><button class="btn sm" data-act="train" data-stat="${k}" data-n="1">Train (5 energy)</button><button class="btn sm" data-act="train" data-stat="${k}" data-n="5">x5</button><button class="btn sm" data-act="train" data-stat="${k}" data-n="999">Max</button></div></div>`}).join('');
  const gyms=gymOrder().map(i=>{const x=GYMS[i];return `<div class="row"><span>${x.n}<br><span class="small muted">x${x.mult} gains${x.cost?', '+fmt(x.cost)+' to join':', free'}</span></span>${S.gym===i?'<span class="chip ok">Current</span>':S.gyms[i]?`<button class="btn sm" data-act="gym" data-i="${i}">Switch</button>`:`<button class="btn sm" data-act="gym" data-i="${i}">Join ${fmt(x.cost)}</button>`}</div>`}).join('');
  return pageHead('Gym','Spend energy to train your battle stats. Players who keep training gain a lasting edge in the Brawl zone.')+
- (dr?`<section class="panel"><div class="body"><span class="chip warn">Under the influence</span> <span class="muted">Your gym gains are 15% lower for another ${gm(S.drug.until-S.t)}.</span></div></section>`:'')+
+ (dr?`<section class="panel"><div class="body"><span class="chip warn">Under the influence</span> <span class="muted">Your gym gains are 15% lower${S.drug.nerf?' and your battle stats count as '+Math.round(S.drug.nerf*100)+'% weaker in fights':''} for another ${gm(S.drug.until-S.t)}. Both come back when it wears off.</span></div></section>`:'')+
  `<div class="grid2">${cards}</div><div class="grid2"><section class="panel"><h2>Gyms</h2><div class="body"><p class="muted">Better gyms give bigger gains. Training at the ${g.n} gives x${g.mult}${S.edu.done.sport?' and a further 15% from Sports Science':''}. Gains slow down as a stat grows.</p>${gyms}</div></section></div>`}
 
 /* public library, intelligence, books as items, cooldown indicator */
