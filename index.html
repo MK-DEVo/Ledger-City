@@ -463,7 +463,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='59',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='61',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -495,9 +495,9 @@ it('bandage','Bandage','Medical',95,30,'#e8e1d0','Closes wounds. Restores life w
 it('smallkit','Small medkit','Medical',112,25,'#e6a5a5','A compact kit. Restores 5% life. In hospital it cuts 20 minutes off your stay. 10 minute cooldown.',{med:{pct:5,cut:20,cd:10}});
 it('medkit','Medkit','Medical',560,12,'#e0605a','A full field kit. Restores 10% life. In hospital it cuts 40 minutes off your stay. 15 minute cooldown.',{med:{pct:10,cut:40,cd:15}});
 it('morphine','Morphine syringe','Medical',1344,6,'#8fc1d9','Powerful pain relief. Restores 15% life. In hospital it cuts 70 minutes off your stay. 20 minute cooldown.',{med:{pct:15,cut:70,cd:20}});
-it('b1','Common Sense Primer','Book',250,60,'#c9a46a','A thin paperback for people who never read. Reading it gives 1 Intelligence. The book is used up. 30 minute cooldown.',{book:{gain:1,cd:30,ireq:0}});
-it('b2','The Ledger Method','Book',2500,25,'#6aa0c9','Dense and practical. Needs 30 Intelligence. Reading it gives 2 Intelligence. The book is used up. 45 minute cooldown.',{book:{gain:2,cd:45,ireq:30}});
-it('b3','Mind Over Markets','Book',15000,10,'#b08ad9','A heavy hardback the best traders keep on their desks. Needs 150 Intelligence. Reading it gives 6 Intelligence. The book is used up. 60 minute cooldown.',{book:{gain:6,cd:60,ireq:150}});
+it('b1','Common Sense Primer','Book',250,60,'#c9a46a','A thin paperback for people who never read. Reading it gives 1 Intelligence. The book is used up. 15 minute cooldown.',{book:{gain:1,cd:15,ireq:0}});
+it('b2','The Ledger Method','Book',2500,25,'#6aa0c9','Dense and practical. Needs 30 Intelligence. Reading it gives 5 Intelligence. The book is used up. 25 minute cooldown.',{book:{gain:5,cd:25,ireq:30}});
+it('b3','Mind Over Markets','Book',15000,10,'#b08ad9','A heavy hardback the best traders keep on their desks. Needs 150 Intelligence. Reading it gives 10 Intelligence. The book is used up. 45 minute cooldown.',{book:{gain:10,cd:45,ireq:150}});
 it('tonic','Herbal tonic','Medical',190,15,'#7ac7a0','A bitter brew that gives an energy boost.',{energy:10});
 it('bat','Wooden bat','Weapon',120,20,'#a98a64','A basic melee weapon.',{slot:'melee',dmg:6});
 it('knife','Combat knife','Weapon',500,15,'#aab4be','A quick melee weapon.',{slot:'melee',dmg:9});
@@ -580,7 +580,7 @@ COURSES.forEach(c=>c.mods=c.mods.map(([n,p])=>[n,p,p*100]));
 const MOD_H=3;
 const HRS={pit:[2,2,2,2,2],agro:[2,2,2,2],bot:[2,2,2,2],sport:[3,3,3,5,5],biz:[3,3,3,5,5],teach:[2,3,2,3,2,3,5,5]};
 const modHrs=(c,i)=>(HRS[c.id]||[])[i]||MOD_H;
-const INTEL_MS=[[50,15],[200,15],[1000,15]];
+const INTEL_MS=[[30,15],[150,15],[300,15]];
 const eduCut=()=>INTEL_MS.reduce((a,m)=>a+((S.intel||0)>=m[0]?m[1]:0),0);
 const modMins=(c,i)=>Math.max(30,modHrs(c,i)*60-eduCut());
 const RECIPES=[{id:'bandage',inp:{cloth:2,zinc:1},out:'bandage',n:1,cost:5},{id:'tonic',inp:{herbs:3,berries:2},out:'tonic',n:1,cost:5}];
@@ -741,7 +741,7 @@ const MISSIONS=[
  {id:'first',t:'First score',reward:{cash:140000,energy:30},
   body:`Criminal jobs cost effort, a preparation fee you pay even if the job fails, and 100 life or more. Success rates rise and fall on a fixed schedule, so check the forecast and strike when it is high. A failure costs life and has a 10% chance of jail.`,
   steps:()=>[['Have '+fmt(CRIMES[0].fee)+' cash, '+CRIMES[0].eff+' effort and 100 life',S.money>=CRIMES[0].fee&&S.effort>=CRIMES[0].eff&&S.life>=100||S.crime.wins>=1,['crime','Open Crime']],['Pull off a job in the Crime tab',S.crime.wins>=1,['crime','Open Crime']]],
-  tip:()=>S.crime.wins>=1?'':'Attempt the Junkyard search when the forecast bar is green.',
+  tip:()=>S.crime.wins>=1?'':'Attempt Pickpocketing when the forecast bar is green.',
   bar:()=>[S.crime.wins,1],cond:()=>S.crime.wins>=1},
  {id:'bail',t:'A friend in need',reward:{cash:160000,energy:20},
   body:`The Jail tab lists inmates you can bail out for a fee. It earns you no crime experience, but it is a nice favour and it counts towards achievements.`,
@@ -1043,10 +1043,10 @@ function setPath(id){const P=S.paths;if(!P.unlocked[id]||P.active===id)return;
  if(id!=='gather')P.used=true;P.active=id;const n=PATHS.find(p=>p.id===id).n;addLog('Perk chosen: '+n+'.');toast('Active perk: '+n+(fee?'. Fee '+fmt(fee):''))}
 
 const CRIMES=[
- {id:'junk',eff:3,fee:10000,lvl:0,n:'Junkyard search',flav:'Dig through wrecked cars and skips for cash and spare parts.',ce:0,gain:1,period:5,phase:0,fail:[5,15],base:30,
-  cash:[60,5000,50000],items:[['battery',25],['wallet',10],['clamp',5]],events:[['A security guard spotted you',0],['A police patrol rolled past',30]]},
- {id:'pick',eff:3,fee:30000,lvl:0,n:'Pickpocketing',flav:'Work the busy streets and lift whatever you can from careless pockets.',ce:10,gain:2,period:6,phase:.15,fail:[8,20],base:35,
+ {id:'pick',eff:3,fee:4000,lvl:0,n:'Pickpocketing',flav:'Work the busy streets and lift whatever you can from careless pockets.',ce:0,gain:1,period:6,phase:.15,fail:[5,15],base:30,
   cash:[40,8000,30000],items:[['phone',35],['buds',15],['wallet',10]],events:[['A passer-by shouted for help',0],['A police patrol rolled past',30]]},
+ {id:'junk',eff:3,fee:10000,lvl:0,n:'Junkyard search',flav:'Dig through wrecked cars and skips for cash and spare parts.',ce:10,gain:2,period:5,phase:0,fail:[8,20],base:35,
+  cash:[60,5000,50000],items:[['battery',25],['wallet',10],['clamp',5]],events:[['A security guard spotted you',0],['A police patrol rolled past',30]]},
  {id:'shop',eff:4,fee:50000,lvl:15,n:'Stock-room raid',flav:'Slip into the back of a shop after closing and take what you can carry.',ce:60,gain:3,period:7,phase:.3,fail:[10,25],base:45,
   cash:[55,25000,75000],items:[['watch',25],['laptop',14],['clock',6]],events:[['Security caught you',15],['The police arrived',30],['A fight broke out',45]]},
  {id:'run',eff:5,fee:75000,lvl:0,n:'Contraband run',flav:'Move a package across town for people who do not ask questions.',ce:150,gain:4,period:9,phase:.45,fail:[12,30],base:50,
@@ -1054,6 +1054,7 @@ const CRIMES=[
  {id:'heist',eff:5,fee:100000,lvl:25,n:'Jewellery heist',flav:'A planned job on a high-street jeweller. Big rewards and serious consequences.',ce:300,gain:6,period:11,phase:.6,fail:[15,35],base:60,
   cash:[50,50000,150000],items:[['chain',25],['ring',17],['painting',8]],events:[['Armed security responded',30],['The police arrived',45],['You were assaulted',60]]}];
 const crimeRate=(c,t)=>Math.min(95,Math.round(15+80*(0.5+0.5*Math.sin(2*Math.PI*(t/(c.period*60)+c.phase))))+mer('street'));
+const CRIME_STEPS=[[10,'Junkyard search'],[20,'Burglar rank'],[60,'Stock-room raid'],[120,'Heist crew rank'],[150,'Contraband run'],[300,'Jewellery heist']],crimeNext=ce=>CRIME_STEPS.find(s=>ce<s[0])||null;
 const critTitle=ce=>ce>=120?'Heist crew':ce>=20?'Burglar':'Petty thief';
 const bailCost=m=>Math.round((5000+(m-30)*(15000/90))*100);
 const bailPrice=c=>Math.round(c*(S.paths.active==='enf'?0.75:1));
@@ -1070,7 +1071,7 @@ function crimeAct(id){const c=CRIMES.find(x=>x.id===id);
  if(Math.random()*100<rate){let r=Math.random()*100;
   if(r<c.cash[0]){const v=ri(c.cash[1]/100,c.cash[2]/100)*100;gain(v);txt='Success. You found '+fmt(v)+' in cash.'}
   else{r-=c.cash[0];let got=null;for(const [i,ch] of c.items){if(r<ch){got=i;break}r-=ch}got=got||c.items[0][0];S.inv[got]=(S.inv[got]||0)+1;txt='Success. You found a '+ITEMS[got].n+' worth '+fmt(ITEMS[got].base)+'.';rr=rarityOf(got)}
-  S.crime.ce+=c.gain;S.crime.wins++;S.crime.last={ok:true,t:txt}}
+  S.crime.ce+=c.gain;S.crime.wins++;{const nx=crimeNext(S.crime.ce);txt+=' +'+c.gain+' crime XP ('+S.crime.ce+(nx?' / '+nx[0]:' max')+').'}S.crime.last={ok:true,t:txt}}
  else{const loss=ri(c.fail[0],c.fail[1]);if(S.life-loss<=0){S.life=1;hospitalise(1,'Badly hurt on a job')}else S.life-=loss;S.crime.fails++;const ev=c.events[ri(0,c.events.length-1)];
   txt='Failed. '+ev[0]+'. You lost '+loss+' life.';
   if(Math.random()<0.10-mer('clean')*0.01){const m=Math.min(120,c.base+ev[1]);S.jail.until=S.t+m;S.jail.reason=ev[0];S.jail.mins=m;S.jail.price=bailCost(m);txt+=' You were arrested: '+gm(m)+' in jail.'}
@@ -1303,12 +1304,14 @@ function crimeCard(c){
  <div class="sec">If you succeed</div><div class="tblwrap"><table class="tbl"><tbody>${rows}</tbody></table></div>
  <div class="small muted">Failing costs ${c.fail[0]} to ${c.fail[1]} life and has a 10% chance of jail.</div>
  <div class="btns">${locked?`<span class="chip warn">Needs ${c.ce} crime experience (you have ${S.crime.ce})</span>`:`<button class="btn pri" data-act="crime" data-id="${c.id}">Attempt (${c.eff} effort, ${fmt(c.fee)})</button>`}</div></div></section>`}
-function tabCrime(){const h=pageHead('Crime','Criminal jobs cost 3 to 5 Effort, a preparation fee ($100, $500 or $1,000) and '+CRIME_LIFE+' life or more. Crime experience from successful jobs unlocks pickpocketing at 10, the stock-room raid at 60, the contraband run at 150 and the heist at 300. Success rates rise and fall on a fixed schedule, so check the forecast. Loot from here can only be found by criminals or bought on the Market.');
+function tabCrime(){const h=pageHead('Crime','Criminal jobs cost 3 to 5 Effort, a preparation fee ($40 to $1,000) and '+CRIME_LIFE+' life or more. Crime experience from successful jobs unlocks the junkyard search at 10, the stock-room raid at 60, the contraband run at 150 and the heist at 300. Success rates rise and fall on a fixed schedule, so check the forecast. Loot from here can only be found by criminals or bought on the Market.');
  if(!S.paths.unlocked.criminal)return h+`<section class="panel"><h2>Locked</h2><div class="body"><p class="muted">Reach level 10 and finish the mission "Word on the street" to open the Criminal path.</p></div></section>`;
  if(S.paths.active!=='criminal')return h+`<section class="panel"><h2>Not your active path</h2><div class="body"><p class="muted">Make Criminal your active perk to take criminal jobs.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="paths">Open Paths</button></div></div></section>`;
+const prevS=(CRIME_STEPS.slice().reverse().find(s=>s[0]<=S.crime.ce)||[0])[0],nx=crimeNext(S.crime.ce),pc=nx?Math.max(0,Math.min(100,(S.crime.ce-prevS)/(nx[0]-prevS)*100)):100;
+ const sk=`<div class="skillbox"><div class="row"><span><b>Criminal skill</b> <span class="muted">${critTitle(S.crime.ce)}</span></span><b>${nx?S.crime.ce+' / '+nx[0]+' XP':S.crime.ce+' XP, max'}</b></div><div class="track"><i class="f xp" style="width:${pc}%"></i></div><div class="small muted">${nx?'Next: '+nx[1]+' at '+nx[0]+' crime experience.':'You have unlocked everything.'} Each successful job adds experience.</div></div>`;
  const l=S.crime.last;
  return h+`<section class="panel"><h2><span>Your record</span>${jailed()?'<span class="chip warn cdJail"></span>':''}</h2><div class="body">${kv([['Status',critTitle(S.crime.ce)],['Crime experience',S.crime.ce],['Jobs succeeded / failed',S.crime.wins+' / '+S.crime.fails],['Life',Math.floor(S.life)+' (need '+CRIME_LIFE+')']])}
- ${l?`<div class="goal ${l.ok?'ok':''}"><b>${l.ok?'Success':'Failed'}</b><span>${l.t}</span></div>`:''}</div></section><div class="grid2">${CRIMES.map(crimeCard).join('')}</div>`}
+ ${sk}${l?`<div class="goal ${l.ok?'ok':''}"><b>${l.ok?'Success':'Failed'}</b><span>${l.t}</span></div>`:''}</div></section><div class="grid2">${CRIMES.map(crimeCard).join('')}</div>`}
 function tabJail(){
  const me=jailed()?`<div class="body"><h3>You are in jail</h3>${kv([['Reason',S.jail.reason],['Sentence',gm(S.jail.mins||0)],['Bail',fmt(bailPrice(S.jail.price))]])}<div class="btns"><span class="chip warn cdJail"></span><button class="btn pri" data-act="bail">Pay bail</button></div><p class="small muted">While you are in jail you cannot do criminal or enforcer work, or fight.</p></div>`:`<div class="body"><p class="muted">You are free.</p></div>`;
  const rows=S.jail.inmates.map(m=>`<tr><td>${m.name}<small>${m.crime}. ${m.why}.</small></td><td class="num">${gm(m.until-S.t)}</td><td class="num">${gm(m.mins)}</td><td class="num">${fmt(bailPrice(m.price))}</td><td class="num"><button class="btn sm" data-act="bailout" data-id="${m.id}">Bail out</button></td></tr>`).join('');
@@ -1694,7 +1697,7 @@ const GUIDE=[
   ['Is there a tax?','Yes, '+taxPct()+' comes off every market sale. Business and Haggling courses and the Haggler merit lower it.'],
   ['Why do prices move?','Prices drift every game hour around each item\'s base value, with some random noise. Buy when an item is low and sell when it is high.'],
   ['What about the City shops?','The Farmers market, Weapons store, Clothing store and Pharmacy sell below the player market. Every game hour the stock changes: some items leave, new ones arrive, and each price is 10% to 40% off (5% to 20% at the Pharmacy). Look for the orange discount badges. Every shop shares one limit: each person can buy '+SHOP_LIMIT+' items per day across all city shops, and it resets at midnight.'],
-  ['What is Intelligence?','Intelligence is a skill you raise by reading books from the Public Library (open from player level 10). At 50, 200 and 1,000 Intelligence every Education module finishes 15, 15 and 15 minutes faster. Books are bought once and can be read again after a cooldown. Book 2 needs 30 Intelligence and level 15, book 3 needs 150 and level 20.'],
+  ['What is Intelligence?','Intelligence is a skill you raise by reading books from the Public Library (open from player level 10). At 30, 150 and 300 Intelligence every Education module finishes 15, 15 and 15 minutes faster. Books are bought once and can be read again after a cooldown. Book 2 needs 30 Intelligence and level 15, book 3 needs 150 and level 20.'],
   ['How does the hospital work?','If you run out of life you are admitted to the Hospital. Stays come in three sections: 20 minutes if you ran out of life, 40 minutes for an overdose and 80 minutes for a severe overdose. You cannot work, train, fight or do crime while admitted. Medkits are the only way to shorten a stay, and they restore life too. Small medkit: 5% life, 20 minutes off, 10 minute cooldown. Medkit: 10% life, 40 minutes off, 15 minute cooldown. Morphine: 15% life, 70 minutes off, 20 minute cooldown. Buy them at the Pharmacy or on the Market.'],
   ['What do drugs do?','Pills, powder and pure stashes from criminal jobs give you energy when used, but your gym gains drop 15% while you are under the influence. Every dose adds toxicity, which fades by about 8 points an hour. Pile doses on top of each other and you risk an overdose. Pure product can cause a severe overdose even on its own.'],
   ['Why can I not equip the Riot helmet?','The Riot helmet, Specialist pants and Body armour need player levels 15, 15 and 20. You will see a notice when you buy one early, and the item shows the level it needs.'],
@@ -1778,7 +1781,9 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
- ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','New book reader chip at the top right: shows when you can read again, with a progress bar, and one click reads your best available book without opening the library','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance fix: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay (the blur behind panels is removed) so integrated GPUs are not maxed out'],'The Big Update'],
+ ['61',['Books: reading cooldowns are halved. Book 1 is 15 min, book 2 gives +5 Intelligence with a 25 min cooldown, book 3 gives +10 with a 45 min cooldown','Intelligence milestones are now 30, 150 and 300. The day membership card unlocks at 30','Crime: Pickpocketing is now the starter job (cheaper, lowest pay) and the Junkyard search unlocks at 10 crime experience','New Criminal skill bar on the Crime tab, and every successful job now shows the crime XP you earned']],
+ ['60',['New book reader chip at the top right: shows when you can read again with a progress bar, and one click reads your best available book without opening the library','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay in a lighter form so integrated GPUs are not maxed out','Admin: hospital and drug tools']],
+ ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','Performance fix: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay (the blur behind panels is removed) so integrated GPUs are not maxed out'],'The Big Update'],
  ['58',['Music engine rebuilt to stop the crackle that built up in long sessions']],
  ['57',['Ledger City now has its own address: ledgercity.co.uk. Share links and the QR code use it']],
  ['56',['Restored the previous look']],
@@ -2105,7 +2110,7 @@ const BOOKS=[{id:'b1',lvl:10,sub:'A first read',d:'A thin paperback for people w
 {id:'b2',lvl:15,sub:'Practical study',d:'Dense and practical. Not for beginners, but it rewards a trained mind.'},
 {id:'b3',lvl:20,sub:'Master class',d:'A heavy hardback the best traders in the city keep on their desks.'}];
 BOOKS.forEach(b=>{const x=ITEMS[b.id];b.n=x.n;b.price=x.base;b.c=x.c;b.gain=x.book.gain;b.cd=x.book.cd;b.ireq=x.book.ireq});
-const LIB_LVL=10,LIB_LIMIT=50,CARD_COST=100000,CARD_INTEL=50,bookOf=id=>BOOKS.find(b=>b.id===id);
+const LIB_LVL=10,LIB_LIMIT=50,CARD_COST=100000,CARD_INTEL=30,bookOf=id=>BOOKS.find(b=>b.id===id);
 const intelVal=()=>S.intel||0,fi=v=>(Math.round(v*10)/10).toLocaleString(undefined,{maximumFractionDigits:1});
 const libLimit=()=>LIB_LIMIT*(S.lib.card?2:1),libLeft=()=>Math.max(0,libLimit()-S.lib.bought);
 function shade(h,k){const n=parseInt(h.slice(1),16),f=v=>Math.max(0,Math.min(255,Math.round(v*k)));return 'rgb('+f(n>>16)+','+f((n>>8)&255)+','+f(n&255)+')'}
