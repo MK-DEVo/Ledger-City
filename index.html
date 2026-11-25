@@ -419,6 +419,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 .rdchip.rdy{border-color:var(--brass);color:var(--brass);background:rgba(224,174,74,.14);box-shadow:0 0 0 1px rgba(224,174,74,.25)}
 .rdchip[hidden]{display:none}
 @media(max-width:700px){.rdchip{order:5}}
+.chip.beta{color:#14181d;font-weight:700;border-color:#fff;background:linear-gradient(115deg,#ffffff 0%,#dfe8f2 30%,#ffffff 48%,#c9d6e4 70%,#ffffff 100%);box-shadow:0 0 10px rgba(255,255,255,.6),inset 0 1px 0 #fff;text-shadow:0 1px 0 rgba(255,255,255,.7)}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
  <div><div class="nm"><b id="hName">Newcomer</b><span class="chip" id="hRank"></span><span class="chip bt" id="hBeat" hidden>&#9733; The Beater</span><button class="chip godchip" id="hGod" data-act="godoff" hidden title="Click to turn god mode off">GOD MODE</button><span class="chip warn" id="hBehind" hidden>Behind on rent</span><span class="chip warn" id="hJail" hidden>In jail</span><button class="chip" id="hCd" data-act="cdlist" hidden title="Items that cannot be used again yet">Cooldowns</button><button class="chip warn" id="hHosp" data-act="tab" data-tab="hospital" hidden>In hospital</button></div><div class="sub" id="hDay"></div></div>
@@ -463,7 +464,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='62',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='64',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -610,6 +611,11 @@ const mkDone=()=>{const m=mb('mkreg');return [Math.min(30,S.stats.sales-m.s),Mat
 const readAny=()=>(S.intel||0)>=1||Object.keys(S.bookCd||{}).length>0;
 const merSpent=()=>Object.values((S.mer&&S.mer.lv)||{}).reduce((a,b)=>a+b,0);
 const achDone=()=>Object.keys((S.ach&&S.ach.done)||{}).length;
+const CRT=['crime','Open Crime'],ENT=['bounties','Open Enforcer'],PAT=['paths','Open Paths'],ce=()=>S.crime.ce,cby=id=>(S.crime.by||{})[id]||0;
+const crM=(id,n,t,body,need,tip)=>({id:'c_'+id,t,reward:{cash:200000,energy:30},body,
+ steps:()=>[['Reach '+need+' crime experience'+(CRIMES.find(x=>x.id===id)&&CRIMES.find(x=>x.id===id).ce>=need?' to unlock the '+CRIMES.find(x=>x.id===id).n:''),ce()>=need,CRT]].concat(n?[['Pull off a '+n+' job',cby(id)>=1,CRT]]:[]),
+ tip:()=>S.paths.active!=='criminal'?'Criminal is not your active path. Switch back in the Paths tab.':tip,
+ bar:()=>[Math.min(ce(),need),need,'Crime experience'],cond:()=>ce()>=need&&(!n||cby(id)>=1)});
 const LIBT=['library','Open Library'],ACHT=['ach','Open Achievements'],HS=['housing','Open Housing'],RT=['rentals','Open Rentals'];
 const MISSIONS=[
  {id:'welcome',t:'Welcome to Ledger City',reward:{cash:10000,energy:10},
@@ -746,7 +752,49 @@ const MISSIONS=[
  {id:'bail',t:'A friend in need',reward:{cash:160000,energy:20},
   body:`The Jail tab lists inmates you can bail out for a fee. It earns you no crime experience, but it is a nice favour and it counts towards achievements.`,
   steps:()=>[['Save enough for bail (a short sentence costs about $5,000)',S.money>=5000*100||S.stats.bails>=1,MK],['Bail out an inmate in the Jail tab',S.stats.bails>=1,['jail','Open Jail']]],
-  bar:()=>[Math.min(1,S.stats.bails),1,'Prisoners bailed'],cond:()=>S.stats.bails>=1}];
+  bar:()=>[Math.min(1,S.stats.bails),1,'Prisoners bailed'],cond:()=>S.stats.bails>=1},
+ {id:'ce20',t:'Making a name',reward:{cash:200000,energy:30},
+  body:`Crime experience is your criminal skill. Every successful job adds some, and more of it unlocks better jobs. Reach 20 and you earn the rank of Burglar.`,
+  steps:()=>[['Reach 20 crime experience',ce()>=20,CRT]],
+  tip:()=>S.paths.active!=='criminal'?'Criminal is not your active path. Switch back in the Paths tab.':'Pickpocketing gives 1 experience a success. The Junkyard search gives 2 once you reach 10.',
+  bar:()=>[Math.min(ce(),20),20,'Crime experience'],cond:()=>ce()>=20},
+ crM('junk','Junkyard search','Junkyard dog',`The Junkyard search pays more than Pickpocketing and unlocks at 10 crime experience. It costs a little more to prepare, so check the forecast first.`,10,'Wait for the forecast bar to turn green for better odds.'),
+ crM('shop','Stock-room raid','Back of the shop',`Stock-room raids need 60 crime experience. The pay is much bigger, and so is the risk if you get caught.`,60,'Each raid gives 3 experience. Junkyard jobs give 2.'),
+ {id:'ce100',t:'A reputation',reward:{cash:200000,energy:30},
+  body:`People in the right places know your name now. Keep working jobs until you reach 100 crime experience.`,
+  steps:()=>[['Reach 100 crime experience',ce()>=100,CRT]],
+  tip:()=>S.paths.active!=='criminal'?'Criminal is not your active path. Switch back in the Paths tab.':'Stock-room raids give the most experience that you can reach right now.',
+  bar:()=>[Math.min(ce(),100),100,'Crime experience'],cond:()=>ce()>=100},
+ crM('run','Contraband run','Contraband run',`The Contraband run needs 150 crime experience. It can drop pills, powder and stashes, which sell well and are only found by criminals.`,150,'Do not use the pills while fighting. They cut your gym gains.'),
+ {id:'ce200',t:'Crew material',reward:{cash:200000,energy:30},
+  body:`Serious crews recruit people who can stay out of jail. Reach 200 crime experience to prove you are one of them.`,
+  steps:()=>[['Reach 200 crime experience',ce()>=200,CRT]],
+  tip:()=>S.paths.active!=='criminal'?'Criminal is not your active path. Switch back in the Paths tab.':'Contraband runs give 4 experience each.',
+  bar:()=>[Math.min(ce(),200),200,'Crime experience'],cond:()=>ce()>=200},
+ crM('heist','Jewellery heist','The big score',`The Jewellery heist is the top job in the city. It needs 300 crime experience, pays the most and punishes failure the hardest. Take it when the odds are green.`,300,'A failure costs up to 35 life and a longer sentence. Keep bandages loaded.'),
+ {id:'enfu',t:'Wear a badge',reward:{cash:200000,energy:30},
+  body:`Some people work the other side of the law. The Enforcer path opens at level 15 once you have won 50 brawls. Enforcers hunt bounties and take patrol shifts.`,
+  steps:()=>[['Reach player level 15',plevel(S.spent).L>=15,J],['Win 50 brawls ('+Math.min(50,S.brawl.wins)+' of 50)',S.brawl.wins>=50,BR]],
+  tip:()=>'Prize fights count too. Use Dodge and bandages in the Brawl tab.',
+  bar:()=>[Math.min(S.brawl.wins,50),50,'Brawls won'],cond:()=>!!S.paths.unlocked.enf},
+ {id:'enfp',t:'Switch sides',reward:{cash:200000,energy:30},
+  body:()=>`Open the Paths tab and make Enforcer your active perk. Switching perks costs ${fmt(SWITCH_FEE)}, so save up first. You can come back to Gatherer for free at any time.`,
+  steps:()=>[['Have '+fmt(SWITCH_FEE)+' for the switch fee',S.money>=SWITCH_FEE||S.paths.active==='enf',CT],['Choose Enforcer as your active path',S.paths.active==='enf',PAT]],
+  bar:()=>[S.paths.active==='enf'?1:0,1],cond:()=>S.paths.active==='enf'},
+ {id:'bnt1',t:'First bounty',reward:{cash:200000,energy:30},
+  body:()=>`The Enforcer tab lists wanted criminals. A hunt costs ${BOUNTY_ENERGY} energy and uses your loadout and gym stats in a fight. Start with the Street thug.`,
+  steps:()=>[['Have '+BOUNTY_ENERGY+' energy and 50 life',S.energy>=BOUNTY_ENERGY&&S.life>=50||S.enf.wins>=1,ENT],['Collect a bounty',S.enf.wins>=1,ENT]],
+  tip:()=>S.enf.wins>=1?'':'Equip a weapon and some armour first. If you lose, you are knocked out and go to hospital.',
+  bar:()=>[Math.min(1,S.enf.wins),1,'Bounties collected'],cond:()=>S.enf.wins>=1},
+ {id:'ptl',t:'Walk the beat',reward:{cash:200000,energy:30},
+  body:`Patrol shifts are the safe way to earn as an Enforcer. They cost 4 effort and pay steady cash, with a chance of finding handcuffs.`,
+  steps:()=>[['Take a patrol shift in the Enforcer tab',S.enf.shifts>=1,ENT]],
+  bar:()=>[Math.min(1,S.enf.shifts),1,'Shifts worked'],cond:()=>S.enf.shifts>=1},
+ {id:'bnt5',t:'Bounty hunter',reward:{cash:200000,energy:30},
+  body:`Collect five bounties in total. Bigger targets like the Gang enforcer pay far more, but they hit harder and hide longer after you catch them.`,
+  steps:()=>[['Collect 5 bounties ('+Math.min(5,S.enf.wins)+' of 5)',S.enf.wins>=5,ENT]],
+  tip:()=>'Each target hides for a while after you catch it, so rotate between them.',
+  bar:()=>[Math.min(5,S.enf.wins),5,'Bounties collected'],cond:()=>S.enf.wins>=5}];
 
 
 function initMarket(st){st.mk={bk:1,price:{},book:{},listings:[],orders:[],seq:1,stock:{},dem:{},sup:{},ev:[]};for(const id in ITEMS){const bk=ITEMS[id].book;st.mk.price[id]=Math.round(ITEMS[id].base*(bk?1.6:1));st.mk.stock[id]=bk?Math.round(eqOf(id)/1.8):eqOf(id);st.mk.dem[id]=1;st.mk.sup[id]=1}refreshBooks(st)}
@@ -760,7 +808,7 @@ function restock(st,first){if(!st.shop)st.shop={};SHOPS.forEach(sh=>{let cur=st.
   const inn=absent.slice(0,k);cur=cur.filter(i=>!out.includes(i)).concat(inn);while(cur.length<sh.show){const o=sh.items.find(i=>!cur.includes(i));if(!o)break;cur.push(o)}}
  const items={};sh.items.filter(i=>cur.includes(i)).forEach(i=>items[i]={n:ri(80,300),off:ri(...(sh.off||[10,40]))});st.shop[sh.id]={items}})}
 function fresh(){const st={v:2,name:'Newcomer',t:480,real:Date.now(),speed:20,money:5000,energy:100,hunger:100,life:100,effort:25,spent:0,
- skills:{farming:{lvl:1,xp:0},foraging:{lvl:1,xp:0},mining:{lvl:1,xp:0},teacher:{lvl:1,xp:0}},tools:{farming:0,foraging:0,mining:0,teacher:0},inv:{},home:'room',owned:{},behind:false,mis:0,foodSlot:null,eCool:0,paths:{unlocked:{gather:true,criminal:false,entre:false,enf:false},active:'gather',used:false},crime:{ce:0,wins:0,fails:0,last:null},jail:{until:0,reason:'',mins:0,price:0,inmates:[],seq:1},enf:{cd:{},last:null,wins:0,shifts:0},
+ skills:{farming:{lvl:1,xp:0},foraging:{lvl:1,xp:0},mining:{lvl:1,xp:0},teacher:{lvl:1,xp:0}},tools:{farming:0,foraging:0,mining:0,teacher:0},inv:{},home:'room',owned:{},behind:false,mis:0,foodSlot:null,eCool:0,paths:{unlocked:{gather:true,criminal:false,entre:false,enf:false},active:'gather',used:false},crime:{ce:0,wins:0,fails:0,last:null,by:{}},jail:{until:0,reason:'',mins:0,price:0,inmates:[],seq:1},enf:{cd:{},last:null,wins:0,shifts:0},
  bs:{str:10,def:10,spd:10,dex:10},gym:0,gyms:[true],loadout:{gun:null,melee:null,head:null,body:null,legs:null},edu:{done:{},cur:null,prog:{}},brawl:{wins:0,losses:0,n:0,last:null,pz:{w:0,l:0,t:0}},daily:{last:'',streak:0},bandKit:0,rent:{},rentTot:0,mb:{},shop:{},shopBuys:{},visits:{},focus:{},beat:null,god:null,cont:[],contNext:0,hosp:null,lib:{bought:0,card:false},intel:0,books:{},bookCd:{},medCd:{},drug:{until:0,tox:0,at:0},misV:2,
  ach:{done:{}},mer:{lv:{}},mv:3,stay:{},profile:{bio:'',motto:'',title:'',skin:2,shirt:0,acc:0,pins:[],id:1000+Math.floor(Math.random()*9000),since:480},
  stats:{shifts:0,gathered:0,sales:0,sold:0,bought:0,meals:0,earned:0,spentCash:0,tax:0,donated:0,contracts:0,meds:0,admits:0,rent:0,trained:0,gear:0,crafted:0,bails:0,taught:0,deals:0,mbuys:0},
@@ -774,7 +822,7 @@ function ensure(st){if(!st.misV){if(st.mis>=15)st.mis++;st.misV=1}if(st.hosp===u
  for(const k in JOBS){if(!st.skills[k])st.skills[k]={lvl:1,xp:0};if(st.tools[k]===undefined)st.tools[k]=0}
  if(!st.edu.prog)st.edu.prog={};COURSES.forEach(c=>{if(st.edu.done[c.id])st.edu.prog[c.id]=c.mods.length;else if(st.edu.prog[c.id]>=c.mods.length)st.edu.done[c.id]=true});
  if(st.edu.cur&&st.edu.cur.mod===undefined){st.edu.cur.mod=st.edu.prog[st.edu.cur.id]||0}
- if(!st.brawl.pz)st.brawl.pz={w:0,l:0,t:0};if(st.brawl.n===undefined)st.brawl.n=(st.brawl.wins||0)+(st.brawl.losses||0);if(st.bandKit===undefined)st.bandKit=0;if(!st.daily)st.daily={last:'',streak:0};if(!st.rent)st.rent={};if(!st.rentTot)st.rentTot=0;if(!st.mb)st.mb={};
+ if(!st.brawl.pz)st.brawl.pz={w:0,l:0,t:0};if(st.crime&&!st.crime.by)st.crime.by={};if(st.brawl.n===undefined)st.brawl.n=(st.brawl.wins||0)+(st.brawl.losses||0);if(st.bandKit===undefined)st.bandKit=0;if(!st.daily)st.daily={last:'',streak:0};if(!st.rent)st.rent={};if(!st.rentTot)st.rentTot=0;if(!st.mb)st.mb={};
  if(st.misV<2){const OLD=['welcome','sell','eat','skill','roof','slot','tool','gear','deal','loadout','punch','gym','books','trade','brawler','aid','prize','dig','biz','street','pick','first','bail','teach'];const cur=OLD[st.mis];st.mis=cur?Math.max(0,MISSIONS.findIndex(m=>m.id===cur)):MISSIONS.length;st.misV=2}
  let sh=st.shop;if(!sh||SHOPS.some(s=>!sh[s.id]||!sh[s.id].items))restock(st,true);
  return st}
@@ -1039,15 +1087,15 @@ function setPath(id){const P=S.paths;if(!P.unlocked[id]||P.active===id)return;
  if(id!=='gather')P.used=true;P.active=id;const n=PATHS.find(p=>p.id===id).n;addLog('Perk chosen: '+n+'.');toast('Active perk: '+n+(fee?'. Fee '+fmt(fee):''))}
 
 const CRIMES=[
- {id:'pick',eff:3,fee:4000,lvl:0,n:'Pickpocketing',flav:'Work the busy streets and lift whatever you can from careless pockets.',ce:0,gain:1,period:6,phase:.15,fail:[5,15],base:30,
+ {id:'pick',eff:3,fee:2000,lvl:0,n:'Pickpocketing',flav:'Work the busy streets and lift whatever you can from careless pockets.',ce:0,gain:1,period:6,phase:.15,fail:[5,15],base:30,
   cash:[40,24000,60000],items:[['phone',35],['buds',15],['wallet',10]],events:[['A passer-by shouted for help',0],['A police patrol rolled past',30]]},
- {id:'junk',eff:3,fee:10000,lvl:0,n:'Junkyard search',flav:'Dig through wrecked cars and skips for cash and spare parts.',ce:10,gain:2,period:5,phase:0,fail:[8,20],base:35,
+ {id:'junk',eff:3,fee:5000,lvl:0,n:'Junkyard search',flav:'Dig through wrecked cars and skips for cash and spare parts.',ce:10,gain:2,period:5,phase:0,fail:[8,20],base:35,
   cash:[60,40000,100000],items:[['battery',25],['wallet',10],['clamp',5]],events:[['A security guard spotted you',0],['A police patrol rolled past',30]]},
- {id:'shop',eff:4,fee:50000,lvl:15,n:'Stock-room raid',flav:'Slip into the back of a shop after closing and take what you can carry.',ce:60,gain:3,period:7,phase:.3,fail:[10,25],base:45,
+ {id:'shop',eff:4,fee:25000,lvl:15,n:'Stock-room raid',flav:'Slip into the back of a shop after closing and take what you can carry.',ce:60,gain:3,period:7,phase:.3,fail:[10,25],base:45,
   cash:[55,60000,150000],items:[['watch',25],['laptop',14],['clock',6]],events:[['Security caught you',15],['The police arrived',30],['A fight broke out',45]]},
- {id:'run',eff:5,fee:75000,lvl:0,n:'Contraband run',flav:'Move a package across town for people who do not ask questions.',ce:150,gain:4,period:9,phase:.45,fail:[12,30],base:50,
+ {id:'run',eff:5,fee:37500,lvl:0,n:'Contraband run',flav:'Move a package across town for people who do not ask questions.',ce:150,gain:4,period:9,phase:.45,fail:[12,30],base:50,
   cash:[40,80000,200000],items:[['pills',30],['powder',20],['stash',10]],events:[['A rival crew ambushed you',30],['The police arrived',45]]},
- {id:'heist',eff:5,fee:100000,lvl:25,n:'Jewellery heist',flav:'A planned job on a high-street jeweller. Big rewards and serious consequences.',ce:300,gain:6,period:11,phase:.6,fail:[15,35],base:60,
+ {id:'heist',eff:5,fee:50000,lvl:25,n:'Jewellery heist',flav:'A planned job on a high-street jeweller. Big rewards and serious consequences.',ce:300,gain:6,period:11,phase:.6,fail:[15,35],base:60,
   cash:[50,120000,300000],items:[['chain',25],['ring',17],['painting',8]],events:[['Armed security responded',30],['The police arrived',45],['You were assaulted',60]]}];
 const crimeRate=(c,t)=>Math.min(95,Math.max(30,Math.round(15+80*(0.5+0.5*Math.sin(2*Math.PI*(t/(c.period*60)+c.phase))))+mer('street')));
 const CRIME_STEPS=[[10,'Junkyard search'],[20,'Burglar rank'],[60,'Stock-room raid'],[120,'Heist crew rank'],[150,'Contraband run'],[300,'Jewellery heist']],crimeNext=ce=>CRIME_STEPS.find(s=>ce<s[0])||null;
@@ -1067,7 +1115,7 @@ function crimeAct(id){const c=CRIMES.find(x=>x.id===id);
  if(Math.random()*100<rate){let r=Math.random()*100,got=null;for(const [i,ch] of c.items){if(r<ch){got=i;break}r-=ch}
   let v=ri(c.cash[1]/100,c.cash[2]/100)*100;if(!got)v=Math.max(v,ri(c.cash[1]/100,c.cash[2]/100)*100);gain(v);
   if(got){S.inv[got]=(S.inv[got]||0)+1;txt='Success. You took '+fmt(v)+' in cash and a '+ITEMS[got].n+' worth '+fmt(ITEMS[got].base)+'.';rr=rarityOf(got)}else txt='Success. You took '+fmt(v)+' in cash.'
-  S.crime.ce+=c.gain;S.crime.wins++;{const nx=crimeNext(S.crime.ce);txt+=' +'+c.gain+' crime XP ('+S.crime.ce+(nx?' / '+nx[0]:' max')+').'}S.crime.last={ok:true,t:txt}}
+  S.crime.ce+=c.gain;S.crime.wins++;if(!S.crime.by)S.crime.by={};S.crime.by[c.id]=(S.crime.by[c.id]||0)+1;{const nx=crimeNext(S.crime.ce);txt+=' +'+c.gain+' crime XP ('+S.crime.ce+(nx?' / '+nx[0]:' max')+').'}S.crime.last={ok:true,t:txt}}
  else{const loss=ri(c.fail[0],c.fail[1]);if(S.life-loss<=0){S.life=1;hospitalise(1,'Badly hurt on a job')}else S.life-=loss;S.crime.fails++;const ev=c.events[ri(0,c.events.length-1)];
   txt='Failed. '+ev[0]+'. You lost '+loss+' life.';
   if(Math.random()<0.10-mer('clean')*0.01){const m=Math.min(120,c.base+ev[1]);S.jail.until=S.t+m;S.jail.reason=ev[0];S.jail.mins=m;S.jail.price=bailCost(m);txt+=' You were arrested: '+gm(m)+' in jail.'}
@@ -1122,7 +1170,7 @@ function refreshWork(){document.querySelectorAll('.wmax').forEach(e=>{const id=e
 function setT(id,v){const e=document.getElementById(id);if(e&&e.textContent!==v)e.textContent=v}
 function renderHeader(){
  const pl=plevel(S.spent),b=hb(),c=cap(),ml=maxLife(),m=S.hunger>70?1.25:1,left=(15-S.t%15)/S.speed*60;
- setT('hName',S.name);{const hb=$('#hBeat');if(hb)hb.hidden=!(S.beat&&titleOf()!=='The Beater');const hr=$('#hRank');if(hr)hr.classList.toggle('gold',titleOf()==='The Beater')}setT('hRank',titleOf());setT('hDay',fmtT(S.t)+' · '+phaseOf((S.t/60)%24)+' · '+H().n);$('#hBehind').hidden=!S.behind;$('#hJail').hidden=!jailed();
+ setT('hName',S.name);{const hb=$('#hBeat');if(hb)hb.hidden=!(S.beat&&titleOf()!=='The Beater');const hr=$('#hRank');if(hr)hr.classList.toggle('gold',titleOf()==='The Beater');hr.classList.toggle('beta',titleOf()==='Beta Tester')}setT('hRank',titleOf());setT('hDay',fmtT(S.t)+' · '+phaseOf((S.t/60)%24)+' · '+H().n);$('#hBehind').hidden=!S.behind;$('#hJail').hidden=!jailed();
  setT('hEf',Math.floor(S.effort)+' / '+effCap());$('#hEfF').style.width=Math.min(100,S.effort/effCap()*100)+'%';setT('hEfS',S.effort>effCap()?'Bonus effort above your cap':S.effort>=effCap()?'Full':'+'+(+effortGain().toFixed(2))+' in '+mm((5-S.t%5)/S.speed*60));
  setT('hEn',Math.floor(S.energy)+' / '+c);$('#hEnF').style.width=Math.min(100,S.energy/c*100)+'%';
  setT('hEnS',S.energy>c?'Bonus energy. It will not regenerate until it drops below '+c:S.energy>=c?'Full':'+'+Math.round(5*m*(1+b.regen))+' in '+mm(left)+(cdLeft()>0?' · cooldown '+mm(cdLeft()):''));
@@ -1300,7 +1348,7 @@ function crimeCard(c){
  <div class="sec">If you succeed</div><div class="tblwrap"><table class="tbl"><tbody>${rows}</tbody></table></div>
  <div class="small muted">Failing costs ${c.fail[0]} to ${c.fail[1]} life and has a 10% chance of jail.</div>
  <div class="btns">${locked?`<span class="chip warn">Needs ${c.ce} crime experience (you have ${S.crime.ce})</span>`:`<button class="btn pri" data-act="crime" data-id="${c.id}">Attempt (${c.eff} effort, ${fmt(c.fee)})</button>`}</div></div></section>`}
-function tabCrime(){const h=pageHead('Crime','Criminal jobs cost 3 to 5 Effort, a preparation fee ($40 to $1,000) and '+CRIME_LIFE+' life or more. Crime experience from successful jobs unlocks the junkyard search at 10, the stock-room raid at 60, the contraband run at 150 and the heist at 300. Success rates rise and fall on a fixed schedule but never drop below 30%. Every success pays cash, and some also drop a bonus item. Loot from here can only be found by criminals or bought on the Market.');
+function tabCrime(){const h=pageHead('Crime','Criminal jobs cost 3 to 5 Effort, a preparation fee ($20 to $500) and '+CRIME_LIFE+' life or more. Crime experience from successful jobs unlocks the junkyard search at 10, the stock-room raid at 60, the contraband run at 150 and the heist at 300. Success rates rise and fall on a fixed schedule but never drop below 30%. Every success pays cash, and some also drop a bonus item. Loot from here can only be found by criminals or bought on the Market.');
  if(!S.paths.unlocked.criminal)return h+`<section class="panel"><h2>Locked</h2><div class="body"><p class="muted">Reach level 10 and finish the mission "Word on the street" to open the Criminal path.</p></div></section>`;
  if(S.paths.active!=='criminal')return h+`<section class="panel"><h2>Not your active path</h2><div class="body"><p class="muted">Make Criminal your active perk to take criminal jobs.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="paths">Open Paths</button></div></div></section>`;
 const prevS=(CRIME_STEPS.slice().reverse().find(s=>s[0]<=S.crime.ce)||[0])[0],nx=crimeNext(S.crime.ce),pc=nx?Math.max(0,Math.min(100,(S.crime.ce-prevS)/(nx[0]-prevS)*100)):100;
@@ -1314,7 +1362,7 @@ function tabJail(){
  return pageHead('Jail','Failed criminal jobs can end here. Sentences run from 30 minutes to 2 hours, and bail runs from $5,000 to $20,000 to match. You can also bail out other prisoners.')+
  `<section class="panel"><h2>Your status</h2>${me}</section><section class="panel"><h2>Prisoners</h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Prisoner</th><th class="num">Time left</th><th class="num">Sentence</th><th class="num">Bail</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="muted">The cells are empty.</td></tr>'}</tbody></table></div><div class="body"><p class="small muted">${S.paths.active==='enf'?'Your Enforcer contacts cut bail by 25%. ':''}Bailing out a prisoner earns crime experience if you have unlocked the Criminal path. These prisoners are stand-ins until other players join.</p></div></section>`}
 function tabBounties(){const h=pageHead('Enforcer','Hunt wanted criminals for bounties, or take a patrol shift to guard local businesses. Hunts cost '+BOUNTY_ENERGY+' energy and use your loadout and gym stats.');
- if(!S.paths.unlocked.enf)return h+`<section class="panel"><h2>Locked</h2><div class="body"><p class="muted">Reach level 15 and win 10 brawls to unlock the Enforcer path.</p></div></section>`;
+ if(!S.paths.unlocked.enf)return h+`<section class="panel"><h2>Locked</h2><div class="body"><p class="muted">Reach level 15 and win 50 brawls to unlock the Enforcer path.</p></div></section>`;
  if(S.paths.active!=='enf')return h+`<section class="panel"><h2>Not your active path</h2><div class="body"><p class="muted">Make Enforcer your active path to hunt bounties.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="paths">Open Paths</button></div></div></section>`;
  const rows=BOUNTIES.map(b=>{const cd=(S.enf.cd[b.id]||0)-S.t;return `<tr><td>${b.n}<small>${b.hp} health, hits for ${b.lo} to ${b.hi}</small></td><td class="num">${fmt(bCash(b))}</td><td class="num">${cd>0?'Back in '+gm(cd):'Ready'}</td><td class="num"><button class="btn sm ${cd>0?'':'pri'}" data-act="bounty" data-id="${b.id}">Hunt (${BOUNTY_ENERGY} energy)</button></td></tr>`}).join('');
  const l=S.enf.last;
@@ -1330,7 +1378,7 @@ const ACH=[
  {id:'s250',t:'m',n:'Steady hands',d:'Work 250 gathering shifts.',g:250,v:()=>S.stats.shifts},
  {id:'g1500',t:'m',n:'Full sacks',d:'Gather 1,500 items.',g:1500,v:()=>S.stats.gathered},
  {id:'so100',t:'m',n:'Open for business',d:'Sell 100 items.',g:100,v:()=>S.stats.sold},
- {id:'e50k',t:'m',n:'Pocket money',d:'Earn $50,000 in total.',g:$k(5000000)/100,v:()=>S.stats.earned/100,f:fmt0},
+ {id:'e50k',t:'m',n:'Pocket money',d:'Earn $50,000 in total.',g:50000,v:()=>S.stats.earned/100,f:fmt0},
  {id:'t500',t:'m',n:'Regular',d:'Spend 500 energy in the gym.',g:500,v:()=>S.stats.trained},
  {id:'c25',t:'m',n:'Apprentice maker',d:'Craft 25 times in the workshop.',g:25,v:()=>S.stats.crafted},
  {id:'l15',t:'m',n:'Making a name',d:'Reach player level 15.',g:15,v:PL},
@@ -1350,25 +1398,25 @@ const ACH=[
  {id:'cr100',t:'h',n:'Career criminal',d:'Succeed at 100 criminal jobs.',g:100,v:()=>S.crime.wins},
  {id:'en60',t:'h',n:'Bounty hunter',d:'Collect 60 bounties.',g:60,v:()=>S.enf.wins},
  {id:'sk10',t:'h',n:'Master of all trades',d:'Reach level 10 in mining, farming and foraging.',g:10,v:minSk},
- {id:'t5k',t:'h',n:'Gym rat',d:'Spend 5,000 energy in the gym.',g:5000,v:()=>S.stats.trained},
+ {id:'t5k',t:'h',n:'Gym rat',d:'Spend 1,500 energy in the gym.',g:1500,v:()=>S.stats.trained},
  {id:'tax',t:'h',n:'Civic duty',d:'Pay $25,000 in market tax.',g:25000,v:()=>S.stats.tax/100,f:fmt0},
  {id:'cash250',t:'h',n:'Nest egg',d:'Hold $250,000 in cash at once.',g:250000,v:()=>S.money/100,f:fmt0},
  {id:'c200',t:'h',n:'Master craftsman',d:'Craft 200 times in the workshop.',g:200,v:()=>S.stats.crafted},
- {id:'edall',t:'h',n:'Graduate',d:'Finish every course.',g:COURSES.length,v:()=>Object.keys(S.edu.done).length},
+ {id:'edall',t:'o',n:'Graduate',d:'Finish every course.',g:COURSES.length,v:()=>Object.keys(S.edu.done).length},
  {id:'home3',t:'h',n:'Landlord',d:'Own 3 different homes.',g:3,v:()=>Object.keys(S.owned).length},
- {id:'s3k',t:'o',n:'Iron constitution',d:'Work 3,000 gathering shifts.',g:3000,v:()=>S.stats.shifts},
+ {id:'s3k',t:'o',n:'Iron constitution',d:'Work 2,000 gathering shifts.',g:2000,v:()=>S.stats.shifts},
  {id:'l40',t:'o',n:'City legend',d:'Reach player level 40.',g:40,v:PL},
  {id:'e5m',t:'o',n:'Tycoon',d:'Earn $5,000,000 in total.',g:5000000,v:()=>S.stats.earned/100,f:fmt0},
  {id:'so5k',t:'o',n:'Trade baron',d:'Sell 5,000 items.',g:5000,v:()=>S.stats.sold},
  {id:'b300',t:'o',n:'Undefeated',d:'Win 300 brawls.',g:300,v:()=>S.brawl.wins},
  {id:'cr400',t:'o',n:'Kingpin',d:'Succeed at 400 criminal jobs.',g:400,v:()=>S.crime.wins},
  {id:'en200',t:'o',n:'Lawman',d:'Collect 200 bounties.',g:200,v:()=>S.enf.wins},
- {id:'t20k',t:'o',n:'Peak condition',d:'Spend 20,000 energy in the gym.',g:20000,v:()=>S.stats.trained},
+ {id:'t20k',t:'o',n:'Peak condition',d:'Spend 5,000 energy in the gym.',g:5000,v:()=>S.stats.trained},
  {id:'cash2m',t:'o',n:'Old money',d:'Hold $2,000,000 in cash at once.',g:2000000,v:()=>S.money/100,f:fmt0},
  {id:'estate',t:'o',n:'Lord of the manor',d:'Own the Estate.',g:1,v:()=>S.owned.estate?1:0},
  {id:'bail10',t:'m',n:'Friend in need',d:'Bail out 10 prisoners.',g:10,v:()=>S.stats.bails},
  {id:'bail50',t:'h',n:'Bail bondsman',d:'Bail out 50 prisoners.',g:50,v:()=>S.stats.bails},
- {id:'bail150',t:'o',n:'Get out of jail free',d:'Bail out 150 prisoners.',g:150,v:()=>S.stats.bails},
+ {id:'bail150',t:'o',n:'Get out of jail free',d:'Bail out 100 prisoners.',g:100,v:()=>S.stats.bails},
  {id:'don10k',t:'m',n:'Kind heart',d:'Donate $10,000 to the Ledger Foundation.',g:10000,v:()=>(S.stats.donated||0)/100,f:fmt0},
  {id:'don100k',t:'h',n:'Pillar of the community',d:'Donate $100,000 to the Ledger Foundation.',g:100000,v:()=>(S.stats.donated||0)/100,f:fmt0},
  {id:'don1m',t:'o',n:'Philanthropist',d:'Donate $1,000,000 to the Ledger Foundation.',g:1000000,v:()=>(S.stats.donated||0)/100,f:fmt0},
@@ -1615,7 +1663,8 @@ const SKINS=['#f1c9a5','#e0ac82','#c8a07c','#a97c57','#7c5538','#5a3a26'],SHIRTS
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function netWorth(){let v=S.money;for(const i in S.inv)v+=S.inv[i]*S.mk.price[i];for(const l of S.mk.listings)v+=(l.qty-l.sold)*S.mk.price[l.item];for(const o of S.mk.orders)v+=o.price*(o.qty-o.got);
  for(const h in S.owned)v+=Math.round(HOMES.find(x=>x.id===h).price*.9);for(const s in S.loadout)if(S.loadout[s])v+=S.mk.price[S.loadout[s]];return v}
-function titleOf(){const t=S.profile.title;if(t==='beater'&&S.beat)return 'The Beater';if(t&&S.ach.done[t]){const a=ACH.find(x=>x.id===t);if(a)return a.n}return rankOf(plevel(S.spent).L)}
+const betaOK=()=>plevel(S.spent).L>=20;
+function titleOf(){const t=S.profile.title;if(t==='beta'&&betaOK())return 'Beta Tester';if(t==='beater'&&S.beat)return 'The Beater';if(t&&S.ach.done[t]){const a=ACH.find(x=>x.id===t);if(a)return a.n}return rankOf(plevel(S.spent).L)}
 function pfInput(t){const p=S.profile;
  if(t.id==='pfName'){S.name=t.value.replace(/[<>]/g,'').slice(0,20).trim()||'Newcomer';const e=$('#pfNameShow');if(e)e.textContent=S.name;return true}
  if(t.id==='pfBio'){p.bio=t.value.slice(0,140);const e=$('#pfBioShow');if(e)e.textContent=p.bio||'No bio yet.';return true}
@@ -1632,7 +1681,7 @@ function pfPanel(view,ctx){const{p,pl,st,b,done,pins,fav,pathN,bw,bl,rate,jl}=ct
  <section class="panel"><h2>Career</h2><div class="body">${kv([['Gathering shifts',st.shifts],['Items gathered',st.gathered],['Items sold',st.sold],['Items bought',st.bought],['Market tax paid',fmt(st.tax)],['Items crafted',st.crafted],['Meals eaten',st.meals],['Gym energy spent',st.trained],['Courses finished',Object.keys(S.edu.done).length+' of '+COURSES.length]])}</div></section></div>`}
  if(view==='badges'){const tiers=[['t-o','Honor'],['t-h','Hard'],['t-m','Merit']];
   return `<section class="panel"><h2><span>Badges</span><span class="chip">${done.length} of ${ACH.length}</span></h2><div class="body"><div class="track"><i class="f xp" style="width:${Math.round(done.length/ACH.length*100)}%"></i></div><p class="small muted">Click a badge to pin it to your profile (up to 3) or click it again to unpin. Bronze is Merit, silver is Hard and gold is Honor.</p><div class="pins">${done.length?done.map(a=>badge(a,p.pins.includes(a.id),true)).join(''):'<span class="small muted">No badges yet. Open the Achievements tab to see what you can earn.</span>'}</div><div class="btns"><button class="btn sm" data-act="tab" data-tab="ach">See everything you can earn</button></div></div></section>`}
- if(view==='edit'){const titles=['<option value="">'+rankOf(pl.L)+' (rank)</option>'].concat(S.beat?['<option value="beater" '+(p.title==='beater'?'selected':'')+'>The Beater</option>']:[],done.map(a=>`<option value="${a.id}" ${p.title===a.id?'selected':''}>${esc(a.n)}</option>`)).join('');
+ if(view==='edit'){const titles=['<option value="">'+rankOf(pl.L)+' (rank)</option>'].concat(S.beat?['<option value="beater" '+(p.title==='beater'?'selected':'')+'>The Beater</option>']:[],betaOK()?['<option value="beta" '+(p.title==='beta'?'selected':'')+'>Beta Tester (reached level 20)</option>']:[],done.map(a=>`<option value="${a.id}" ${p.title===a.id?'selected':''}>${esc(a.n)}</option>`)).join('');
   const sw=(k,arr,cur)=>arr.map((c,i)=>`<button class="swatch ${cur===i?'on':''}" style="background:${c}" data-act="pf" data-k="${k}" data-v="${i}" aria-label="${k} ${i+1}"></button>`).join('');
   return `<div class="grid2"><section class="panel"><h2>About you</h2><div class="body">
   <div class="fld" style="max-width:none"><label for="pfName" class="lbl">Display name (20 max)</label><input id="pfName" type="text" maxlength="20" value="${esc(S.name)}" autocomplete="off"></div>
@@ -1659,7 +1708,7 @@ function tabProfile(){const p=S.profile,pl=plevel(S.spent),acc=ACCENTS[p.acc]||A
  return pageHead('Profile','Your public face in Ledger City: who you are, what you have built and what you have earned.')+
  `<section class="panel pfcard" style="--acc:${acc}"><div class="pfban"></div><div class="body">
   <div class="pfhead"><div class="pfav">${figure(S.loadout)}</div>
-  <div class="pfinfo"><h3 id="pfNameShow" class="${S.beat?'gold':''}">${esc(S.name)}</h3><div class="btns"><span class="chip pfti ${S.beat?'gold':''}">${S.beat?'&#9733; ':''}${esc(titleOf())}</span>${titleOf()!==rankOf(pl.L)?'<span class="chip">'+esc(rankOf(pl.L))+'</span>':''}<span class="chip ${jl?'warn':'ok'}">${jl?'In jail':'Free'}</span>${S.paths.active?'<span class="chip">'+esc(pathN)+'</span>':''}</div>
+  <div class="pfinfo"><h3 id="pfNameShow" class="${S.beat?'gold':''}">${esc(S.name)}</h3><div class="btns"><span class="chip pfti ${S.beat?'gold':''}${titleOf()==='Beta Tester'?' beta':''}">${S.beat?'&#9733; ':''}${esc(titleOf())}</span>${titleOf()!==rankOf(pl.L)?'<span class="chip">'+esc(rankOf(pl.L))+'</span>':''}<span class="chip ${jl?'warn':'ok'}">${jl?'In jail':'Free'}</span>${S.paths.active?'<span class="chip">'+esc(pathN)+'</span>':''}</div>
   <div class="pfmotto" id="pfMottoShow">${p.motto?'"'+esc(p.motto)+'"':''}</div><p class="pfbio" id="pfBioShow">${p.bio?esc(p.bio):'No bio yet. Add one in Customise.'}</p>
   <div class="small muted">Citizen #${p.id} · Arrived ${fmtT(p.since)} · ${Math.floor((S.t-p.since)/1440)+1} days in the city</div></div>
   <div class="pfring">${pfRing(pl)}<div class="small muted">${pl.need-pl.cur} energy to next level</div></div></div>
@@ -1777,6 +1826,8 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
+ ['64',['12 new missions that walk you through the criminal path (crime experience 20, 100, 200, plus the Junkyard search, Stock-room raid, Contraband run and Jewellery heist) and the Enforcer path (unlock, switch, bounties, patrol). Each pays $2,000 and 30 energy','Players who had finished every mission get the new ones','The Enforcer tab now correctly says you need 50 brawl wins']],
+ ['63',['Achievements: Gym rat is now 1,500 gym energy, Peak condition 5,000, Iron constitution 2,000 shifts, Get out of jail free 100 prisoners, and Graduate is now an Honor','Fixed Pocket money, which secretly needed $5,000,000 instead of $50,000','New optional rank: Beta Tester, white and shiny, unlocked at level 20. Pick it in your Profile under Title','Crime preparation fees are 50% cheaper']],
  ['62',['Missions: the Teaching course is no longer a mission. Teaching stays optional','Crime pays double. Every successful job now always pays cash, with a higher minimum, and some jobs also drop a bonus item. When no item drops the cash is likely to be bigger','Crime success chance never drops below 30%']],
  ['61',['Books: reading cooldowns are halved. Book 1 is 15 min, book 2 gives +5 Intelligence with a 25 min cooldown, book 3 gives +10 with a 45 min cooldown','Intelligence milestones are now 30, 150 and 300. The day membership card unlocks at 30','Crime: Pickpocketing is now the starter job (cheaper, lowest pay) and the Junkyard search unlocks at 10 crime experience','New Criminal skill bar on the Crime tab, and every successful job now shows the crime XP you earned']],
  ['60',['New book reader chip at the top right: shows when you can read again with a progress bar, and one click reads your best available book without opening the library','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay in a lighter form so integrated GPUs are not maxed out','Admin: hospital and drug tools']],
