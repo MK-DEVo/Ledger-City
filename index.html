@@ -463,7 +463,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='61',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='62',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -746,12 +746,8 @@ const MISSIONS=[
  {id:'bail',t:'A friend in need',reward:{cash:160000,energy:20},
   body:`The Jail tab lists inmates you can bail out for a fee. It earns you no crime experience, but it is a nice favour and it counts towards achievements.`,
   steps:()=>[['Save enough for bail (a short sentence costs about $5,000)',S.money>=5000*100||S.stats.bails>=1,MK],['Bail out an inmate in the Jail tab',S.stats.bails>=1,['jail','Open Jail']]],
-  bar:()=>[Math.min(1,S.stats.bails),1,'Prisoners bailed'],cond:()=>S.stats.bails>=1},
- {id:'teach',t:'Class is in session',reward:{cash:200000,energy:30},
-  body:`Business teacher is the best paying job in the city. It needs player level 15, Business Basics and Teaching. Students\' grades decide the pay: bad, mid or great.`,
-  steps:()=>[['Finish the 8 Teaching modules',!!S.edu.done.teach,['education','Open Education']],['Reach level 15',plevel(S.spent).L>=15,J],['Teach a class in the Jobs tab',S.stats.taught>=1,J]],
-  tip:()=>S.stats.taught>=1?'':'Each class costs '+JOBS.teacher.cost+' effort, so fill your effort bar first.',
-  bar:()=>[Math.min(1,S.stats.taught),1,'Classes taught'],cond:()=>S.stats.taught>=1}];
+  bar:()=>[Math.min(1,S.stats.bails),1,'Prisoners bailed'],cond:()=>S.stats.bails>=1}];
+
 
 function initMarket(st){st.mk={bk:1,price:{},book:{},listings:[],orders:[],seq:1,stock:{},dem:{},sup:{},ev:[]};for(const id in ITEMS){const bk=ITEMS[id].book;st.mk.price[id]=Math.round(ITEMS[id].base*(bk?1.6:1));st.mk.stock[id]=bk?Math.round(eqOf(id)/1.8):eqOf(id);st.mk.dem[id]=1;st.mk.sup[id]=1}refreshBooks(st)}
 function refreshBooks(st){for(const id in ITEMS){const x=ITEMS[id],p=st.mk.price[id];
@@ -1044,16 +1040,16 @@ function setPath(id){const P=S.paths;if(!P.unlocked[id]||P.active===id)return;
 
 const CRIMES=[
  {id:'pick',eff:3,fee:4000,lvl:0,n:'Pickpocketing',flav:'Work the busy streets and lift whatever you can from careless pockets.',ce:0,gain:1,period:6,phase:.15,fail:[5,15],base:30,
-  cash:[40,8000,30000],items:[['phone',35],['buds',15],['wallet',10]],events:[['A passer-by shouted for help',0],['A police patrol rolled past',30]]},
+  cash:[40,24000,60000],items:[['phone',35],['buds',15],['wallet',10]],events:[['A passer-by shouted for help',0],['A police patrol rolled past',30]]},
  {id:'junk',eff:3,fee:10000,lvl:0,n:'Junkyard search',flav:'Dig through wrecked cars and skips for cash and spare parts.',ce:10,gain:2,period:5,phase:0,fail:[8,20],base:35,
-  cash:[60,5000,50000],items:[['battery',25],['wallet',10],['clamp',5]],events:[['A security guard spotted you',0],['A police patrol rolled past',30]]},
+  cash:[60,40000,100000],items:[['battery',25],['wallet',10],['clamp',5]],events:[['A security guard spotted you',0],['A police patrol rolled past',30]]},
  {id:'shop',eff:4,fee:50000,lvl:15,n:'Stock-room raid',flav:'Slip into the back of a shop after closing and take what you can carry.',ce:60,gain:3,period:7,phase:.3,fail:[10,25],base:45,
-  cash:[55,25000,75000],items:[['watch',25],['laptop',14],['clock',6]],events:[['Security caught you',15],['The police arrived',30],['A fight broke out',45]]},
+  cash:[55,60000,150000],items:[['watch',25],['laptop',14],['clock',6]],events:[['Security caught you',15],['The police arrived',30],['A fight broke out',45]]},
  {id:'run',eff:5,fee:75000,lvl:0,n:'Contraband run',flav:'Move a package across town for people who do not ask questions.',ce:150,gain:4,period:9,phase:.45,fail:[12,30],base:50,
-  cash:[40,30000,100000],items:[['pills',30],['powder',20],['stash',10]],events:[['A rival crew ambushed you',30],['The police arrived',45]]},
+  cash:[40,80000,200000],items:[['pills',30],['powder',20],['stash',10]],events:[['A rival crew ambushed you',30],['The police arrived',45]]},
  {id:'heist',eff:5,fee:100000,lvl:25,n:'Jewellery heist',flav:'A planned job on a high-street jeweller. Big rewards and serious consequences.',ce:300,gain:6,period:11,phase:.6,fail:[15,35],base:60,
-  cash:[50,50000,150000],items:[['chain',25],['ring',17],['painting',8]],events:[['Armed security responded',30],['The police arrived',45],['You were assaulted',60]]}];
-const crimeRate=(c,t)=>Math.min(95,Math.round(15+80*(0.5+0.5*Math.sin(2*Math.PI*(t/(c.period*60)+c.phase))))+mer('street'));
+  cash:[50,120000,300000],items:[['chain',25],['ring',17],['painting',8]],events:[['Armed security responded',30],['The police arrived',45],['You were assaulted',60]]}];
+const crimeRate=(c,t)=>Math.min(95,Math.max(30,Math.round(15+80*(0.5+0.5*Math.sin(2*Math.PI*(t/(c.period*60)+c.phase))))+mer('street')));
 const CRIME_STEPS=[[10,'Junkyard search'],[20,'Burglar rank'],[60,'Stock-room raid'],[120,'Heist crew rank'],[150,'Contraband run'],[300,'Jewellery heist']],crimeNext=ce=>CRIME_STEPS.find(s=>ce<s[0])||null;
 const critTitle=ce=>ce>=120?'Heist crew':ce>=20?'Burglar':'Petty thief';
 const bailCost=m=>Math.round((5000+(m-30)*(15000/90))*100);
@@ -1068,9 +1064,9 @@ function crimeAct(id){const c=CRIMES.find(x=>x.id===id);
  if(S.effort<c.eff)return toast(c.n+' costs '+c.eff+' effort.','bad');
  if(S.money<c.fee)return toast('Preparing for '+c.n+' costs '+fmt(c.fee)+'.','bad');
  const L0=plevel(S.spent).L;S.effort-=c.eff;S.spent+=c.eff*2;pay(c.fee);const rate=crimeRate(c,S.t);let txt,rr='';
- if(Math.random()*100<rate){let r=Math.random()*100;
-  if(r<c.cash[0]){const v=ri(c.cash[1]/100,c.cash[2]/100)*100;gain(v);txt='Success. You found '+fmt(v)+' in cash.'}
-  else{r-=c.cash[0];let got=null;for(const [i,ch] of c.items){if(r<ch){got=i;break}r-=ch}got=got||c.items[0][0];S.inv[got]=(S.inv[got]||0)+1;txt='Success. You found a '+ITEMS[got].n+' worth '+fmt(ITEMS[got].base)+'.';rr=rarityOf(got)}
+ if(Math.random()*100<rate){let r=Math.random()*100,got=null;for(const [i,ch] of c.items){if(r<ch){got=i;break}r-=ch}
+  let v=ri(c.cash[1]/100,c.cash[2]/100)*100;if(!got)v=Math.max(v,ri(c.cash[1]/100,c.cash[2]/100)*100);gain(v);
+  if(got){S.inv[got]=(S.inv[got]||0)+1;txt='Success. You took '+fmt(v)+' in cash and a '+ITEMS[got].n+' worth '+fmt(ITEMS[got].base)+'.';rr=rarityOf(got)}else txt='Success. You took '+fmt(v)+' in cash.'
   S.crime.ce+=c.gain;S.crime.wins++;{const nx=crimeNext(S.crime.ce);txt+=' +'+c.gain+' crime XP ('+S.crime.ce+(nx?' / '+nx[0]:' max')+').'}S.crime.last={ok:true,t:txt}}
  else{const loss=ri(c.fail[0],c.fail[1]);if(S.life-loss<=0){S.life=1;hospitalise(1,'Badly hurt on a job')}else S.life-=loss;S.crime.fails++;const ev=c.events[ri(0,c.events.length-1)];
   txt='Failed. '+ev[0]+'. You lost '+loss+' life.';
@@ -1297,14 +1293,14 @@ function tabPaths(){return pageHead('Paths and perks','Your perk decides what wo
 function crimeCard(c){
  const rate=crimeRate(c,S.t),fc=[...Array(12)].map((_,i)=>crimeRate(c,S.t+i*60)),mx=Math.max(...fc),bi=fc.indexOf(mx),locked=S.crime.ce<c.ce;
  const bars=fc.map((v,i)=>`<i style="flex:1;display:block;border-radius:2px;height:${v*0.4}px;background:${i===0?'var(--brass)':v>=70?'var(--good)':v<=35?'var(--bad)':'var(--muted)'}" title="${v}%"></i>`).join('');
- const rows=[`<tr><td>Cash ${fmt(c.cash[1])} to ${fmt(c.cash[2])}</td><td class="num">${c.cash[0]}%</td></tr>`].concat(c.items.map(([i,ch])=>`<tr><td>${sw(i)}${ITEMS[i].n} (${fmt(ITEMS[i].base)})</td><td class="num">${ch}%</td></tr>`)).join('');
+ const itp=c.items.reduce((a,x)=>a+x[1],0),rows=[`<tr><td>Cash ${fmt(c.cash[1])} to ${fmt(c.cash[2])} <small>every success. Bigger when no item drops</small></td><td class="num">100%</td></tr>`].concat(c.items.map(([i,ch])=>`<tr><td>${sw(i)}${ITEMS[i].n} (${fmt(ITEMS[i].base)}) <small>bonus drop</small></td><td class="num">${ch}%</td></tr>`)).join('');
  return `<section class="panel"><h2><span>${c.n}</span><span class="chip">${c.eff} effort · ${fmt(c.fee)}</span></h2><div class="body"><p class="muted">${c.flav}</p>
  <div class="row"><span>Success chance now</span><b>${rate}%</b></div><div class="row"><span>Preparation cost (paid even if you fail)</span><b>${fmt(c.fee)}</b></div>
  <div><div class="fcb" style="display:flex;gap:3px;align-items:flex-end;height:40px">${bars}</div><div class="small muted">Next 12 hours. ${bi===0?'Odds are at their best right now.':'Best odds in '+bi+' h ('+mx+'%).'}</div></div>
  <div class="sec">If you succeed</div><div class="tblwrap"><table class="tbl"><tbody>${rows}</tbody></table></div>
  <div class="small muted">Failing costs ${c.fail[0]} to ${c.fail[1]} life and has a 10% chance of jail.</div>
  <div class="btns">${locked?`<span class="chip warn">Needs ${c.ce} crime experience (you have ${S.crime.ce})</span>`:`<button class="btn pri" data-act="crime" data-id="${c.id}">Attempt (${c.eff} effort, ${fmt(c.fee)})</button>`}</div></div></section>`}
-function tabCrime(){const h=pageHead('Crime','Criminal jobs cost 3 to 5 Effort, a preparation fee ($40 to $1,000) and '+CRIME_LIFE+' life or more. Crime experience from successful jobs unlocks the junkyard search at 10, the stock-room raid at 60, the contraband run at 150 and the heist at 300. Success rates rise and fall on a fixed schedule, so check the forecast. Loot from here can only be found by criminals or bought on the Market.');
+function tabCrime(){const h=pageHead('Crime','Criminal jobs cost 3 to 5 Effort, a preparation fee ($40 to $1,000) and '+CRIME_LIFE+' life or more. Crime experience from successful jobs unlocks the junkyard search at 10, the stock-room raid at 60, the contraband run at 150 and the heist at 300. Success rates rise and fall on a fixed schedule but never drop below 30%. Every success pays cash, and some also drop a bonus item. Loot from here can only be found by criminals or bought on the Market.');
  if(!S.paths.unlocked.criminal)return h+`<section class="panel"><h2>Locked</h2><div class="body"><p class="muted">Reach level 10 and finish the mission "Word on the street" to open the Criminal path.</p></div></section>`;
  if(S.paths.active!=='criminal')return h+`<section class="panel"><h2>Not your active path</h2><div class="body"><p class="muted">Make Criminal your active perk to take criminal jobs.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="paths">Open Paths</button></div></div></section>`;
 const prevS=(CRIME_STEPS.slice().reverse().find(s=>s[0]<=S.crime.ce)||[0])[0],nx=crimeNext(S.crime.ce),pc=nx?Math.max(0,Math.min(100,(S.crime.ce-prevS)/(nx[0]-prevS)*100)):100;
@@ -1781,6 +1777,7 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
+ ['62',['Missions: the Teaching course is no longer a mission. Teaching stays optional','Crime pays double. Every successful job now always pays cash, with a higher minimum, and some jobs also drop a bonus item. When no item drops the cash is likely to be bigger','Crime success chance never drops below 30%']],
  ['61',['Books: reading cooldowns are halved. Book 1 is 15 min, book 2 gives +5 Intelligence with a 25 min cooldown, book 3 gives +10 with a 45 min cooldown','Intelligence milestones are now 30, 150 and 300. The day membership card unlocks at 30','Crime: Pickpocketing is now the starter job (cheaper, lowest pay) and the Junkyard search unlocks at 10 crime experience','New Criminal skill bar on the Crime tab, and every successful job now shows the crime XP you earned']],
  ['60',['New book reader chip at the top right: shows when you can read again with a progress bar, and one click reads your best available book without opening the library','New daily reward on the Home tab: claim once per real day, bigger with a streak up to day 7','Performance: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay in a lighter form so integrated GPUs are not maxed out','Admin: hospital and drug tools']],
  ['59',['Homes: buying a home no longer moves you in. Choose Move in, or list it in the new Rentals tab and collect rent from tenants every midnight','Brawl overhaul: Take cover is gone. Dodge avoids the next hit 4 times in 5, and Bandage heals 10 using a bandage from the new Bandages slot in your Loadout','Nine named fighters in the prize pools ($100, $500 and $1,000), each with their own look, armour and weapons. Pools get tougher as you go up','Five new missions: Market regular, Fight night, Public Library, Earn a merit and Landlord, so there is always something to aim at before level 15','Job skills after level 4 level up faster: 45, 50, 55, 60 then 65 shifts for levels 5 to 9 (about 335 shifts to level 10 instead of 550). The last two tools of Farming and Foraging are 20% cheaper','Fixed the Work max count not updating as your effort refills','Performance fix: progress bars and the drifting skyline are now still, while the see-through panels and the golden sparkle stay (the blur behind panels is removed) so integrated GPUs are not maxed out'],'The Big Update'],
