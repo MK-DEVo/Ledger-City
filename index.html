@@ -420,6 +420,14 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 .rdchip[hidden]{display:none}
 @media(max-width:700px){.rdchip{order:5}}
 .chip.beta{color:#14181d;font-weight:700;border-color:#fff;background:linear-gradient(115deg,#ffffff 0%,#dfe8f2 30%,#ffffff 48%,#c9d6e4 70%,#ffffff 100%);box-shadow:0 0 10px rgba(255,255,255,.6),inset 0 1px 0 #fff;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+.sidem{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0 16px}
+.sdot{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:var(--fg);cursor:pointer;font:inherit;width:88px}
+.sdot i{font:700 18px var(--ui);font-style:normal;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bar);border:2px solid var(--brass);color:var(--brass)}
+.sdot.lock i{border-color:var(--line);color:var(--muted);font-size:12px}.sdot.rdy i{background:var(--brass);color:var(--ink)}
+.sdot span{font:600 13px var(--ui)}.sdot small{font-size:11px;color:var(--muted)}
+.sdtxt{display:flex;flex-direction:column;font-size:12px;color:var(--muted);flex:1;min-width:160px}.sdtxt b{color:var(--fg);font-size:13px}
+.mtabs{margin-bottom:12px}
+#nav button[data-tab="missions"] .nl{color:var(--brass);font-weight:700}#nav button[data-tab="missions"] .ni{color:var(--brass)}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
  <div><div class="nm"><b id="hName">Newcomer</b><span class="chip" id="hRank"></span><span class="chip bt" id="hBeat" hidden>&#9733; The Beater</span><button class="chip godchip" id="hGod" data-act="godoff" hidden title="Click to turn god mode off">GOD MODE</button><span class="chip warn" id="hBehind" hidden>Behind on rent</span><span class="chip warn" id="hJail" hidden>In jail</span><button class="chip" id="hCd" data-act="cdlist" hidden title="Items that cannot be used again yet">Cooldowns</button><button class="chip warn" id="hHosp" data-act="tab" data-tab="hospital" hidden>In hospital</button></div><div class="sub" id="hDay"></div></div>
@@ -464,7 +472,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='65',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='66',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -782,19 +790,78 @@ const MISSIONS=[
   steps:()=>[['Have '+fmt(SWITCH_FEE)+' for the switch fee',S.money>=SWITCH_FEE||S.paths.active==='enf',CT],['Choose Enforcer as your active path',S.paths.active==='enf',PAT]],
   bar:()=>[S.paths.active==='enf'?1:0,1],cond:()=>S.paths.active==='enf'},
  {id:'bnt1',t:'First bounty',reward:{cash:200000,energy:30},
-  body:()=>`The Enforcer tab lists wanted criminals. A hunt costs ${BOUNTY_ENERGY} energy and uses your loadout and gym stats in a fight. Start with the Street thug.`,
+  body:()=>`The Enforcer tab lists wanted criminals. A hunt is a turn-based fight, like Brawl, and costs ${BOUNTY_ENERGY} energy. Start with a mid-level target such as Rico Salt.`,
   steps:()=>[['Have '+BOUNTY_ENERGY+' energy and 50 life',S.energy>=BOUNTY_ENERGY&&S.life>=50||S.enf.wins>=1,ENT],['Collect a bounty',S.enf.wins>=1,ENT]],
-  tip:()=>S.enf.wins>=1?'':'Equip a weapon and some armour first. If you lose, you are knocked out and go to hospital.',
+  tip:()=>S.enf.wins>=1?'':'Equip a weapon, armour and bandages first. If you lose, you are knocked out and go to hospital.',
   bar:()=>[Math.min(1,S.enf.wins),1,'Bounties collected'],cond:()=>S.enf.wins>=1},
  {id:'ptl',t:'Walk the beat',reward:{cash:200000,energy:30},
-  body:`Patrol shifts are the safe way to earn as an Enforcer. They cost 4 effort and pay steady cash, with a chance of finding handcuffs.`,
+  body:`Patrol shifts are the safe way to earn as an Enforcer. They cost 2 effort and pay $300 to $800, with a chance of finding handcuffs.`,
   steps:()=>[['Take a patrol shift in the Enforcer tab',S.enf.shifts>=1,ENT]],
   bar:()=>[Math.min(1,S.enf.shifts),1,'Shifts worked'],cond:()=>S.enf.shifts>=1},
  {id:'bnt5',t:'Bounty hunter',reward:{cash:200000,energy:30},
-  body:`Collect five bounties in total. Bigger targets like the Gang enforcer pay far more, but they hit harder and hide longer after you catch them.`,
-  steps:()=>[['Collect 5 bounties ('+Math.min(5,S.enf.wins)+' of 5)',S.enf.wins>=5,ENT]],
-  tip:()=>'Each target hides for a while after you catch it, so rotate between them.',
-  bar:()=>[Math.min(5,S.enf.wins),5,'Bounties collected'],cond:()=>S.enf.wins>=5}];
+  body:`Collect ten bounties in total. Each target hides for a while after you catch it, so rotate between them.`,
+  steps:()=>[['Collect 10 bounties ('+Math.min(10,S.enf.wins)+' of 10)',S.enf.wins>=10,ENT]],
+  tip:()=>'Mid-level targets come back every 2 hours, high-level every 6 and crime bosses every 10.',
+  bar:()=>[Math.min(10,S.enf.wins),10,'Bounties collected'],cond:()=>S.enf.wins>=10},
+ {id:'bnt_high',t:'Step up',reward:{cash:200000,energy:30},
+  body:`The high-level criminals hit harder and wear armour, but they pay $5,000 to $10,000. Catch one.`,
+  steps:()=>[['Catch a high-level criminal',((S.enf.tier||{}).high||0)+((S.enf.tier||{}).boss||0)>=1,ENT]],
+  tip:()=>'Bring bandages and a good weapon. Dodge when it winds up a haymaker.',
+  bar:()=>[Math.min(1,((S.enf.tier||{}).high||0)+((S.enf.tier||{}).boss||0)),1,'High-level catches'],cond:()=>((S.enf.tier||{}).high||0)+((S.enf.tier||{}).boss||0)>=1},
+ {id:'ptl10',t:'Regular rounds',reward:{cash:200000,energy:30},
+  body:`Steady work builds a name. Take ten patrol shifts.`,
+  steps:()=>[['Work 10 patrol shifts ('+Math.min(10,S.enf.shifts)+' of 10)',S.enf.shifts>=10,ENT]],
+  bar:()=>[Math.min(10,S.enf.shifts),10,'Shifts worked'],cond:()=>S.enf.shifts>=10},
+ {id:'bnt_boss',t:'Crime boss',reward:{cash:200000,energy:30},
+  body:`The crime bosses are the top of the wanted board. They pay $10,000 to $15,000 and come back after 10 hours.`,
+  steps:()=>[['Catch a crime boss',((S.enf.tier||{}).boss||0)>=1,ENT]],
+  tip:()=>'Bosses are tough. Level up your gym stats and wear full armour first.',
+  bar:()=>[Math.min(1,(S.enf.tier||{}).boss||0),1,'Bosses caught'],cond:()=>((S.enf.tier||{}).boss||0)>=1},
+ {id:'bnt25',t:'Top hunter',reward:{cash:200000,energy:30},
+  body:`Collect 25 bounties in total to prove you are the best hunter in the city.`,
+  steps:()=>[['Collect 25 bounties ('+Math.min(25,S.enf.wins)+' of 25)',S.enf.wins>=25,ENT]],
+  bar:()=>[Math.min(25,S.enf.wins),25,'Bounties collected'],cond:()=>S.enf.wins>=25},
+ {id:'cw25',t:'Career criminal',reward:{cash:200000,energy:30},
+  body:`Keep pulling jobs. Pull off 25 successful jobs in total.`,
+  steps:()=>[['Succeed at 25 criminal jobs ('+Math.min(25,S.crime.wins)+' of 25)',S.crime.wins>=25,CRT]],
+  bar:()=>[Math.min(25,S.crime.wins),25,'Jobs pulled off'],cond:()=>S.crime.wins>=25},
+ {id:'cw100',t:'Legend of the underworld',reward:{cash:200000,energy:30},
+  body:`One hundred successful jobs. Not many make it that far without a record.`,
+  steps:()=>[['Succeed at 100 criminal jobs ('+Math.min(100,S.crime.wins)+' of 100)',S.crime.wins>=100,CRT]],
+  bar:()=>[Math.min(100,S.crime.wins),100,'Jobs pulled off'],cond:()=>S.crime.wins>=100},
+ {id:'l20',t:'Rising name',reward:{cash:200000,energy:30},
+  body:`Keep working, fighting and trading. Level 20 also earns the Beta Tester title, which you can pick in your profile.`,
+  steps:()=>[['Reach player level 20',plevel(S.spent).L>=20,J]],
+  tip:()=>plevel(S.spent).L>=20?'':'About '+shiftsTo(20)+' more shifts, or train and fight to level up faster.',
+  bar:lvlBar(20),cond:()=>plevel(S.spent).L>=20},
+ {id:'nw250',t:'Quarter of a million',reward:{cash:200000,energy:30},
+  body:`Net worth counts your cash, items, market orders and listings. Grow it to $250,000.`,
+  steps:()=>[['Reach a net worth of $250,000',netWorth()>=25000000,MK]],
+  bar:()=>[Math.min(Math.floor(netWorth()/100),250000),250000,'Net worth ($)'],cond:()=>netWorth()>=25000000},
+ {id:'l25',t:'Veteran',reward:{cash:200000,energy:30},
+  body:`Level 25 puts you among the best-known names in Ledger City.`,
+  steps:()=>[['Reach player level 25',plevel(S.spent).L>=25,J]],
+  tip:()=>plevel(S.spent).L>=25?'':'About '+shiftsTo(25)+' more shifts, or train and fight to level up faster.',
+  bar:lvlBar(25),cond:()=>plevel(S.spent).L>=25},
+ {id:'ach15',t:'Collector',reward:{cash:200000,energy:30},
+  body:`Achievements record what you have done in the city. Unlock fifteen of them.`,
+  steps:()=>[['Unlock 15 achievements ('+Math.min(15,achDone())+' of 15)',achDone()>=15,ACHT]],
+  bar:()=>[Math.min(15,achDone()),15,'Achievements'],cond:()=>achDone()>=15},
+ {id:'nw1m',t:'Millionaire',reward:{cash:200000,energy:30},
+  body:`Grow your net worth to $1,000,000.`,
+  steps:()=>[['Reach a net worth of $1,000,000',netWorth()>=100000000,MK]],
+  bar:()=>[Math.min(Math.floor(netWorth()/100),1000000),1000000,'Net worth ($)'],cond:()=>netWorth()>=100000000}];
+const TRK={main:{n:'Main',ids:MISSIONS.slice(0,MISSIONS.findIndex(m=>m.id==='street')+1).map(m=>m.id).concat(['l20','nw250','l25','ach15','nw1m'])},
+ crime:{n:'Crime',ids:['pick','first','bail','ce20','c_junk','c_shop','ce100','c_run','ce200','c_heist','cw25','cw100']},
+ enf:{n:'Enforcer',ids:['enfu','enfp','bnt1','ptl','bnt5','bnt_high','ptl10','bnt_boss','bnt25']}};
+const TRKL={};for(const k in TRK)TRKL[k]=TRK[k].ids.map(id=>MISSIONS.find(m=>m.id===id));
+const MTOT=Object.keys(TRK).reduce((a,k)=>a+TRK[k].ids.length,0);
+const trkN=k=>(S&&S.mt&&S.mt[k])||0;
+const trkCur=k=>{const n=trkN(k);return n<TRKL[k].length?TRKL[k][n]:null};
+const trkSum=()=>Object.keys(TRK).reduce((a,k)=>a+trkN(k),0);
+const trkOpen=k=>k==='main'||(k==='crime'?!!S.paths.unlocked.criminal||trkN('main')>=TRK.main.ids.indexOf('street')+1:plevel(S.spent).L>=15);
+const allCur=()=>Object.keys(TRK).filter(trkOpen).map(k=>({k,m:trkCur(k)})).filter(x=>x.m);
+function curM(){const a=allCur();return a.find(x=>x.m.cond())||a[0]||null}
 
 
 ['sell','skill','gear','gym','brawler','prize','dig','biz','first','c_ce100'].forEach(id=>{const m=MISSIONS.find(x=>x.id===id||x.id==='ce100'&&id==='c_ce100');if(m)m.reward.effort=10});
@@ -809,7 +876,7 @@ function restock(st,first){if(!st.shop)st.shop={};SHOPS.forEach(sh=>{let cur=st.
   const inn=absent.slice(0,k);cur=cur.filter(i=>!out.includes(i)).concat(inn);while(cur.length<sh.show){const o=sh.items.find(i=>!cur.includes(i));if(!o)break;cur.push(o)}}
  const items={};sh.items.filter(i=>cur.includes(i)).forEach(i=>items[i]={n:ri(80,300),off:ri(...(sh.off||[10,40]))});st.shop[sh.id]={items}})}
 function fresh(){const st={v:2,name:'Newcomer',t:480,real:Date.now(),speed:20,money:5000,energy:100,hunger:100,life:100,effort:25,spent:0,
- skills:{farming:{lvl:1,xp:0},foraging:{lvl:1,xp:0},mining:{lvl:1,xp:0},teacher:{lvl:1,xp:0}},tools:{farming:0,foraging:0,mining:0,teacher:0},inv:{},home:'room',owned:{},behind:false,mis:0,foodSlot:null,eCool:0,paths:{unlocked:{gather:true,criminal:false,entre:false,enf:false},active:'gather',used:false},crime:{ce:0,wins:0,fails:0,last:null,by:{}},jail:{until:0,reason:'',mins:0,price:0,inmates:[],seq:1},enf:{cd:{},last:null,wins:0,shifts:0},
+ skills:{farming:{lvl:1,xp:0},foraging:{lvl:1,xp:0},mining:{lvl:1,xp:0},teacher:{lvl:1,xp:0}},tools:{farming:0,foraging:0,mining:0,teacher:0},inv:{},home:'room',owned:{},behind:false,mis:0,foodSlot:null,eCool:0,paths:{unlocked:{gather:true,criminal:false,entre:false,enf:false},active:'gather',used:false},crime:{ce:0,wins:0,fails:0,last:null,by:{}},jail:{until:0,reason:'',mins:0,price:0,inmates:[],seq:1},enf:{tier:{mid:0,high:0,boss:0},cd:{},last:null,wins:0,shifts:0},
  bs:{str:10,def:10,spd:10,dex:10},gym:0,gyms:[true],loadout:{gun:null,melee:null,head:null,body:null,legs:null},edu:{done:{},cur:null,prog:{}},brawl:{wins:0,losses:0,n:0,last:null,pz:{w:0,l:0,t:0}},daily:{last:'',streak:0},bandKit:0,rent:{},rentTot:0,mb:{},shop:{},shopBuys:{},visits:{},focus:{},beat:null,god:null,cont:[],contNext:0,hosp:null,lib:{bought:0,card:false},intel:0,books:{},bookCd:{},medCd:{},drug:{until:0,tox:0,at:0},misV:2,
  ach:{done:{}},mer:{lv:{}},mv:3,stay:{},profile:{bio:'',motto:'',title:'',skin:2,shirt:0,acc:0,pins:[],id:1000+Math.floor(Math.random()*9000),since:480},
  stats:{shifts:0,gathered:0,sales:0,sold:0,bought:0,meals:0,earned:0,spentCash:0,tax:0,donated:0,contracts:0,meds:0,admits:0,rent:0,trained:0,gear:0,crafted:0,bails:0,taught:0,deals:0,mbuys:0},
@@ -825,6 +892,8 @@ function ensure(st){if(!st.misV){if(st.mis>=15)st.mis++;st.misV=1}if(st.hosp===u
  if(st.edu.cur&&st.edu.cur.mod===undefined){st.edu.cur.mod=st.edu.prog[st.edu.cur.id]||0}
  if(!st.brawl.pz)st.brawl.pz={w:0,l:0,t:0};if(st.crime&&!st.crime.by)st.crime.by={};if(st.brawl.n===undefined)st.brawl.n=(st.brawl.wins||0)+(st.brawl.losses||0);if(st.bandKit===undefined)st.bandKit=0;if(!st.daily)st.daily={last:'',streak:0};if(!st.rent)st.rent={};if(!st.rentTot)st.rentTot=0;if(!st.mb)st.mb={};
  if(st.misV<2){const OLD=['welcome','sell','eat','skill','roof','slot','tool','gear','deal','loadout','punch','gym','books','trade','brawler','aid','prize','dig','biz','street','pick','first','bail','teach'];const cur=OLD[st.mis];st.mis=cur?Math.max(0,MISSIONS.findIndex(m=>m.id===cur)):MISSIONS.length;st.misV=2}
+ if(!st.mt){const dn=new Set(MISSIONS.slice(0,Math.max(0,Math.min(st.mis||0,MISSIONS.length))).map(m=>m.id));st.mt={};for(const k in TRK){let n=0;while(n<TRK[k].ids.length&&dn.has(TRK[k].ids[n]))n++;st.mt[k]=n}st.mis=st.mt.main+st.mt.crime+st.mt.enf}
+ if(st.enf&&!st.enf.tier)st.enf.tier={mid:0,high:0,boss:0};
  let sh=st.shop;if(!sh||SHOPS.some(s=>!sh[s.id]||!sh[s.id].items))restock(st,true);
  return st}
 let S;
@@ -1041,9 +1110,9 @@ function stepTime(mins){const target=S.t+mins;
 
 /* missions */
 const rw=r=>(r.cash?fmt(r.cash)+(r.energy||r.effort?' + ':''):'')+(r.energy?r.energy+' energy':'')+(r.effort?(r.cash||r.energy?' + ':'')+r.effort+' effort':'');
-function claim(){if(S.mis>=MISSIONS.length)return;const m=MISSIONS[S.mis];if(!m.cond())return;gain(m.reward.cash);if(m.reward.energy)S.energy+=m.reward.energy;if(m.reward.effort)S.effort+=m.reward.effort;
- if(m.unlock){S.paths.unlocked[m.unlock]=true;toast('New path unlocked: '+PATHS.find(p=>p.id===m.unlock).n)}S.mis++;addLog('Mission complete: '+m.t+'. Reward '+rw(m.reward)+'.');toast('Mission complete. '+rw(m.reward),'gold');fxFlash('level');
- if(S.mis===5)toast('You know the basics. It is up to you to decide your path.')}
+function claim(k){k=k||'main';const m=trkCur(k);if(!m||!trkOpen(k)||!m.cond())return;gain(m.reward.cash);if(m.reward.energy)S.energy+=m.reward.energy;if(m.reward.effort)S.effort+=m.reward.effort;
+ if(m.unlock){S.paths.unlocked[m.unlock]=true;toast('New path unlocked: '+PATHS.find(p=>p.id===m.unlock).n)}S.mt=S.mt||{};S.mt[k]=trkN(k)+1;S.mis=trkSum();addLog('Mission complete: '+m.t+'. Reward '+rw(m.reward)+'.');toast('Mission complete. '+rw(m.reward),'gold');fxFlash('level');
+ if(k==='main'&&trkN('main')===5)toast('You know the basics. It is up to you to decide your path.')}
 
 /* hospital, medkits and drugs */
 const HOSP=[null,{n:'Section 1',mins:20,why:'Ran out of life'},{n:'Section 2',mins:40,why:'Overdose'},{n:'Section 3',mins:80,why:'Severe overdose'}];
@@ -1053,7 +1122,7 @@ function hospitalise(sec,why){const h=HOSP[sec];S.hosp={sec,why:why||h.why,from:
  addLog('Admitted to hospital ('+h.n+'): '+S.hosp.why+'.');toast('Admitted to hospital: '+S.hosp.why+'. '+h.mins+' minutes. Medkits shorten the stay.','bad');ui.dirty=true}
 function discharge(){if(!S.hosp)return;S.life=Math.max(S.life,Math.round(maxLife()*.5));S.hosp=null;addLog('Discharged from hospital.');toast('You have been discharged from hospital.');ui.dirty=true}
 function useMed(id){const x=ITEMS[id],m=x.med;if(!m||!S.inv[id])return;const cd=S.medCd[id]||0;if(cd>S.t)return toast(x.n+' is on cooldown for '+gm(cd-S.t)+'.','bad');
- const inH=hospitalised(),tut=MISSIONS[S.mis]&&MISSIONS[S.mis].id==='aid';
+ const inH=hospitalised(),tut=(trkCur('main')||{}).id==='aid';
  if(!inH&&S.life>=maxLife()&&!tut)return toast('Your life is full and you are not in hospital. Save it for when you need it.','bad');
  takeInv(id,1);S.medCd[id]=S.t+m.cd;S.stats.meds++;const heal=Math.round(maxLife()*m.pct/100);S.life=Math.min(maxLife(),S.life+heal);const bits=['+'+heal+' life'];
  if(inH){const cut=Math.min(m.cut,S.hosp.until-S.t);S.hosp.until-=m.cut;bits.push('-'+cut+' min in hospital');if(S.hosp.until<=S.t)discharge()}
@@ -1133,7 +1202,20 @@ function bailSelf(){if(!jailed())return;const p=bailPrice(S.jail.price);if(S.mon
 function bailOut(id){const i=S.jail.inmates.findIndex(x=>x.id===id);if(i<0)return;const m=S.jail.inmates[i],p=bailPrice(m.price);
  if(S.money<p)return toast('Bail costs '+fmt(p)+'.','bad');pay(p);S.jail.inmates.splice(i,1);S.stats.bails++;addLog('Bailed out '+m.name+' for '+fmt(p)+'.');toast('Bailed out '+m.name+'. That is '+S.stats.bails+' so far.')}
 
-const BOUNTIES=[{id:'thug',n:'Street thug',hp:80,lo:3,hi:7,ph:.55,cash:150000,cd:60},{id:'gang',n:'Gang enforcer',hp:150,lo:6,hi:12,ph:.6,cash:400000,cd:90},{id:'boss',n:'Crime boss',hp:260,lo:10,hi:20,ph:.65,cash:1000000,cd:120}];
+const BOUNTIES=[
+ {id:'b1',tier:'mid',n:'Rico Salt',skin:1,shirt:7,hp:130,atk:1.0,arm:.04,g:{head:'cap',body:'hoodie',melee:'bat'},cash:100000,cd:120,bio:'Runs numbers for a small crew.'},
+ {id:'b2',tier:'mid',n:'Jonas Pike',skin:3,shirt:3,hp:145,atk:1.08,arm:.06,g:{body:'jacket',melee:'knife'},cash:200000,cd:120,bio:'Skipped bail twice.'},
+ {id:'b3',tier:'mid',n:'Dex Morrow',skin:5,shirt:2,hp:158,atk:1.16,arm:.08,g:{head:'cap',body:'jacket',legs:'combat',melee:'knife'},cash:350000,cd:120,bio:'Fast hands, loud mouth.'},
+ {id:'b4',tier:'mid',n:'Lena Ward',skin:2,shirt:5,hp:172,atk:1.24,arm:.1,g:{head:'hardhat',body:'vest',melee:'bat'},cash:500000,cd:120,bio:'Called Knuckles for a reason.'},
+ {id:'h1',tier:'high',n:'Silas Crane',skin:0,shirt:1,hp:195,atk:1.32,arm:.12,g:{head:'helmet',body:'vest',melee:'knife'},cash:500000,cd:360,bio:'Ex-security turned enforcer for hire.'},
+ {id:'h2',tier:'high',n:'Tomas Reyes',skin:4,shirt:6,hp:212,atk:1.4,arm:.15,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete'},cash:650000,cd:360,bio:'Collects debts with a machete.'},
+ {id:'h3',tier:'high',n:'Ivo Brandt',skin:1,shirt:0,hp:230,atk:1.5,arm:.17,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete'},cash:800000,cd:360,bio:'Runs the docks after dark.'},
+ {id:'h4',tier:'high',n:'Nadia Volkov',skin:2,shirt:4,hp:248,atk:1.6,arm:.2,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete',gun:'shotgun'},cash:1000000,cd:360,bio:'Never seen without her shotgun.'},
+ {id:'c1',tier:'boss',n:'The Butcher',skin:5,shirt:2,hp:270,atk:1.68,arm:.22,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete'},cash:1000000,cd:600,bio:'Crime boss of the meat market.'},
+ {id:'c2',tier:'boss',n:'Oskar Dray',skin:0,shirt:7,hp:290,atk:1.76,arm:.24,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete',gun:'shotgun'},cash:1150000,cd:600,bio:'Owns three clubs and a few cops.'},
+ {id:'c3',tier:'boss',n:'Madame Iron',skin:3,shirt:5,hp:310,atk:1.84,arm:.26,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete',gun:'shotgun'},cash:1300000,cd:600,bio:'Nobody has seen her lose.'},
+ {id:'c4',tier:'boss',n:'King Harlan',skin:4,shirt:0,hp:335,atk:1.95,arm:.28,g:{head:'helmet',body:'vest',legs:'combat',melee:'machete',gun:'shotgun'},cash:1500000,cd:600,bio:'The top name on the wanted board.'}];
+const BTIERS=[['mid','Mid-level criminals'],['high','High-level criminals'],['boss','Crime bosses']];
 function duel(mode,tg,maxR){const w=weaponFor(mode),b=bsEff(),pr=prot()/100,hit=clamp(.7+(b.dex-10)/(b.dex+100)*.5,.5,.95),extra=clamp((b.spd-10)/(b.spd+40),0,.5);
  let hp=tg.hp,dealt=0,took=0,r=0;
  while(r<maxR&&hp>0&&S.life>0){r++;const acts=1+(Math.random()<extra?1:0);
@@ -1141,19 +1223,18 @@ function duel(mode,tg,maxR){const w=weaponFor(mode),b=bsEff(),pr=prot()/100,hit=
   if(hp>0&&Math.random()<tg.ph){const x=(tg.lo+Math.random()*(tg.hi-tg.lo))*(1-pr)*(1-b.def/(b.def+200));S.life=Math.max(0,S.life-x);took+=x}}
  return{res:hp<=0?'win':S.life<=0?'loss':'draw',r,dealt:Math.round(dealt),took:Math.round(took),w:w.n}}
 const bCash=b=>Math.round(b.cash*(1+mer('bounty')*0.05));
-function bounty(id){const b=BOUNTIES.find(x=>x.id===id);
+function bounty(id){const b=BOUNTIES.find(x=>x.id===id);if(!b)return;
  if(S.paths.active!=='enf')return toast('Set Enforcer as your active path first.','bad');if(hospBlock())return;if(jailed())return toast('You are in jail.','bad');
+ if(ui.fight&&!ui.fight.over)return toast('Finish your current fight first.','bad');
  if((S.enf.cd[id]||0)>S.t)return toast(b.n+' is lying low for '+gm(S.enf.cd[id]-S.t)+'.','bad');
  if(S.life<50)return toast('You need 50 life or more. Use a bandage or rest.','bad');if(S.energy<BOUNTY_ENERGY)return toast('A bounty hunt costs '+BOUNTY_ENERGY+' energy.','bad');
- const L0=plevel(S.spent).L;S.energy-=BOUNTY_ENERGY;S.spent+=BOUNTY_ENERGY;const o=duel('auto',b,40);
- let loot=null;if(o.res==='win'){gain(bCash(b));S.enf.cd[id]=S.t+b.cd;S.enf.wins++;loot=enfLoot(b)}if(o.res==='loss'){S.life=Math.max(1,maxLife()*.25);hospitalise(1,'Knocked out by a bounty')}
- S.enf.last=Object.assign(o,{n:b.n,cash:o.res==='win'?bCash(b):0});
- const m=o.res==='win'?'Caught the '+b.n+'. Bounty '+fmt(bCash(b))+'.'+(loot?' You also seized a '+ITEMS[loot].n+'.':''):o.res==='loss'?'The '+b.n+' knocked you out.':'The '+b.n+' got away.';
- addLog('Bounty: '+m);toast(m,o.res==='win'?'':'bad');levelCheck(L0)}
-const ENFLOOT={thug:[.5,[['cuffs',70],['radio',30]]],gang:[.65,[['radio',50],['cuffs',30],['crate',20]]],boss:[.85,[['crate',60],['radio',25],['cuffs',15]]]};
-function enfLoot(b){const L=ENFLOOT[b.id];if(!L||Math.random()>=L[0])return null;let r=Math.random()*100;for(const [i,w] of L[1]){if(r<w){S.inv[i]=(S.inv[i]||0)+1;return i}r-=w}return null}
+ const L0=plevel(S.spent).L;S.energy-=BOUNTY_ENERGY;S.spent+=BOUNTY_ENERGY;levelCheck(L0);
+ const eh=npcHp(b),g=S.loadout.gun;
+ ui.fight={r:1,php:Math.min(S.life,maxLife()),pmax:maxLife(),ehp:eh,emax:eh,prize:null,npc:b,bnt:b,ds:npcAtk(b),arm:b.arm||0,name:b.n,ammo:g?(FIRE[g]||[5,10])[1]:0,buff:1,intent:rollIntent(),log:[],over:false,res:null,dealt:0,took:0,fx:null}}
+const ENFLOOT={mid:[.5,[['cuffs',70],['radio',30]]],high:[.65,[['radio',50],['cuffs',30],['crate',20]]],boss:[.85,[['crate',60],['radio',25],['cuffs',15]]]};
+function enfLoot(b){const L=ENFLOOT[b.tier];if(!L||Math.random()>=L[0])return null;let r=Math.random()*100;for(const [i,w] of L[1]){if(r<w){S.inv[i]=(S.inv[i]||0)+1;return i}r-=w}return null}
 function patrol(){if(S.paths.active!=='enf')return toast('Set Enforcer as your active path first.','bad');if(hospBlock())return;if(jailed())return toast('You are in jail.','bad');
- if(S.effort<4)return toast('A patrol shift costs 4 effort.','bad');S.effort-=4;S.spent+=8;const c=ri(200,400)*100;gain(c);S.enf.shifts++;let it2=null;if(Math.random()<.2){it2='cuffs';S.inv.cuffs=(S.inv.cuffs||0)+1}addLog('Patrol shift paid '+fmt(c)+'.');toast('Patrol shift paid '+fmt(c)+(it2?' and you found a pair of handcuffs.':''))}
+ if(S.effort<2)return toast('A patrol shift costs 2 effort.','bad');S.effort-=2;S.spent+=4;const c=ri(300,800)*100;gain(c);S.enf.shifts++;let it2=null;if(Math.random()<.2){it2='cuffs';S.inv.cuffs=(S.inv.cuffs||0)+1}addLog('Patrol shift paid '+fmt(c)+'.');toast('Patrol shift paid '+fmt(c)+(it2?' and you found a pair of handcuffs.':''))}
 
 
 /* render helpers */
@@ -1185,30 +1266,34 @@ function renderHeader(){
 function groups(){const P=S.paths.unlocked,law=[];if(P.criminal)law.push(['crime','Crime']);if(P.enf)law.push(['bounties','Enforcer']);law.push(['jail','Jail']);
  return [['',[['home','Home'],['guide','How to play'],['profile','Profile'],['settings','Settings']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]]].concat(law.length?[['Crime and law',law]]:[],[['Living',[['housing','Housing'],['paths','Paths'],['ach','Achievements'],['charity','Charity'],['hospital','Hospital'],['library','Library']]]])}
 function navFocus(){const n=$('#nav'),o=n&&n.querySelector('.on');if(o&&innerWidth<=860)n.scrollTo({left:Math.max(0,o.offsetLeft-60)})}
-function renderNav(){const ms=S.mis<MISSIONS.length?MISSIONS[S.mis]:null,done=ms&&ms.cond();
+function renderNav(){const cm=curM(),ms=cm?cm.m:null,done=ms&&ms.cond();
  $('#nav').innerHTML=groups().map(([g,items])=>(g?`<div class="ng">${g}</div>`:'')+items.map(([k,l])=>
  `<button class="${ui.tab===k?'on':''}" data-act="tab" data-tab="${k}">${l}${k==='home'&&done?'<i class="dot"></i>':(ms&&!done&&mTabs(ms).includes(k)&&ui.tab!==k?'<span class="tgt">Mission</span>':'')}</button>`).join('')).join('');navFocus()}
 const mStep=m=>{const st=m.steps(),i=st.findIndex(x=>!x[1]);return{st,i}};
 const mTabs=m=>{const o=mStep(m);return o.i<0?[]:o.st[o.i].slice(2).map(a=>a[0])};
 const mText=v=>typeof v==='function'?v():v;
-function missionPanel(){
- if(S.mis>=MISSIONS.length)return `<section class="panel"><h2><span>Missions</span><span class="chip">${MISSIONS.length} of ${MISSIONS.length}</span></h2><div class="body"><h3>All missions complete</h3><p class="muted">You know the city. More missions will arrive with new features.</p></div></section>`;
- const m=MISSIONS[S.mis],done=m.cond(),{st,i}=mStep(m),b=m.bar?m.bar():null,tip=m.tip?m.tip():'';
+function missionPanel(k){k=k||'main';const T=TRK[k],L=TRKL[k],n=trkN(k);
+ if(n>=L.length)return `<section class="panel"><h2><span>${T.n} missions</span><span class="chip">${L.length} of ${L.length}</span></h2><div class="body"><h3>All ${T.n.toLowerCase()} missions complete</h3><p class="muted">More missions will arrive with new features.</p></div></section>`;
+ const m=L[n],done=m.cond(),{st,i}=mStep(m),b=m.bar?m.bar():null,tip=m.tip?m.tip():'';
  const pct=b?Math.max(0,Math.min(100,Math.round(b[0]/b[1]*100))):0;
- const steps=st.map((x,k)=>{const cur=k===i,acts=cur?x.slice(2).map((a,n)=>`<button class="btn ${n?'':'pri'} sm" data-act="tab" data-tab="${a[0]}">${a[1]}</button>`).join(''):'';
-  return `<li class="${x[1]?'done':cur?'cur':''}"><i class="ck">${x[1]?'&#10003;':k+1}</i><div><span>${x[0]}</span>${acts?`<div class="btns">${acts}</div>`:''}</div></li>`}).join('');
- const list=MISSIONS.map((q,k)=>`<li class="${k<S.mis?'done':k===S.mis?'cur':''}"><i class="ck">${k<S.mis?'&#10003;':k+1}</i><span>${k<=S.mis?q.t:'Locked'}</span><em>${k<S.mis?'Claimed':rw(q.reward)}</em></li>`).join('');
- return `<section class="panel mis"><h2><span>Mission ${S.mis+1} of ${MISSIONS.length}</span><span class="chip">Reward ${rw(m.reward)}</span></h2><div class="body"><h3>${m.t}</h3><p>${mText(m.body)}</p>
+ const steps=st.map((x,j)=>{const cur=j===i,acts=cur?x.slice(2).map((a,q)=>`<button class="btn ${q?'':'pri'} sm" data-act="tab" data-tab="${a[0]}">${a[1]}</button>`).join(''):'';
+  return `<li class="${x[1]?'done':cur?'cur':''}"><i class="ck">${x[1]?'&#10003;':j+1}</i><div><span>${x[0]}</span>${acts?`<div class="btns">${acts}</div>`:''}</div></li>`}).join('');
+ const list=L.map((q,j)=>`<li class="${j<n?'done':j===n?'cur':''}"><i class="ck">${j<n?'&#10003;':j+1}</i><span>${j<=n?q.t:'Locked'}</span><em>${j<n?'Claimed':rw(q.reward)}</em></li>`).join('');
+ return `<section class="panel mis"><h2><span>${k==='main'?'Mission':T.n+' mission'} ${n+1} of ${L.length}</span><span class="chip">Reward ${rw(m.reward)}</span></h2><div class="body"><h3>${m.t}</h3><p>${mText(m.body)}</p>
  ${b?`<div class="mbar"><div><b>${b[2]||'Progress'}</b><span>${Math.min(b[0],b[1]).toLocaleString()} / ${b[1].toLocaleString()}</span></div><div class="tr"><i style="width:${pct}%"></i></div></div>`:''}
  <ol class="steps">${steps}</ol>
  ${done?'':tip?`<div class="tip"><b>Tip</b><span>${tip}</span></div>`:''}
- ${done?'<div class="btns"><button class="btn pri" data-act="claim">Claim reward</button></div>':''}
- <details class="mlist" data-det="mlist" ${ui.det.mlist?'open':''}><summary>All missions (${S.mis} done)</summary><ul class="steps ml">${list}</ul></details></div></section>`}
+ ${done?`<div class="btns"><button class="btn pri" data-act="claim" data-t="${k}">Claim reward</button></div>`:''}
+ <details class="mlist" data-det="mlist${k}" ${ui.det['mlist'+k]?'open':''}><summary>All ${T.n.toLowerCase()} missions (${n} done)</summary><ul class="steps ml">${list}</ul></details></div></section>`}
+function sideMis(){return `<div class="sidem">${['crime','enf'].map(k=>{const o=trkOpen(k),left=TRKL[k].length-trkN(k),c=trkCur(k),r=o&&c&&c.cond();return `<button class="sdot ${o?'':'lock'} ${r?'rdy':''}" data-act="mtrack" data-t="${k}"><i>${o?(left||'&#10003;'):'Lv 15'}</i><span>${TRK[k].n}</span><small>${o?(r?'Ready to claim':left?left+' more':'Done'):'Locked'}</small></button>`}).join('')}<div class="sdtxt"><b>Side missions</b><span>More missions for each category. Tap one to view it.</span></div></div>`}
+function tabMissions(){const k=ui.mtrack&&TRK[ui.mtrack]&&trkOpen(ui.mtrack)?ui.mtrack:'main';
+ const tabs=Object.keys(TRK).map(t=>{const o=trkOpen(t),c=trkCur(t),r=o&&c&&c.cond();return `<button class="btn ${t===k?'pri':''}" data-act="mtrack" data-t="${t}" ${o?'':'disabled'}>${TRK[t].n} ${o?trkN(t)+'/'+TRKL[t].length:'(locked)'}${r?' &bull; ready':''}</button>`}).join('');
+ return pageHead('Missions','Main missions teach the city. Crime and Enforcer missions open as you reach those paths. Each track keeps its own progress.')+`<div class="btns mtabs">${tabs}</div>`+missionPanel(k)+(!trkOpen('crime')||!trkOpen('enf')?`<p class="small muted">Crime missions open after the Word on the street mission. Enforcer missions open at level 15.</p>`:'')}
 function tabHome(){
  const pl=plevel(S.spent),h=H(),st=S.stats,b=S.bs,w=weaponFor('auto');
  const sk=Object.keys(JOBS).map(id=>{const k=S.skills[id],tr=tierOf(k.lvl),nd=skillNeed(k.lvl);return `<div><div class="row"><span>${JOBS[id].n} <span class="muted">level ${k.lvl}, ${tr.n}, sizes 1-${tr.max}</span></span><b>${k.lvl>=10?'Max':k.xp+' / '+nd}</b></div><div class="track"><i class="f xp" style="width:${k.lvl>=10?100:k.xp/nd*100}%"></i></div></div>`}).join('');
  const paths=PATHS.map(p=>`<div class="row"><span>${p.n}</span>${S.paths.active===p.id?'<span class="chip ok">Active</span>':S.paths.unlocked[p.id]?'<span class="chip">Unlocked</span>':'<span class="chip">Locked</span>'}</div>`).join('');
- return pageHead('Home','Your character, money, skills and stats at a glance.')+missionPanel()+`<section class="panel"><div class="body" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><b>New here? Read the guide.</b><div class="muted small">How jobs, the market, homes, fights, crime and merits work, explained step by step.</div></div><button class="btn pri" data-act="tab" data-tab="guide">How to play</button></div></section><section class="fbban"><div><b>Help shape Ledger City</b><div class="small muted">It takes a minute. Tell MK what you love, what broke, or what you want next.</div></div><button class="btn pri" data-act="modal" data-m="feedback">Give feedback</button></section><div class="grid2">
+ return pageHead('Home','Your character, money, skills and stats at a glance.')+missionPanel('main')+sideMis()+`<section class="panel"><div class="body" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><b>New here? Read the guide.</b><div class="muted small">How jobs, the market, homes, fights, crime and merits work, explained step by step.</div></div><button class="btn pri" data-act="tab" data-tab="guide">How to play</button></div></section><section class="fbban"><div><b>Help shape Ledger City</b><div class="small muted">It takes a minute. Tell MK what you love, what broke, or what you want next.</div></div><button class="btn pri" data-act="modal" data-m="feedback">Give feedback</button></section><div class="grid2">
  <section class="panel"><h2>Character</h2><div class="body">${kv([['Name',esc(S.name)],['Level',pl.L],['Rank',rankOf(pl.L)],['Home',h.n+(S.owned[h.id]?' (owned)':' (rented)')],['Energy cap',cap()],['Storage',used()+' / '+h.store],['Path',S.paths.active?PATHS.find(p=>p.id===S.paths.active).n:'None'],['Food slot',S.foodSlot?ITEMS[S.foodSlot].n+' x'+(S.inv[S.foodSlot]||0):'Empty']])}</div></section>
  <section class="panel"><h2>Battle stats</h2><div class="body">${kv([['Strength',b.str.toFixed(1)],['Defence',b.def.toFixed(1)],['Speed',b.spd.toFixed(1)],['Dexterity',b.dex.toFixed(1)],['Total',(b.str+b.def+b.spd+b.dex).toFixed(1)],['Life',Math.floor(S.life)+' / '+maxLife()],['Protection',prot()+'%'],['Best weapon',w.n+' ('+w.dmg+')'],['Fights won',S.brawl.wins]])}</div></section>
  <section class="panel"><h2>Money</h2><div class="body">${kv([['Cash',fmt(S.money)],['Total earned',fmt(st.earned)],['Total spent',fmt(st.spentCash)],['Market tax paid',fmt(st.tax)],['Rent and upkeep paid',fmt(st.rent)]])}</div></section>
@@ -1326,7 +1411,7 @@ function placeTile(p,tgt){const [k,n,,,ic,bl,gate]=p,shop=k.startsWith('shop:'),
  return `<button class="qt ${lock?'lk':''} ${hot?'hot':''}" ${lock?'disabled':''} title="${bl}${lock?' (locked)':''}" data-act="${shop?'place':'tab'}" data-${shop?'place':'tab'}="${id}" data-v="${k}"><span class="qi">${picon(ic)}</span><span class="qn">${n}</span>${lock?'<em class="qs">Locked</em>':placeStat(k)}</button>`}
 function tabCity(){
  if(ui.place){const sh=SHOPS.find(s=>s.id===ui.place);if(sh)return pageHead(sh.n,'NPC shop. Stock and prices change every game hour.')+shopPanel(sh)+infoBox()}
- const tgt=S.mis<MISSIONS.length?mTabs(MISSIONS[S.mis]):[],sort=ui.citySort||'area',vis=S.visits||{};
+ const tgt=curM()?mTabs(curM().m):[],sort=ui.citySort||'area',vis=S.visits||{};
  let body;
  if(sort==='area'||sort==='type'){const keys=sort==='area'?AREAS:TYPES,ix=sort==='area'?2:3;body=`<div class="quick">${keys.map(g=>{const L=PLACES.filter(p=>p[ix]===g);return L.length?`<div class="qgrp"><div class="qh">${g}</div>${L.map(p=>placeTile(p,tgt)).join('')}</div>`:''}).join('')}</div>`}
  else{const L=PLACES.slice().sort((a,b)=>sort==='name'?a[1].localeCompare(b[1]):((vis[b[0]]||0)-(vis[a[0]]||0))||a[1].localeCompare(b[1]));body=`<div class="quick flat"><div class="qgrp">${L.map(p=>placeTile(p,tgt)).join('')}</div></div>`}
@@ -1364,14 +1449,16 @@ function tabJail(){
  const rows=S.jail.inmates.map(m=>`<tr><td>${m.name}<small>${m.crime}. ${m.why}.</small></td><td class="num">${gm(m.until-S.t)}</td><td class="num">${gm(m.mins)}</td><td class="num">${fmt(bailPrice(m.price))}</td><td class="num"><button class="btn sm" data-act="bailout" data-id="${m.id}">Bail out</button></td></tr>`).join('');
  return pageHead('Jail','Failed criminal jobs can end here. Sentences run from 30 minutes to 2 hours, and bail runs from $5,000 to $20,000 to match. You can also bail out other prisoners.')+
  `<section class="panel"><h2>Your status</h2>${me}</section><section class="panel"><h2>Prisoners</h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Prisoner</th><th class="num">Time left</th><th class="num">Sentence</th><th class="num">Bail</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="muted">The cells are empty.</td></tr>'}</tbody></table></div><div class="body"><p class="small muted">${S.paths.active==='enf'?'Your Enforcer contacts cut bail by 25%. ':''}Bailing out a prisoner earns crime experience if you have unlocked the Criminal path. These prisoners are stand-ins until other players join.</p></div></section>`}
-function tabBounties(){const h=pageHead('Enforcer','Hunt wanted criminals for bounties, or take a patrol shift to guard local businesses. Hunts cost '+BOUNTY_ENERGY+' energy and use your loadout and gym stats.');
+function tabBounties(){const h=pageHead('Enforcer','Hunt wanted criminals for bounties, or take a patrol shift to guard local businesses. Each hunt is a fight and costs '+BOUNTY_ENERGY+' energy.');
  if(!S.paths.unlocked.enf)return h+`<section class="panel"><h2>Locked</h2><div class="body"><p class="muted">Reach level 15 and win 50 brawls to unlock the Enforcer path.</p></div></section>`;
  if(S.paths.active!=='enf')return h+`<section class="panel"><h2>Not your active path</h2><div class="body"><p class="muted">Make Enforcer your active path to hunt bounties.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="paths">Open Paths</button></div></div></section>`;
- const rows=BOUNTIES.map(b=>{const cd=(S.enf.cd[b.id]||0)-S.t;return `<tr><td>${b.n}<small>${b.hp} health, hits for ${b.lo} to ${b.hi}</small></td><td class="num">${fmt(bCash(b))}</td><td class="num">${cd>0?'Back in '+gm(cd):'Ready'}</td><td class="num"><button class="btn sm ${cd>0?'':'pri'}" data-act="bounty" data-id="${b.id}">Hunt (${BOUNTY_ENERGY} energy)</button></td></tr>`}).join('');
+ if(ui.fight&&ui.fight.bnt)return tabBrawl();
+ const row=b=>{const cd=(S.enf.cd[b.id]||0)-S.t;return `<tr><td>${b.n}<small>${b.bio}</small></td><td class="num"><span class="chip">${npcLab(b)}</span></td><td class="num">${fmt(bCash(b))}</td><td class="num">${cd>0?'Back in '+gm(cd):'Ready'}</td><td class="num"><button class="btn sm ${cd>0?'':'pri'}" data-act="bounty" data-id="${b.id}">Hunt (${BOUNTY_ENERGY} energy)</button></td></tr>`};
+ const rows=BTIERS.map(([t,l])=>`<section class="panel"><h2><span>${l}</span><span class="chip">Back every ${gm(BOUNTIES.find(x=>x.tier===t).cd)}</span></h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Target</th><th class="num">Difficulty</th><th class="num">Bounty</th><th class="num">Status</th><th></th></tr></thead><tbody>${BOUNTIES.filter(x=>x.tier===t).map(row).join('')}</tbody></table></div></section>`).join('');
  const l=S.enf.last;
- return h+`<div class="grid2"><section class="panel"><h2>Patrol shift</h2><div class="body"><p class="muted">Guard local businesses for steady pay. Costs 4 effort and pays $200 to $400.</p><div class="btns"><button class="btn pri" data-act="patrol">Take a patrol shift</button></div><div class="small muted">Shifts worked: ${S.enf.shifts}</div></div></section>
+ return h+`<div class="grid2"><section class="panel"><h2>Patrol shift</h2><div class="body"><p class="muted">Guard local businesses for steady pay. Costs 2 effort and pays $300 to $800.</p><div class="btns"><button class="btn pri" data-act="patrol">Take a patrol shift</button></div><div class="small muted">Shifts worked: ${S.enf.shifts}</div></div></section>
  <section class="panel"><h2>Your record</h2><div class="body">${kv([['Bounties collected',S.enf.wins],['Life',Math.floor(S.life)+' / '+maxLife()]])}${l?`<div class="goal ${l.res==='win'?'ok':''}"><b>${l.res==='win'?'Caught':l.res==='loss'?'Beaten':'Escaped'}</b><span>${l.n}: ${l.r} rounds, ${l.dealt} dealt, ${l.took} taken</span></div>`:''}</div></section></div>
- <section class="panel"><h2>Bounty board</h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Target</th><th class="num">Bounty</th><th class="num">Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></section>`}
+ <p class="small muted">Each hunt is a turn-based fight, the same as Brawl. Your loadout, bandages and gym stats decide it. Pay is the bounty.</p>${rows}`}
 
 
 /* achievements, honors, merits */
@@ -1513,6 +1600,11 @@ function fightNew(pid,nid){const pr=PRIZES.find(x=>x.id===pid)||null,np=pr?(npcO
  const g=S.loadout.gun;ui.fight={r:1,php:Math.min(S.life,maxLife()),pmax:maxLife(),ehp:eh,emax:eh,prize:pr,npc:np,ds:np?npcAtk(np):1,arm:np?(np.arm||0):0,name:np?np.n:'Training dummy',ammo:g?(FIRE[g]||[5,10])[1]:0,buff:1,intent:rollIntent(),log:[],over:false,res:null,dealt:0,took:0,fx:null}}
 const foe=f=>f.npc?f.npc.n:'The dummy';
 function fightEnd(f,res){f.over=true;f.res=res;const L0=plevel(S.spent).L;
+ if(f.bnt){const b=f.bnt;
+  if(res==='win'){const c=bCash(b);gain(c);S.enf.cd[b.id]=S.t+b.cd;S.enf.wins++;S.enf.tier=S.enf.tier||{mid:0,high:0,boss:0};S.enf.tier[b.tier]=(S.enf.tier[b.tier]||0)+1;S.spent+=5;S.life=Math.max(1,f.php);f.earned=c;f.loot=enfLoot(b);toast('Caught '+b.n+'. Bounty '+fmt(c)+'.'+(f.loot?' You seized a '+ITEMS[f.loot].n+'.':''),'gold');addLog('Bounty: caught '+b.n+' in '+f.r+' rounds. Paid '+fmt(c)+'.');fxFlash('win')}
+  else if(res==='loss'){S.life=Math.max(1,maxLife()*.25);hospitalise(1,'Knocked out by a bounty');toast(b.n+' knocked you out.','bad');fxFlash('hurt');addLog('Bounty: '+b.n+' knocked you out.')}
+  else{S.life=Math.max(1,f.php);toast(b.n+' got away.','bad');addLog('Bounty: '+b.n+' got away.')}
+  S.enf.last={res,n:b.n,r:f.r,dealt:Math.round(f.dealt),took:Math.round(f.took),cash:res==='win'?f.earned:0};return levelCheck(L0)}
  if(res==='win'){const pay_=f.prize?f.prize.pool:WIN_CASH;S.brawl.wins++;if(f.prize)S.brawl.pz.w++;gain(pay_);S.spent+=5;S.life=Math.max(1,f.php);f.earned=pay_;toast('Victory! You earned '+fmt(pay_)+(f.prize?' from the prize pool.':'.'),'gold');addLog((f.prize?f.prize.n+' won against '+foe(f):'Brawl won')+' in '+f.r+' rounds. Earned '+fmt(pay_)+'.');fxFlash('win')}
  else if(res==='loss'){S.brawl.losses++;if(f.prize)S.brawl.pz.l++;S.life=Math.max(1,maxLife()*.25);hospitalise(1,'Knocked out in a fight');toast(foe(f)+' knocked you out.'+(f.prize?' You lost your '+fmt(f.prize.pool/2)+' stake.':''),'bad');fxFlash('hurt');addLog('Brawl lost to '+foe(f)+' in '+f.r+' rounds.')}
  else{S.life=Math.max(1,f.php);if(f.prize)S.brawl.pz.l++;toast('Time ran out. '+foe(f)+' is still standing.'+(f.prize?' You lost your stake.':''),'bad');addLog('Brawl ended with '+foe(f)+' still standing.')}
@@ -1580,7 +1672,7 @@ function prizeCards(){const sc=PRIZES.map(p=>`<div class="prize"><div class="ph"
  const z=S.brawl.pz;return `<section class="panel" style="grid-column:1/-1"><h2><span>Prize fights</span><span class="chip">Record ${z.w} won / ${z.l} lost</span></h2><div class="body"><p class="muted">Nine named fighters across three pools. The better the pool, the better their gear and the harder they hit. Put up half the pool and win to take it all. Lose or run out of rounds and your stake is gone. Every fight also costs ${BRAWL_COST} energy.</p><div class="prizes">${sc}</div></div></section>`}
 const cs0=()=>({power:0});
 function tabBrawl(){const f=ui.fight,cs=combatStats(),g=S.loadout.gun,m=S.loadout.melee,l=S.brawl.last;
- const head=pageHead('Brawl','Fight in ten decisions. Read what it is about to do, then pick the move that counters it. Your gear and gym stats decide how hard you hit, how often you hit and how much you take.');
+ const head=pageHead(f&&f.bnt?'Enforcer':'Brawl','Fight in ten decisions. Read what it is about to do, then pick the move that counters it. Your gear and gym stats decide how hard you hit, how often you hit and how much you take.');
  if(!f){return head+`<div class="grid2"><section class="panel"><h2><span>Training dummy</span><span class="chip">Win pays ${fmt(WIN_CASH)}</span></h2><div class="body"><div class="btns"><button class="btn pri" data-act="fnew">Start fight (${BRAWL_COST} energy)</button>${S.inv.bandage?`<button class="btn" data-act="eat" data-id="bandage">Use bandage (${S.inv.bandage})</button>`:''}<button class="btn" data-act="tab" data-tab="loadout">Change loadout</button></div>
   ${det('brawl-rules','How this fight works',`<p class="muted small">The dummy has ${DUMMY_HP} health and fights back. The named fighters in the prize pools hit harder and wear armour. Each round it telegraphs a move. You have ${B_ROUNDS} rounds to knock it down, and ammo is limited, so you can pay ${fmt(RELOAD_COST)} to reload mid-fight. Run out of rounds and it is still standing, run out of life and you are knocked out. ${BRAWL_COST?'Each fight costs '+BRAWL_COST+' energy.':'Fights are free for now.'}</p>`,false)}
   <div class="arena mini"><div class="fwrap">${figure(S.loadout)}<div class="small muted">You</div></div><div class="fwrap">${dummyFig(false)}<div class="small muted">Training dummy</div></div></div>
@@ -1592,11 +1684,11 @@ function tabBrawl(){const f=ui.fight,cs=combatStats(),g=S.loadout.gun,m=S.loadou
  const fx=f.fx||{};f.fx=null;const it=MOVES[f.intent],can=g&&f.ammo>0,rp=g?(FIRE[g]||[5,10])[0]:0;
  const arena=`<div class="arena ${fx.pl==='hit'?'hurt':''}"><div class="fwrap ${fx.pl==='hit'?'hit':''}">${figure(S.loadout)}${fx.pd?`<i class="dmg">-${fx.pd}</i>`:''}${hpBar(f.php,f.pmax,'lf')}</div>
   <div class="fwrap ${fx.en==='hit'?'hit':''}">${f.npc?figure(f.npc.g,{skin:f.npc.skin,shirt:f.npc.shirt,flip:1,guard:f.intent==='guard'&&!f.over}):dummyFig(f.intent==='guard'&&!f.over)}${fx.ed?`<i class="dmg out">-${fx.ed}</i>`:''}${hpBar(f.ehp,f.emax,'ef',f.name)}</div></div>`;
- const intent=f.over?`<div class="intent ${f.res==='win'?'win':'lose'}"><b>${f.res==='win'?'Victory':f.res==='loss'?'Knocked out':'Time ran out'}</b><span>${f.res==='win'?foe(f)+' is down. You earned '+fmt(f.earned)+'.':f.res==='loss'?'You took too much damage.':foe(f)+' is still standing. Hit harder or counter smarter.'}</span></div>`
+ const intent=f.over?`<div class="intent ${f.res==='win'?'win':'lose'}"><b>${f.res==='win'?'Victory':f.res==='loss'?'Knocked out':'Time ran out'}</b><span>${f.res==='win'?foe(f)+' is down. You earned '+fmt(f.earned)+'.'+(f.loot?' You seized a '+ITEMS[f.loot].n+'.':''):f.res==='loss'?'You took too much damage.':f.bnt?foe(f)+' got away.':foe(f)+' is still standing. Hit harder or counter smarter.'}</span></div>`
   :`<div class="intent ${f.intent}"><b>${foe(f)} ${it.tip}</b><span>${it.hint}</span></div>`;
- const acts=f.over?`<div class="btns"><button class="btn pri" data-act="fnew" data-p="${f.prize?f.prize.id:''}" data-n="${f.npc?f.npc.id:''}">Fight again (${BRAWL_COST} energy${f.prize?' + '+fmt(f.prize.pool/2)+' stake':''})</button><button class="btn" data-act="fend">Back</button>${S.inv.bandage?`<button class="btn" data-act="eat" data-id="bandage">Use bandage (${S.inv.bandage})</button>`:''}</div>`
+ const acts=f.over&&f.bnt?`<div class="btns">${f.res==='win'?'':`<button class="btn pri" data-act="bounty" data-id="${f.bnt.id}">Hunt again (${BOUNTY_ENERGY} energy)</button>`}<button class="btn" data-act="fend">Back to the board</button>${S.inv.bandage?`<button class="btn" data-act="eat" data-id="bandage">Use bandage (${S.inv.bandage})</button>`:''}</div>`:f.over?`<div class="btns"><button class="btn pri" data-act="fnew" data-p="${f.prize?f.prize.id:''}" data-n="${f.npc?f.npc.id:''}">Fight again (${BRAWL_COST} energy${f.prize?' + '+fmt(f.prize.pool/2)+' stake':''})</button><button class="btn" data-act="fend">Back</button>${S.inv.bandage?`<button class="btn" data-act="eat" data-id="bandage">Use bandage (${S.inv.bandage})</button>`:''}</div>`
   :`<div class="acts">${actCard('shoot','Shoot',g?(can?rp+' rounds at '+pct(cs.gunAcc)+' each. '+f.ammo+' rounds left.':'Out of ammo.'):'No gun equipped.',!can)}${actCard('rush','Rush','3 melee swings at '+pct(cs.mAcc)+' each with '+(m?ITEMS[m].n:'fists')+'.',false)}${actCard('dodge','Dodge','No attack this round. '+(it.dmg?'80% to avoid the hit.':'Nothing to dodge.'),false)}${actCard('bandage','Bandage',(S.bandKit||0)+' in your loadout. Heals '+BAND_HEAL+'.',!(S.bandKit>0)||f.php>=f.pmax)}${g&&f.ammo<(FIRE[g]||[5,10])[1]?actCard('reload','Buy ammo and reload',fmt(RELOAD_COST)+' for a full magazine. It costs your turn.',S.money<RELOAD_COST):''}</div>`;
- return head+`<section class="panel"><h2><span>${f.name}</span><span class="chip">${f.prize?'Pool '+fmt(f.prize.pool)+' &middot; ':''}Round ${f.r} of ${B_ROUNDS}</span></h2><div class="body">${arena}${intent}${acts}
+ return head+`<section class="panel"><h2><span>${f.name}</span><span class="chip">${f.prize?'Pool '+fmt(f.prize.pool)+' &middot; ':''}${f.bnt?'Bounty '+fmt(bCash(f.bnt))+' &middot; ':''}Round ${f.r} of ${B_ROUNDS}</span></h2><div class="body">${arena}${intent}${acts}
   
   <div class="sec">Fight log</div><div class="log">${f.log.map(x=>`<div><em style="font-style:normal">${x}</em></div>`).join('')||'<div class="muted">Choose your first move.</div>'}</div></div></section>`}
 function tabLoadout(){const w=weaponFor('auto'),cs=combatStats(),pu=ui.pulse;ui.pulse=null;
@@ -1679,7 +1771,7 @@ function pinAch(id){const p=S.profile,i=p.pins.indexOf(id);if(i>=0)p.pins.splice
 const badge=(a,pin,btn)=>`<${btn?'button data-act="pin" data-id="'+a.id+'"':'span'} class="badge t-${a.t}${pin?' pinned':''}" title="${esc(a.d)}"><i></i>${esc(a.n)}${btn?(pin?' &#9733;':''):''}</${btn?'button':'span'}>`;
 function pfRing(pl){const C=2*Math.PI*27,fr=Math.max(0,Math.min(1,pl.cur/pl.need));return `<svg class="ring" viewBox="0 0 64 64" role="img" aria-label="Level ${pl.L}, ${Math.round(fr*100)}% to next"><circle cx="32" cy="32" r="27" class="rb"/><circle cx="32" cy="32" r="27" class="rf" stroke-dasharray="${(C*fr).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 32 32)"/><text x="32" y="30" text-anchor="middle" class="rl">LEVEL</text><text x="32" y="45" text-anchor="middle" class="rn">${pl.L}</text></svg>`}
 function pfPanel(view,ctx){const{p,pl,st,b,done,pins,fav,pathN,bw,bl,rate,jl}=ctx;
- if(view==='stats'){return `<div class="grid2"><section class="panel"><h2>Overview</h2><div class="body">${kv([['Level',pl.L+' ('+rankOf(pl.L)+')'],['Days in the city',Math.floor((S.t-p.since)/1440)+1],['Cash',fmt(S.money)],['Net worth',fmt(netWorth())],['Total earned',fmt(st.earned)],['Total spent',fmt(st.spentCash)],['Missions done',Math.min(S.mis,MISSIONS.length)+' of '+MISSIONS.length]])}</div></section>
+ if(view==='stats'){return `<div class="grid2"><section class="panel"><h2>Overview</h2><div class="body">${kv([['Level',pl.L+' ('+rankOf(pl.L)+')'],['Days in the city',Math.floor((S.t-p.since)/1440)+1],['Cash',fmt(S.money)],['Net worth',fmt(netWorth())],['Total earned',fmt(st.earned)],['Total spent',fmt(st.spentCash)],['Missions done',trkSum()+' of '+MTOT]])}</div></section>
  <section class="panel"><h2>Combat record</h2><div class="body">${kv([['Strength',b.str.toFixed(1)],['Defence',b.def.toFixed(1)],['Speed',b.spd.toFixed(1)],['Dexterity',b.dex.toFixed(1)],['Brawls won / lost',bw+' / '+bl],['Win rate',rate],['Crime jobs',S.crime.wins+' won, '+S.crime.fails+' failed'],['Bounties collected',S.enf.wins]])}</div></section>
  <section class="panel"><h2>Career</h2><div class="body">${kv([['Gathering shifts',st.shifts],['Items gathered',st.gathered],['Items sold',st.sold],['Items bought',st.bought],['Market tax paid',fmt(st.tax)],['Items crafted',st.crafted],['Meals eaten',st.meals],['Gym energy spent',st.trained],['Courses finished',Object.keys(S.edu.done).length+' of '+COURSES.length]])}</div></section></div>`}
  if(view==='badges'){const tiers=[['t-o','Honor'],['t-h','Hard'],['t-m','Merit']];
@@ -1715,7 +1807,7 @@ function tabProfile(){const p=S.profile,pl=plevel(S.spent),acc=ACCENTS[p.acc]||A
   <div class="pfmotto" id="pfMottoShow">${p.motto?'"'+esc(p.motto)+'"':''}</div><p class="pfbio" id="pfBioShow">${p.bio?esc(p.bio):'No bio yet. Add one in Customise.'}</p>
   <div class="small muted">Citizen #${p.id} · Arrived ${fmtT(p.since)} · ${Math.floor((S.t-p.since)/1440)+1} days in the city</div></div>
   <div class="pfring">${pfRing(pl)}<div class="small muted">${pl.need-pl.cur} energy to next level</div></div></div>
-  <div class="tiles pfstats"><div class="tile big"><b>${fmt(netWorth())}</b><span>Net worth</span></div><div class="tile"><b>${fmt(S.money)}</b><span>Cash</span></div><div class="tile"><b>${Math.min(S.mis,MISSIONS.length)}/${MISSIONS.length}</b><span>Missions</span></div><div class="tile"><b>${bw+bl?Math.round(bw/(bw+bl)*100)+'%':'-'}</b><span>Win rate</span></div><div class="tile"><b>${fav?JOBS[fav[0]].n:'-'}</b><span>Best job${fav?' (lvl '+fav[1].lvl+')':''}</span></div><div class="tile"><b>${done.length}/${ACH.length}</b><span>Badges</span></div></div>
+  <div class="tiles pfstats"><div class="tile big"><b>${fmt(netWorth())}</b><span>Net worth</span></div><div class="tile"><b>${fmt(S.money)}</b><span>Cash</span></div><div class="tile"><b>${trkSum()}/${MTOT}</b><span>Missions</span></div><div class="tile"><b>${bw+bl?Math.round(bw/(bw+bl)*100)+'%':'-'}</b><span>Win rate</span></div><div class="tile"><b>${fav?JOBS[fav[0]].n:'-'}</b><span>Best job${fav?' (lvl '+fav[1].lvl+')':''}</span></div><div class="tile"><b>${done.length}/${ACH.length}</b><span>Badges</span></div></div>
   <div class="sec">Showcase</div><div class="pslots">${slot(0)}${slot(1)}${slot(2)}</div></div></section>
  <div class="seg pfseg">${tabs}</div>
  ${pfPanel(view,ctx)}`}
@@ -1829,6 +1921,7 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
+ ['66',['Enforcer patrol shifts now cost 2 effort and pay $300 to $800','Bounty hunts are now turn-based fights, the same as Brawl: Shoot, Rush, Dodge, Bandage and Reload. You get the bounty when you win','12 named bounty targets: 4 mid-level ($1,000 to $5,000, back every 2 hours), 4 high-level ($5,000 to $10,000, every 6 hours) and 4 crime bosses ($10,000 to $15,000, every 10 hours)','New Missions tab with three tracks: Main, Crime and Enforcer. Each keeps its own progress, so crime and enforcer missions no longer block the main ones','Home shows the main mission plus small circles for the side-mission tracks','More missions: 5 new main missions, 2 crime and 4 more enforcer missions. The bounty hunter mission now needs 10 bounties','Your mission progress carries over automatically'],'Missions and bounties'],
  ['65',['Jail chance on a failed crime is now 5% (Clean getaway lowers it by 10% of that per level)','Sealed stash now gives +15 energy and +15 effort. While it lasts (3 hours) your gym gains drop 15% and your battle stats count 15% weaker in fights. Both come back when it wears off','Ten missions now also give +10 effort']],
  ['64',['12 new missions that walk you through the criminal path (crime experience 20, 100, 200, plus the Junkyard search, Stock-room raid, Contraband run and Jewellery heist) and the Enforcer path (unlock, switch, bounties, patrol). Each pays $2,000 and 30 energy','Players who had finished every mission get the new ones','The Enforcer tab now correctly says you need 50 brawl wins']],
  ['63',['Achievements: Gym rat is now 1,500 gym energy, Peak condition 5,000, Iron constitution 2,000 shifts, Get out of jail free 100 prisoners, and Graduate is now an Honor','Fixed Pocket money, which secretly needed $5,000,000 instead of $50,000','New optional rank: Beta Tester, white and shiny, unlocked at level 20. Pick it in your Profile under Title','Crime preparation fees are 50% cheaper']],
@@ -2028,7 +2121,7 @@ function adminPanel(){const pl=plevel(S.spent);openModal(`<h2>Admin</h2><p class
 <div class="admsec"><h4>Needs and status</h4><div class="btns">${admB('refill','Refill effort, energy, hunger, life')}${admB('dayreset','Reset daily reward')}${admB('unjail','Clear jail and rent debt')}</div></div>
 <div class="admsec"><h4>Hospital and drugs (permanent) &middot; toxicity ${Math.round(toxNow())}</h4><div class="btns">${admB('hosp','Hospitalise me')}${admB('disch','Discharge me')}${admB('tox','Set toxicity to 90')}${admB('notox','Clear toxicity and drug effects')}</div></div>
 <div class="admsec"><h4>Items (permanent)</h4><div class="btns">${admB('items','+100 of every item')}${admB('clearinv','Empty inventory')}</div></div>
-<div class="admsec"><h4>Missions &middot; on ${Math.min(S.mis+1,MISSIONS.length)} of ${MISSIONS.length}</h4><div class="btns">${admB('mis','Skip current mission (no reward)')}</div></div>
+<div class="admsec"><h4>Missions &middot; done ${trkSum()} of ${MTOT}</h4><div class="btns">${admB('mis','Skip current mission (no reward)')}</div></div>
 <div class="admsec"><h4>Beater badge and previews</h4><div class="btns">${admB('badge','Grant Beater badge')}${admB('unbadge','Remove Beater badge')}<button class="btn" data-act="admend">Preview the ending</button><button class="btn" data-act="admgold">${ui.previewGold?'Turn off':'Turn on'} golden theme preview</button></div></div>`)}
 function admX(x,v){v=+v;switch(x){
  case 'cash':S.money+=v;break;case 'cash0':S.money=0;break;
@@ -2038,7 +2131,7 @@ function admX(x,v){v=+v;switch(x){
  case 'unjail':S.jail.until=0;S.behind=false;break;
  case 'items':for(const id in ITEMS)S.inv[id]=(S.inv[id]||0)+100;break;
  case 'clearinv':S.inv={};break;
- case 'mis':if(S.mis<MISSIONS.length)S.mis++;break;
+ case 'mis':{const c=curM();if(c){S.mt=S.mt||{};S.mt[c.k]=trkN(c.k)+1;S.mis=trkSum()}}break;
  case 'hosp':hospitalise(1,'Admin');break;case 'disch':discharge();break;case 'tox':S.drug.tox=90;S.drug.at=S.t;break;case 'notox':S.drug.tox=0;S.drug.until=0;break;
  case 'dayreset':S.daily={last:'',streak:0};break;
  case 'badge':S.beat={at:S.t,seen:false};break;
@@ -2339,19 +2432,20 @@ Object.assign(PI,{cog:'<path fill-rule="evenodd" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.
  badge:'<path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8L2.2 9.1l6.9-.8z"/>',
  lock:'<path fill-rule="evenodd" d="M7 10V7a5 5 0 0 1 10 0v3h2v12H5V10zm2 0h6V7a3 3 0 0 0-6 0z"/>',
  path:'<path d="M12 2l5 5h-4v5.6l5.7 5.7L21 16v6h-6l2.3-2.3L12 14.4l-5.3 5.3L9 22H3v-6l2.3 2.3L11 12.6V7H7z"/>'});
-const NAVI={home:'house',guide:'info',profile:'user',settings:'cog',jobs:'brief',education:'edu',workshop:'wrench',city:'hall',market:'market',inventory:'bag',library:'book',charity:'heart',hospital:'cross',gym:'gym',loadout:'shield',brawl:'fist',crime:'skull',bounties:'badge',jail:'lock',housing:'house',rentals:'house',paths:'path',ach:'cup'};
+const NAVI={missions:'badge',home:'house',guide:'info',profile:'user',settings:'cog',jobs:'brief',education:'edu',workshop:'wrench',city:'hall',market:'market',inventory:'bag',library:'book',charity:'heart',hospital:'cross',gym:'gym',loadout:'shield',brawl:'fist',crime:'skull',bounties:'badge',jail:'lock',housing:'house',rentals:'house',paths:'path',ach:'cup'};
 const nic=k=>`<svg class="ni" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">${PI[NAVI[k]]||''}</svg>`;
 let _navc={};try{_navc=JSON.parse(localStorage.getItem('lc-navc')||'{}')}catch(e){}
 groups=function(){const P=S.paths.unlocked,law=[];if(P.criminal)law.push(['crime','Crime']);if(P.enf)law.push(['bounties','Enforcer']);law.push(['jail','Jail']);
- return [['',[['home','Home'],['profile','Profile']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['City services',[['library','Library'],['hospital','Hospital'],['charity','Charity']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]],['Crime and law',law],['Living',[['housing','Housing'],['rentals','Rentals'],['paths','Paths'],['ach','Achievements']]]]};
+ return [['',[['home','Home'],['missions','Missions'],['profile','Profile']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['City services',[['library','Library'],['hospital','Hospital'],['charity','Charity']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]],['Crime and law',law],['Living',[['housing','Housing'],['rentals','Rentals'],['paths','Paths'],['ach','Achievements']]]]};
 function navBadge(k,ms,done){
- if(k==='home'&&done)return '<i class="dot" title="Mission ready"></i>';
+ if(k==='home'&&trkCur('main')&&trkCur('main').cond())return '<i class="dot" title="Mission ready"></i>';
+ if(k==='missions'&&allCur().some(x=>x.k!=='main'&&x.m.cond()))return '<i class="dot" title="Mission ready"></i>';
  if(k==='hospital'&&hospitalised())return '<span class="nb bad">Admitted</span>';
  if(k==='jail'&&jailed())return '<span class="nb bad">Locked up</span>';
  if(k==='library'&&plevel(S.spent).L<LIB_LVL)return '<span class="nb mute">Lv '+LIB_LVL+'</span>';
  if(k==='inventory'){const n=cdList().length;if(n)return '<span class="nb">'+n+' cooling</span>'}
  if(ms&&!done&&ui.tab!==k&&mTabs(ms).includes(k))return '<span class="nb gold">Mission</span>';return ''}
-function renderNav(){const ms=S.mis<MISSIONS.length?MISSIONS[S.mis]:null,done=ms&&ms.cond();
+function renderNav(){const cm=curM(),ms=cm?cm.m:null,done=ms&&ms.cond();
  const item=([k,l],bd)=>`<button class="${ui.tab===k?'on':''}" data-act="tab" data-tab="${k}" ${ui.tab===k?'aria-current="page"':''}>${nic(k)}<span class="nl">${l}</span>${bd}</button>`;
  const main=groups().map(([g,items])=>{const bd=items.map(it=>navBadge(it[0],ms,done)),has=items.some(it=>it[0]===ui.tab),pend=bd.some(x=>x),open=!g||!_navc[g]||has;
   const body=items.map((it,i)=>item(it,bd[i])).join('');
@@ -2423,7 +2517,7 @@ function cashFx(c){if(!c)return;pend+=c;if(pendT)return;
 function fxFlash(k){const d=document.createElement('div');d.className='flash '+k;document.body.appendChild(d);setTimeout(()=>d.remove(),1000);if(k==='level'||k==='epic'||k==='win')confetti(k==='epic'?'#ffb84a':k==='win'?'#6fcf8e':'#e0b84a')}
 function confetti(col){const n=26,cols=[col,'#fff','#8fd19e','#7fd3e6','#ffb84a'];for(let i=0;i<n;i++){const p=document.createElement('i');p.className='cf';const a=Math.random()*Math.PI*2,r=140+Math.random()*260;p.style.cssText='left:50%;top:38%;background:'+cols[i%cols.length]+';--dx:'+Math.round(Math.cos(a)*r)+'px;--dy:'+Math.round(Math.sin(a)*r+160)+'px;--rot:'+Math.round(Math.random()*720)+'deg;animation-delay:'+Math.round(Math.random()*120)+'ms';document.body.appendChild(p);setTimeout(()=>p.remove(),1500)}}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn:not([disabled])');if(!b)return;const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='rip';const z=Math.max(r.width,r.height);s.style.cssText='width:'+z+'px;height:'+z+'px;left:'+(e.clientX-r.left-z/2)+'px;top:'+(e.clientY-r.top-z/2)+'px';b.appendChild(s);setTimeout(()=>s.remove(),520)});
-let _trk='';function renderTracker(){const el=$('#tracker');if(!el)return;let h='';if(S.mis<MISSIONS.length){const m=MISSIONS[S.mis],bb=m.bar?m.bar():[0,1],p=Math.max(0,Math.min(100,Math.round(bb[0]/bb[1]*100))),ok=m.cond();h=`<button class="trk ${ok?'ready':''}" data-act="tab" data-tab="home"><span class="tl">Mission ${S.mis+1}</span><b>${m.t}</b><span class="tb"><i style="width:${p}%"></i></span><span class="tr2">${ok?'Ready to claim':p+'%'}</span><span class="trw">+${fmt(m.reward.cash)}</span></button>`}if(h!==_trk){el.innerHTML=h;_trk=h}}
+let _trk='';function renderTracker(){const el=$('#tracker');if(!el)return;let h='';const cm=curM();if(cm){const m=cm.m,k=cm.k,bb=m.bar?m.bar():[0,1],p=Math.max(0,Math.min(100,Math.round(bb[0]/bb[1]*100))),ok=m.cond();h=`<button class="trk ${ok?'ready':''}" data-act="mtrack" data-t="${k}"><span class="tl">${k==='main'?'Mission':TRK[k].n} ${trkN(k)+1}</span><b>${m.t}</b><span class="tb"><i style="width:${p}%"></i></span><span class="tr2">${ok?'Ready to claim':p+'%'}</span><span class="trw">+${fmt(m.reward.cash)}</span></button>`}if(h!==_trk){el.innerHTML=h;_trk=h}}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-act],.btn,.act');if(b)b.classList.add('down-press')});
 document.addEventListener('pointerup',()=>document.querySelectorAll('.down-press').forEach(x=>x.classList.remove('down-press')));
 
@@ -2512,7 +2606,7 @@ function homeCard(h){
 function tabHousing(){return pageHead('Housing','Better homes give more energy, faster regeneration and more storage. Each home unlocks at a player level, or after you live one full day in the home before it. Rent and upkeep are charged at midnight game time.')+
  `<div class="grid2">${HOMES.map(homeCard).join('')}</div><section class="panel"><h2>The small print</h2><div class="body"><p class="muted">If you cannot pay rent you move back to the shared room. If you cannot pay upkeep on a home you own, its bonuses pause until you pay. Homes sell for 90% of the price, minus market tax. Homes you own but do not live in can be let out in the Rentals tab.</p></div></section>`}
 
-const TABS={home:()=>{const h=tabHome(),k=h.indexOf('<section');return k<0?h:h.slice(0,k)+dailyPanel()+h.slice(k)},guide:tabGuide,jobs:tabJobs,education:tabEducation,workshop:tabWorkshop,city:tabCity,market:tabMarket,inventory:tabInventory,gym:tabGym,loadout:tabLoadout,brawl:tabBrawl,housing:tabHousing,rentals:tabRentals,paths:tabPaths,crime:tabCrime,jail:tabJail,ach:tabAch,charity:tabCharity,hospital:tabHospital,settings:tabSettings,library:tabLibrary,profile:tabProfile,bounties:tabBounties};
+const TABS={missions:tabMissions,home:()=>{const h=tabHome(),k=h.indexOf('<section');return k<0?h:h.slice(0,k)+dailyPanel()+h.slice(k)},guide:tabGuide,jobs:tabJobs,education:tabEducation,workshop:tabWorkshop,city:tabCity,market:tabMarket,inventory:tabInventory,gym:tabGym,loadout:tabLoadout,brawl:tabBrawl,housing:tabHousing,rentals:tabRentals,paths:tabPaths,crime:tabCrime,jail:tabJail,ach:tabAch,charity:tabCharity,hospital:tabHospital,settings:tabSettings,library:tabLibrary,profile:tabProfile,bounties:tabBounties};
 function renderMain(){const m=$('#main');m.classList.remove('enter');m.innerHTML=TABS[ui.tab]();updateCd();if(ui.gymFx&&ui.tab==='gym')gymAnim();
  if(ui.enter){m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter');ui.enter=false}
  if(ui.popSel){try{const e=m.querySelector(ui.popSel);if(e){e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')}}catch(x){}ui.popSel=null}}
@@ -2545,7 +2639,8 @@ function act(a,d){
   case 'godoff':godToggle(true);return;
   case 'admgold':if(ui.admin){ui.previewGold=!ui.previewGold;applyBeat();adminPanel()}return;
   case 'focus':if(focusOk(d.id)){S.focus[d.id]=d.item&&FOCUS_ITEMS[d.id].includes(d.item)?d.item:null}break;
-  case 'claim':claim();break;
+  case 'claim':claim(d.t);break;
+  case 'mtrack':ui.mtrack=d.t;ui.tab=(d.t==='main'&&ui.tab!=='missions')?'home':'missions';ui.place=null;window.scrollTo({top:0});break;
   case 'eat':eat(d.id);break;
   case 'info':ui.info=ui.info===d.id?null:d.id||null;break;
   case 'shopbuy':shopBuy(d.shop,d.id,+d.n);break;
