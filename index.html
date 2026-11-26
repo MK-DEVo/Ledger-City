@@ -428,6 +428,9 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 .sdtxt{display:flex;flex-direction:column;font-size:12px;color:var(--muted);flex:1;min-width:160px}.sdtxt b{color:var(--fg);font-size:13px}
 .mtabs{margin-bottom:12px}
 #nav button[data-tab="missions"] .nl{color:var(--brass);font-weight:700}#nav button[data-tab="missions"] .ni{color:var(--brass)}
+.rtrack{position:relative;width:340px;max-width:100%;height:160px;margin:6px auto}.rtrack svg{position:absolute;inset:0;width:100%;height:100%}
+.rcar{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid var(--bg);offset-path:path('M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z');offset-rotate:0deg;offset-distance:0%}.rcar.me{width:15px;height:15px;margin:-7px 0 0 -7px;border-color:var(--fg)}
+.rleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin-top:6px}.rleg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
  <div><div class="nm"><b id="hName">Newcomer</b><span class="chip" id="hRank"></span><span class="chip bt" id="hBeat" hidden>&#9733; The Beater</span><button class="chip godchip" id="hGod" data-act="godoff" hidden title="Click to turn god mode off">GOD MODE</button><span class="chip warn" id="hBehind" hidden>Behind on rent</span><span class="chip warn" id="hJail" hidden>In jail</span><button class="chip" id="hCd" data-act="cdlist" hidden title="Items that cannot be used again yet">Cooldowns</button><button class="chip warn" id="hHosp" data-act="tab" data-tab="hospital" hidden>In hospital</button></div><div class="sub" id="hDay"></div></div>
@@ -472,7 +475,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='66',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='67',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -613,7 +616,7 @@ const toolsBought=()=>Object.values(S.tools).reduce((x,y)=>x+y,0);
 const miningDone=()=>S.skills.mining.xp>0||S.skills.mining.lvl>1;
 const doneMods=()=>Object.values(S.edu.prog||{}).reduce((x,y)=>x+y,0);
 const maxSkill=()=>Math.max(...Object.values(S.skills).map(k=>k.lvl));
-const J=['jobs','Open Jobs'],CT=['city','Open City'],MK=['market','Open Market'],INV=['inventory','Open Inventory'],LO=['loadout','Open Loadout'],BR=['brawl','Open Brawl'];
+const J=['jobs','Open Jobs'],CT=['city','Open City'],MK=['market','Open Market'],INV=['inventory','Open Inventory'],LO=['loadout','Open Loadout'],BR=['brawl','Open Brawl'],DLR=['dealership','Open Dealership'],CIR=['circuit','Open Circuit'],GAR=['garage','Open Garage'];
 const mb=id=>{if(!S.mb)S.mb={};if(!S.mb[id])S.mb[id]={s:S.stats.sales,b:S.stats.mbuys||0};return S.mb[id]};
 const mkDone=()=>{const m=mb('mkreg');return [Math.min(30,S.stats.sales-m.s),Math.min(10,(S.stats.mbuys||0)-m.b)]};
 const readAny=()=>(S.intel||0)>=1||Object.keys(S.bookCd||{}).length>0;
@@ -850,16 +853,43 @@ const MISSIONS=[
  {id:'nw1m',t:'Millionaire',reward:{cash:200000,energy:30},
   body:`Grow your net worth to $1,000,000.`,
   steps:()=>[['Reach a net worth of $1,000,000',netWorth()>=100000000,MK]],
-  bar:()=>[Math.min(Math.floor(netWorth()/100),1000000),1000000,'Net worth ($)'],cond:()=>netWorth()>=100000000}];
+  bar:()=>[Math.min(Math.floor(netWorth()/100),1000000),1000000,'Net worth ($)'],cond:()=>netWorth()>=100000000},
+ {id:'car1',t:'Window shopping',reward:{cash:30000,energy:5},body:`Cars are for sale at the Dealership. Level 10 lets you buy the cheapest one. Have a look at what is on offer.`,
+  steps:()=>[['Visit the Dealership',!!S.car.vd,DLR]],bar:()=>[S.car.vd?1:0,1,'Visited'],cond:()=>!!S.car.vd},
+ {id:'car2',t:'Race day',reward:{cash:40000,energy:5},body:`The Circuit is where cars race for prize pools. Go and see which car you need to enter.`,
+  steps:()=>[['Visit the Circuit',!!S.car.vc,CIR]],bar:()=>[S.car.vc?1:0,1,'Visited'],cond:()=>!!S.car.vc},
+ {id:'car3',t:'First set of wheels',reward:{cash:80000,energy:10},body:`Buy a car at the Dealership. The Pebble Hatch costs $10,000 and is the cheapest. Each car races in its own class.`,
+  steps:()=>[['Save up for a car',S.money>=CARS[0].price||Object.keys(S.car.own).length>=1,CT],['Buy a car',Object.keys(S.car.own).length>=1,DLR]],
+  bar:()=>[Math.min(1,Object.keys(S.car.own).length),1,'Cars owned'],cond:()=>Object.keys(S.car.own).length>=1},
+ {id:'car4',t:'Lap time',reward:{cash:120000,energy:10},body:()=>`Enter races at the Circuit. Each race costs ${RACE_ENERGY} energy and ${RACE_EFFORT} effort, plus an entry fee that goes into the prize pool. Race five times at level 13 or above.`,
+  steps:()=>[['Reach player level 13',plevel(S.spent).L>=13,J],['Race 5 times ('+Math.min(5,S.car.races)+' of 5)',S.car.races>=5,CIR]],
+  bar:()=>[Math.min(5,S.car.races),5,'Races'],cond:()=>plevel(S.spent).L>=13&&S.car.races>=5},
+ {id:'car5',t:'Winner',reward:{cash:150000,energy:15},body:`Win a race. The winner takes the whole prize pool.`,
+  steps:()=>[['Win a race',S.car.wins>=1,CIR]],tip:()=>'Fit upgrades in the Garage to improve your speed.',bar:()=>[Math.min(1,S.car.wins),1,'Races won'],cond:()=>S.car.wins>=1},
+ {id:'car6',t:'Under the bonnet',reward:{cash:100000,energy:10},body:`Upgrades in the Garage add a small boost to your speed. Fit one.`,
+  steps:()=>[['Fit an upgrade in the Garage',carUpTot()>=1,GAR]],bar:()=>[Math.min(1,carUpTot()),1,'Upgrades fitted'],cond:()=>carUpTot()>=1},
+ {id:'car7',t:'Step up',reward:{cash:200000,energy:30},body:`At level 15 the mid-range cars open up. They race for bigger prize pools.`,
+  steps:()=>[['Reach player level 15',plevel(S.spent).L>=15,J],['Own a mid-range or sports car',Object.keys(S.car.own).some(i=>carOf(i).cl!=='low'),DLR]],
+  bar:()=>[Object.keys(S.car.own).some(i=>carOf(i).cl!=='low')?1:0,1,'Mid-range car'],cond:()=>plevel(S.spent).L>=15&&Object.keys(S.car.own).some(i=>carOf(i).cl!=='low')},
+ {id:'car8',t:'Podium regular',reward:{cash:200000,energy:30},body:`Win five races in total.`,
+  steps:()=>[['Win 5 races ('+Math.min(5,S.car.wins)+' of 5)',S.car.wins>=5,CIR]],bar:()=>[Math.min(5,S.car.wins),5,'Races won'],cond:()=>S.car.wins>=5},
+ {id:'car9',t:'Fast lane',reward:{cash:200000,energy:30},body:`Sports cars need level 20. They are the fastest and race for the biggest prize.`,
+  steps:()=>[['Reach player level 20',plevel(S.spent).L>=20,J],['Own a sports car',Object.keys(S.car.own).some(i=>carOf(i).cl==='sport'),DLR]],
+  bar:()=>[Object.keys(S.car.own).some(i=>carOf(i).cl==='sport')?1:0,1,'Sports car'],cond:()=>plevel(S.spent).L>=20&&Object.keys(S.car.own).some(i=>carOf(i).cl==='sport')},
+ {id:'car10',t:'Sports champion',reward:{cash:200000,energy:30},body:`Win a sports class race at the Circuit.`,
+  steps:()=>[['Win a sports class race',(S.car.cw.sport||0)>=1,CIR]],bar:()=>[Math.min(1,S.car.cw.sport||0),1,'Sports wins'],cond:()=>(S.car.cw.sport||0)>=1},
+ {id:'car11',t:'Racing legend',reward:{cash:200000,energy:30},body:`Win 25 races in total.`,
+  steps:()=>[['Win 25 races ('+Math.min(25,S.car.wins)+' of 25)',S.car.wins>=25,CIR]],bar:()=>[Math.min(25,S.car.wins),25,'Races won'],cond:()=>S.car.wins>=25}];
 const TRK={main:{n:'Main',ids:MISSIONS.slice(0,MISSIONS.findIndex(m=>m.id==='street')+1).map(m=>m.id).concat(['l20','nw250','l25','ach15','nw1m'])},
  crime:{n:'Crime',ids:['pick','first','bail','ce20','c_junk','c_shop','ce100','c_run','ce200','c_heist','cw25','cw100']},
+ car:{n:'Cars',ids:['car1','car2','car3','car4','car5','car6','car7','car8','car9','car10','car11']},
  enf:{n:'Enforcer',ids:['enfu','enfp','bnt1','ptl','bnt5','bnt_high','ptl10','bnt_boss','bnt25']}};
 const TRKL={};for(const k in TRK)TRKL[k]=TRK[k].ids.map(id=>MISSIONS.find(m=>m.id===id));
 const MTOT=Object.keys(TRK).reduce((a,k)=>a+TRK[k].ids.length,0);
 const trkN=k=>(S&&S.mt&&S.mt[k])||0;
 const trkCur=k=>{const n=trkN(k);return n<TRKL[k].length?TRKL[k][n]:null};
 const trkSum=()=>Object.keys(TRK).reduce((a,k)=>a+trkN(k),0);
-const trkOpen=k=>k==='main'||(k==='crime'?!!S.paths.unlocked.criminal||trkN('main')>=TRK.main.ids.indexOf('street')+1:plevel(S.spent).L>=15);
+const trkOpen=k=>k==='main'||(k==='crime'?!!S.paths.unlocked.criminal||trkN('main')>=TRK.main.ids.indexOf('street')+1:k==='car'?plevel(S.spent).L>=10:plevel(S.spent).L>=15);
 const allCur=()=>Object.keys(TRK).filter(trkOpen).map(k=>({k,m:trkCur(k)})).filter(x=>x.m);
 function curM(){const a=allCur();return a.find(x=>x.m.cond())||a[0]||null}
 
@@ -876,7 +906,7 @@ function restock(st,first){if(!st.shop)st.shop={};SHOPS.forEach(sh=>{let cur=st.
   const inn=absent.slice(0,k);cur=cur.filter(i=>!out.includes(i)).concat(inn);while(cur.length<sh.show){const o=sh.items.find(i=>!cur.includes(i));if(!o)break;cur.push(o)}}
  const items={};sh.items.filter(i=>cur.includes(i)).forEach(i=>items[i]={n:ri(80,300),off:ri(...(sh.off||[10,40]))});st.shop[sh.id]={items}})}
 function fresh(){const st={v:2,name:'Newcomer',t:480,real:Date.now(),speed:20,money:5000,energy:100,hunger:100,life:100,effort:25,spent:0,
- skills:{farming:{lvl:1,xp:0},foraging:{lvl:1,xp:0},mining:{lvl:1,xp:0},teacher:{lvl:1,xp:0}},tools:{farming:0,foraging:0,mining:0,teacher:0},inv:{},home:'room',owned:{},behind:false,mis:0,foodSlot:null,eCool:0,paths:{unlocked:{gather:true,criminal:false,entre:false,enf:false},active:'gather',used:false},crime:{ce:0,wins:0,fails:0,last:null,by:{}},jail:{until:0,reason:'',mins:0,price:0,inmates:[],seq:1},enf:{tier:{mid:0,high:0,boss:0},cd:{},last:null,wins:0,shifts:0},
+ skills:{farming:{lvl:1,xp:0},foraging:{lvl:1,xp:0},mining:{lvl:1,xp:0},teacher:{lvl:1,xp:0}},tools:{farming:0,foraging:0,mining:0,teacher:0},inv:{},home:'room',owned:{},behind:false,mis:0,foodSlot:null,eCool:0,paths:{unlocked:{gather:true,criminal:false,entre:false,enf:false},active:'gather',used:false},crime:{ce:0,wins:0,fails:0,last:null,by:{}},jail:{until:0,reason:'',mins:0,price:0,inmates:[],seq:1},car:{own:{},races:0,wins:0,cw:{low:0,mid:0,sport:0},vd:0,vc:0,race:null},enf:{tier:{mid:0,high:0,boss:0},cd:{},last:null,wins:0,shifts:0},
  bs:{str:10,def:10,spd:10,dex:10},gym:0,gyms:[true],loadout:{gun:null,melee:null,head:null,body:null,legs:null},edu:{done:{},cur:null,prog:{}},brawl:{wins:0,losses:0,n:0,last:null,pz:{w:0,l:0,t:0}},daily:{last:'',streak:0},bandKit:0,rent:{},rentTot:0,mb:{},shop:{},shopBuys:{},visits:{},focus:{},beat:null,god:null,cont:[],contNext:0,hosp:null,lib:{bought:0,card:false},intel:0,books:{},bookCd:{},medCd:{},drug:{until:0,tox:0,at:0},misV:2,
  ach:{done:{}},mer:{lv:{}},mv:3,stay:{},profile:{bio:'',motto:'',title:'',skin:2,shirt:0,acc:0,pins:[],id:1000+Math.floor(Math.random()*9000),since:480},
  stats:{shifts:0,gathered:0,sales:0,sold:0,bought:0,meals:0,earned:0,spentCash:0,tax:0,donated:0,contracts:0,meds:0,admits:0,rent:0,trained:0,gear:0,crafted:0,bails:0,taught:0,deals:0,mbuys:0},
@@ -893,6 +923,7 @@ function ensure(st){if(!st.misV){if(st.mis>=15)st.mis++;st.misV=1}if(st.hosp===u
  if(!st.brawl.pz)st.brawl.pz={w:0,l:0,t:0};if(st.crime&&!st.crime.by)st.crime.by={};if(st.brawl.n===undefined)st.brawl.n=(st.brawl.wins||0)+(st.brawl.losses||0);if(st.bandKit===undefined)st.bandKit=0;if(!st.daily)st.daily={last:'',streak:0};if(!st.rent)st.rent={};if(!st.rentTot)st.rentTot=0;if(!st.mb)st.mb={};
  if(st.misV<2){const OLD=['welcome','sell','eat','skill','roof','slot','tool','gear','deal','loadout','punch','gym','books','trade','brawler','aid','prize','dig','biz','street','pick','first','bail','teach'];const cur=OLD[st.mis];st.mis=cur?Math.max(0,MISSIONS.findIndex(m=>m.id===cur)):MISSIONS.length;st.misV=2}
  if(!st.mt){const dn=new Set(MISSIONS.slice(0,Math.max(0,Math.min(st.mis||0,MISSIONS.length))).map(m=>m.id));st.mt={};for(const k in TRK){let n=0;while(n<TRK[k].ids.length&&dn.has(TRK[k].ids[n]))n++;st.mt[k]=n}st.mis=st.mt.main+st.mt.crime+st.mt.enf}
+ if(!st.car)st.car={own:{},races:0,wins:0,cw:{low:0,mid:0,sport:0},vd:0,vc:0,race:null};
  if(st.enf&&!st.enf.tier)st.enf.tier={mid:0,high:0,boss:0};
  let sh=st.shop;if(!sh||SHOPS.some(s=>!sh[s.id]||!sh[s.id].items))restock(st,true);
  return st}
@@ -1285,10 +1316,10 @@ function missionPanel(k){k=k||'main';const T=TRK[k],L=TRKL[k],n=trkN(k);
  ${done?'':tip?`<div class="tip"><b>Tip</b><span>${tip}</span></div>`:''}
  ${done?`<div class="btns"><button class="btn pri" data-act="claim" data-t="${k}">Claim reward</button></div>`:''}
  <details class="mlist" data-det="mlist${k}" ${ui.det['mlist'+k]?'open':''}><summary>All ${T.n.toLowerCase()} missions (${n} done)</summary><ul class="steps ml">${list}</ul></details></div></section>`}
-function sideMis(){return `<div class="sidem">${['crime','enf'].map(k=>{const o=trkOpen(k),left=TRKL[k].length-trkN(k),c=trkCur(k),r=o&&c&&c.cond();return `<button class="sdot ${o?'':'lock'} ${r?'rdy':''}" data-act="mtrack" data-t="${k}"><i>${o?(left||'&#10003;'):'Lv 15'}</i><span>${TRK[k].n}</span><small>${o?(r?'Ready to claim':left?left+' more':'Done'):'Locked'}</small></button>`}).join('')}<div class="sdtxt"><b>Side missions</b><span>More missions for each category. Tap one to view it.</span></div></div>`}
+function sideMis(){return `<div class="sidem">${['crime','car','enf'].map(k=>{const o=trkOpen(k),left=TRKL[k].length-trkN(k),c=trkCur(k),r=o&&c&&c.cond();return `<button class="sdot ${o?'':'lock'} ${r?'rdy':''}" data-act="mtrack" data-t="${k}"><i>${o?(left||'&#10003;'):(k==='car'?'Lv 10':'Lv 15')}</i><span>${TRK[k].n}</span><small>${o?(r?'Ready to claim':left?left+' more':'Done'):'Locked'}</small></button>`}).join('')}<div class="sdtxt"><b>Side missions</b><span>More missions for each category. Tap one to view it.</span></div></div>`}
 function tabMissions(){const k=ui.mtrack&&TRK[ui.mtrack]&&trkOpen(ui.mtrack)?ui.mtrack:'main';
  const tabs=Object.keys(TRK).map(t=>{const o=trkOpen(t),c=trkCur(t),r=o&&c&&c.cond();return `<button class="btn ${t===k?'pri':''}" data-act="mtrack" data-t="${t}" ${o?'':'disabled'}>${TRK[t].n} ${o?trkN(t)+'/'+TRKL[t].length:'(locked)'}${r?' &bull; ready':''}</button>`}).join('');
- return pageHead('Missions','Main missions teach the city. Crime and Enforcer missions open as you reach those paths. Each track keeps its own progress.')+`<div class="btns mtabs">${tabs}</div>`+missionPanel(k)+(!trkOpen('crime')||!trkOpen('enf')?`<p class="small muted">Crime missions open after the Word on the street mission. Enforcer missions open at level 15.</p>`:'')}
+ return pageHead('Missions','Main missions teach the city. Crime, Cars and Enforcer missions open as you progress. Each track keeps its own progress.')+`<div class="btns mtabs">${tabs}</div>`+missionPanel(k)+(!trkOpen('crime')||!trkOpen('enf')||!trkOpen('car')?`<p class="small muted">Crime missions open after the Word on the street mission. Car missions open at level 10 and Enforcer missions at level 15.</p>`:'')}
 function tabHome(){
  const pl=plevel(S.spent),h=H(),st=S.stats,b=S.bs,w=weaponFor('auto');
  const sk=Object.keys(JOBS).map(id=>{const k=S.skills[id],tr=tierOf(k.lvl),nd=skillNeed(k.lvl);return `<div><div class="row"><span>${JOBS[id].n} <span class="muted">level ${k.lvl}, ${tr.n}, sizes 1-${tr.max}</span></span><b>${k.lvl>=10?'Max':k.xp+' / '+nd}</b></div><div class="track"><i class="f xp" style="width:${k.lvl>=10?100:k.xp/nd*100}%"></i></div></div>`}).join('');
@@ -1921,6 +1952,7 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
+ ['67',['New Cars section: Dealership, Garage and Circuit','Dealership sells 5 cars: an economy hatch ($10,000, level 10), two mid-range cars ($22,000 and $45,000, level 15) and two sports cars ($85,000 and $130,000, level 20)','Garage has 5 upgrades per car (weight, tires, engine, aerodynamics, driver training), 3 levels each, adding up to 15% speed','Circuit: five-lap animated races against five rivals in your class. Prize pools are $1,000 (economy), $5,000 and $10,000 (mid-range) and $20,000 (sports). Everyone pays a sixth of the pool and the winner takes it. A race costs 15 energy and 2 effort','Sell a car back for 80% of its value, which counts half of what you spent on upgrades','New Cars mission track with 11 missions, opening at level 10. Early rewards are small and scale up to $2,000 and 30 energy'],'Cars and the Circuit'],
  ['66',['Enforcer patrol shifts now cost 2 effort and pay $300 to $800','Bounty hunts are now turn-based fights, the same as Brawl: Shoot, Rush, Dodge, Bandage and Reload. You get the bounty when you win','12 named bounty targets: 4 mid-level ($1,000 to $5,000, back every 2 hours), 4 high-level ($5,000 to $10,000, every 6 hours) and 4 crime bosses ($10,000 to $15,000, every 10 hours)','New Missions tab with three tracks: Main, Crime and Enforcer. Each keeps its own progress, so crime and enforcer missions no longer block the main ones','Home shows the main mission plus small circles for the side-mission tracks','More missions: 5 new main missions, 2 crime and 4 more enforcer missions. The bounty hunter mission now needs 10 bounties','Your mission progress carries over automatically'],'Missions and bounties'],
  ['65',['Jail chance on a failed crime is now 5% (Clean getaway lowers it by 10% of that per level)','Sealed stash now gives +15 energy and +15 effort. While it lasts (3 hours) your gym gains drop 15% and your battle stats count 15% weaker in fights. Both come back when it wears off','Ten missions now also give +10 effort']],
  ['64',['12 new missions that walk you through the criminal path (crime experience 20, 100, 200, plus the Junkyard search, Stock-room raid, Contraband run and Jewellery heist) and the Enforcer path (unlock, switch, bounties, patrol). Each pays $2,000 and 30 energy','Players who had finished every mission get the new ones','The Enforcer tab now correctly says you need 50 brawl wins']],
@@ -2432,11 +2464,11 @@ Object.assign(PI,{cog:'<path fill-rule="evenodd" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.
  badge:'<path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8L2.2 9.1l6.9-.8z"/>',
  lock:'<path fill-rule="evenodd" d="M7 10V7a5 5 0 0 1 10 0v3h2v12H5V10zm2 0h6V7a3 3 0 0 0-6 0z"/>',
  path:'<path d="M12 2l5 5h-4v5.6l5.7 5.7L21 16v6h-6l2.3-2.3L12 14.4l-5.3 5.3L9 22H3v-6l2.3 2.3L11 12.6V7H7z"/>'});
-const NAVI={missions:'badge',home:'house',guide:'info',profile:'user',settings:'cog',jobs:'brief',education:'edu',workshop:'wrench',city:'hall',market:'market',inventory:'bag',library:'book',charity:'heart',hospital:'cross',gym:'gym',loadout:'shield',brawl:'fist',crime:'skull',bounties:'badge',jail:'lock',housing:'house',rentals:'house',paths:'path',ach:'cup'};
+const NAVI={dealership:'bag',garage:'wrench',circuit:'path',missions:'badge',home:'house',guide:'info',profile:'user',settings:'cog',jobs:'brief',education:'edu',workshop:'wrench',city:'hall',market:'market',inventory:'bag',library:'book',charity:'heart',hospital:'cross',gym:'gym',loadout:'shield',brawl:'fist',crime:'skull',bounties:'badge',jail:'lock',housing:'house',rentals:'house',paths:'path',ach:'cup'};
 const nic=k=>`<svg class="ni" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">${PI[NAVI[k]]||''}</svg>`;
 let _navc={};try{_navc=JSON.parse(localStorage.getItem('lc-navc')||'{}')}catch(e){}
 groups=function(){const P=S.paths.unlocked,law=[];if(P.criminal)law.push(['crime','Crime']);if(P.enf)law.push(['bounties','Enforcer']);law.push(['jail','Jail']);
- return [['',[['home','Home'],['missions','Missions'],['profile','Profile']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['City services',[['library','Library'],['hospital','Hospital'],['charity','Charity']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]],['Crime and law',law],['Living',[['housing','Housing'],['rentals','Rentals'],['paths','Paths'],['ach','Achievements']]]]};
+ return [['',[['home','Home'],['missions','Missions'],['profile','Profile']]],['Work',[['jobs','Jobs'],['education','Education'],['workshop','Workshop']]],['Trade',[['city','City'],['market','Market'],['inventory','Inventory']]],['City services',[['library','Library'],['hospital','Hospital'],['charity','Charity']]],['Fight',[['gym','Gym'],['loadout','Loadout'],['brawl','Brawl']]],['Cars',[['dealership','Dealership'],['garage','Garage'],['circuit','Circuit']]],['Crime and law',law],['Living',[['housing','Housing'],['rentals','Rentals'],['paths','Paths'],['ach','Achievements']]]]};
 function navBadge(k,ms,done){
  if(k==='home'&&trkCur('main')&&trkCur('main').cond())return '<i class="dot" title="Mission ready"></i>';
  if(k==='missions'&&allCur().some(x=>x.k!=='main'&&x.m.cond()))return '<i class="dot" title="Mission ready"></i>';
@@ -2497,6 +2529,80 @@ function dailyInfo(){const d=S.daily||{last:'',streak:0},ready=d.last!==dkey(),n
 const dailyRew=n=>({cash:50000*n,energy:20+10*n});
 function claimDaily(){const i=dailyInfo();if(!i.ready)return toast('Already claimed today. Come back tomorrow.','bad');const r=dailyRew(i.next);gain(r.cash);S.energy+=r.energy;S.daily={last:dkey(),streak:i.next};addLog('Daily reward, day '+i.next+': '+rw(r)+'.');toast('Daily reward: '+rw(r),'gold');fxFlash('rare')}
 function dailyPanel(){const i=dailyInfo(),r=dailyRew(i.next);return `<section class="panel"><h2><span>Daily reward</span><span class="chip ${i.ready?'ok':''}">Streak ${i.streak} of 7</span></h2><div class="body"><div class="row"><span>${i.ready?'Today: day '+i.next+' of 7':'Claimed. Next one tomorrow.'}</span><b>${rw(dailyRew(i.ready?i.next:Math.min(7,i.streak+1)))}</b></div><div class="small muted">Log in on consecutive real days for a bigger reward each day, up to day 7. Missing a day starts again at day 1.</div><div class="btns"><button class="btn ${i.ready?'pri':''}" data-act="daily" ${i.ready?'':'disabled'}>${i.ready?'Claim daily reward':'Claimed today'}</button></div></div></section>`}
+
+/* cars: dealership, garage, circuit */
+const CARS=[
+ {id:'c1',n:'Pebble Hatch',cl:'low',price:1000000,lv:10,sp:40,bio:'Cheap, slow and honest. A fine first car.'},
+ {id:'c2',n:'Marlow Saloon',cl:'mid',price:2200000,lv:15,sp:55,bio:'A family saloon with a surprising kick.'},
+ {id:'c3',n:'Harbor Coupe',cl:'mid',price:4500000,lv:15,sp:62,bio:'Two doors, rear drive and a loud exhaust.'},
+ {id:'c4',n:'Vector S',cl:'sport',price:8500000,lv:20,sp:76,bio:'A proper sports car. Stiff, low and quick.'},
+ {id:'c5',n:'Apex R',cl:'sport',price:13000000,lv:20,sp:86,bio:'The fastest thing you can buy in the city.'}];
+const CLS={low:'Economy',mid:'Mid-range',sport:'Sports'};
+const UPG=[['wt','Weight reduction','Strip the panels and seats.'],['tr','Better tires','More grip in the corners.'],['en','Engine tuning','A little more power.'],['ae','Aerodynamics','Less drag on the straights.'],['dr','Driver training','You take better lines.']];
+const UP_MAX=3,UP_GAIN=.01,RACE_ENERGY=15,RACE_EFFORT=2,LAPS=5,RACE_SECS=15;
+const RACES=[
+ {id:'r1',n:'Backstreet sprint',cl:'low',pool:100000,ai:[36,44]},
+ {id:'r2',n:'Ring road cup',cl:'mid',pool:500000,ai:[52,60]},
+ {id:'r3',n:'Harbor grand prix',cl:'mid',pool:1000000,ai:[58,68]},
+ {id:'r4',n:'Skyline invitational',cl:'sport',pool:2000000,ai:[72,84]}];
+const AINAMES=['Jay Rook','Mina Ford','Tobi Grant','Alma Cruz','Rex Dunn','Kit Aldous','Nell Ortiz','Hugo Pratt','Sam Vale','Ines Park'];
+const carOf=id=>CARS.find(c=>c.id===id);
+const carUp=id=>{const o=S.car.own[id];return o?Object.values(o.up).reduce((a,b)=>a+b,0):0};
+const carUpTot=()=>Object.keys(S.car.own).reduce((a,id)=>a+carUp(id),0);
+const carSpd=id=>carOf(id).sp*(1+UP_GAIN*carUp(id));
+const carVal=id=>Math.round(carOf(id).price+.5*S.car.own[id].spent);
+const carSell=id=>Math.round(carVal(id)*.8);
+const upCost=(id,u)=>Math.round(carOf(id).price*.04*(S.car.own[id].up[u]+1)/10000)*100;
+const hasCls=cl=>Object.keys(S.car.own).some(id=>carOf(id).cl===cl);
+function buyCar(id){const c=carOf(id);if(S.car.own[id])return;if(plevel(S.spent).L<c.lv)return toast('You need level '+c.lv+' to buy the '+c.n+'.','bad');if(S.money<c.price)return toast('The '+c.n+' costs '+fmt(c.price)+'.','bad');
+ pay(c.price);S.car.own[id]={up:{wt:0,tr:0,en:0,ae:0,dr:0},spent:0};toast('You bought the '+c.n+'.','gold');addLog('Bought a car: '+c.n+' for '+fmt(c.price)+'.')}
+function upgradeCar(id,u){const o=S.car.own[id];if(!o||o.up[u]>=UP_MAX)return;const c=upCost(id,u);if(S.money<c)return toast('That upgrade costs '+fmt(c)+'.','bad');pay(c);o.spent+=c;o.up[u]++;const nm=UPG.find(x=>x[0]===u)[1];toast(nm+' fitted to the '+carOf(id).n+'.');addLog('Upgrade: '+nm+' on the '+carOf(id).n+' for '+fmt(c)+'.')}
+function sellCar(id){if(!S.car.own[id])return;const v=carSell(id);gain(v);delete S.car.own[id];toast('Sold the '+carOf(id).n+' for '+fmt(v)+'.');addLog('Sold the '+carOf(id).n+' for '+fmt(v)+'.')}
+function raceSim(r,cid){const mine=carSpd(cid),pick=[];while(pick.length<5){const n=AINAMES[ri(0,AINAMES.length-1)];if(!pick.includes(n))pick.push(n)}
+ const rs=[{n:'You',me:1,sp:mine}].concat(pick.map(n=>({n,sp:r.ai[0]+Math.random()*(r.ai[1]-r.ai[0])})));
+ rs.forEach(x=>{let t=0;x.T=[];for(let l=0;l<LAPS;l++){t+=100/x.sp*(.94+Math.random()*.12);x.T.push(t)}x.tot=t});
+ const M=Math.max(...rs.map(x=>x.tot)),W=Math.min(...rs.map(x=>x.tot)),k=RACE_SECS/W;
+ rs.forEach(x=>{x.T=x.T.map(v=>+(v*k).toFixed(3));x.tot=+(x.tot*k).toFixed(3)});
+ const order=rs.slice().sort((a,b)=>a.tot-b.tot);rs.forEach(x=>x.pos=order.indexOf(x)+1);return {rs,dur:Math.max(...rs.map(x=>x.tot))}}
+function raceGo(rid,cid){const r=RACES.find(x=>x.id===rid),c=carOf(cid);if(!r||!S.car.own[cid])return;
+ if(S.car.race&&!S.car.race.settled)return;if(hospBlock())return;if(jailed())return toast('You are in jail.','bad');
+ if(c.cl!==r.cl)return toast('This race is for '+CLS[r.cl].toLowerCase()+' cars only.','bad');
+ const fee=Math.round(r.pool/6);if(S.money<fee)return toast('The entry is '+fmt(fee)+'.','bad');if(S.energy<RACE_ENERGY)return toast('A race costs '+RACE_ENERGY+' energy.','bad');if(S.effort<RACE_EFFORT)return toast('A race costs '+RACE_EFFORT+' effort.','bad');
+ const L0=plevel(S.spent).L;S.energy-=RACE_ENERGY;S.effort-=RACE_EFFORT;S.spent+=RACE_ENERGY+RACE_EFFORT*2;pay(fee);S.car.races++;
+ const sm=raceSim(r,cid);S.car.race={rid,cid,rs:sm.rs,dur:sm.dur,start:Date.now(),settled:false,fee};
+ addLog('Entered the '+r.n+' for '+fmt(fee)+'.');levelCheck(L0);setTimeout(raceSettle,sm.dur*1000+400)}
+function raceSettle(force){const R=S.car&&S.car.race;if(!R||R.settled)return false;if(!force&&Date.now()<R.start+R.dur*1000)return false;R.settled=true;
+ const r=RACES.find(x=>x.id===R.rid),me=R.rs.find(x=>x.me),L0=plevel(S.spent).L;R.won=me.pos===1;
+ if(R.won){gain(r.pool);S.car.wins++;S.car.cw[r.cl]=(S.car.cw[r.cl]||0)+1;S.spent+=5;toast('You won the '+r.n+'. Prize '+fmt(r.pool)+'.','gold');addLog('Won the '+r.n+'. Prize '+fmt(r.pool)+'.');fxFlash('win')}
+ else{toast('You finished '+me.pos+' of 6 in the '+r.n+'.','bad');addLog('Finished '+me.pos+' of 6 in the '+r.n+'.')}
+ levelCheck(L0);if(ui.tab==='circuit'||ui.tab==='garage'){commit()}else{save()}return true}
+const ordn=n=>n+(n===1?'st':n===2?'nd':n===3?'rd':'th');
+const CARCOL=['#e0ae4a','#74a4e0','#6fc08a','#e0746a','#b58ae0','#e8a064'];
+function raceTrack(R){const el=Math.max(0,(Date.now()-R.start)/1000),done=R.settled||el>=R.dur;
+ const css=R.rs.map((x,i)=>{const pts=[[0,0]].concat(x.T.map((t,l)=>[t/R.dur*100,(l+1)*100]));if(x.tot<R.dur)pts.push([100,LAPS*100]);return `@keyframes kf${i}{${pts.map(p=>p[0].toFixed(2)+'%{offset-distance:'+p[1]+'%}').join('')}}.rc${i}{animation:kf${i} ${R.dur}s linear forwards;animation-delay:-${el.toFixed(2)}s;background:${CARCOL[i]}}`}).join('');
+ const dots=R.rs.map((x,i)=>`<i class="rcar rc${i} ${x.me?'me':''}" title="${x.n}"></i>`).join('');
+ return `<style>${css}</style><div class="rtrack"><svg viewBox="0 0 340 160" aria-hidden="true"><path d="M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z" fill="none" stroke="var(--line)" stroke-width="34" stroke-linejoin="round"/><path d="M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z" fill="none" stroke="var(--panel)" stroke-width="30"/><path d="M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="6 8"/><line x1="170" y1="23" x2="170" y2="57" stroke="var(--fg)" stroke-width="3"/></svg>${dots}</div>
+ <div class="small muted">${done?'Race finished.':'Five laps. Results appear when the race ends.'}</div><div class="rleg">${R.rs.map((x,i)=>`<span><i style="background:${CARCOL[i]}"></i>${x.n}</span>`).join('')}</div>`}
+function raceResult(R){const r=RACES.find(x=>x.id===R.rid),me=R.rs.find(x=>x.me),rows=R.rs.slice().sort((a,b)=>a.pos-b.pos).map(x=>`<tr class="${x.me?'cur':''}"><td>${ordn(x.pos)}</td><td>${x.n}</td><td class="num">${x.tot.toFixed(1)} s</td></tr>`).join('');
+ return `<div class="goal ${R.won?'ok':''}"><b>${R.won?'You won':'You finished '+ordn(me.pos)}</b><span>${R.won?'Prize pool '+fmt(r.pool)+' paid out.':'You paid '+fmt(R.fee)+' to enter.'}</span></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Place</th><th>Driver</th><th class="num">Time</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+function tabDealership(){const L=plevel(S.spent).L;
+ const cards=CARS.map(c=>{const own=S.car.own[c.id],lock=L<c.lv;return `<section class="panel"><h2><span>${c.n}</span><span class="chip">${CLS[c.cl]}</span></h2><div class="body"><p class="muted">${c.bio}</p>${kv([['Price',fmt(c.price)],['Top speed rating',c.sp],['Needs level',c.lv],['Races',CLS[c.cl]+' class']])}<div class="btns">${own?'<span class="chip">Owned</span>':`<button class="btn ${lock?'':'pri'} sm" data-act="buycar" data-id="${c.id}">${lock?'Level '+c.lv+' needed':'Buy for '+fmt(c.price)}</button>`}</div></div></section>`}).join('');
+ return pageHead('Dealership','Buy a car to enter the Circuit. Each car races in its own class. You can sell a car back later for 80% of its value, which includes half of what you spent on upgrades.')+`<div class="grid2">${cards}</div>`}
+function tabGarage(){const ids=Object.keys(S.car.own);
+ if(!ids.length)return pageHead('Garage','Upgrade your cars here.')+`<section class="panel"><div class="body"><p class="muted">You do not own a car yet.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="dealership">Open Dealership</button></div></div></section>`;
+ return pageHead('Garage','Each upgrade adds a small boost to your car speed, up to '+Math.round(UP_MAX*UPG.length*UP_GAIN*100)+'% in total. Speed against the field decides your chance in the Circuit.')+ids.map(id=>{const c=carOf(id),o=S.car.own[id];
+  const rows=UPG.map(([u,n,d])=>{const lv=o.up[u],max=lv>=UP_MAX;return `<tr><td>${n}<small>${d}</small></td><td class="num">${lv} / ${UP_MAX}</td><td class="num">${max?'Maxed':fmt(upCost(id,u))}</td><td class="num"><button class="btn sm ${max?'':'pri'}" data-act="upcar" data-id="${id}" data-u="${u}" ${max?'disabled':''}>${max?'Done':'Fit'}</button></td></tr>`}).join('');
+  return `<section class="panel"><h2><span>${c.n}</span><span class="chip">${CLS[c.cl]} &middot; speed ${carSpd(id).toFixed(1)}</span></h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Upgrade</th><th class="num">Level</th><th class="num">Cost</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><div class="body">${kv([['Base speed',c.sp],['Upgrade bonus','+'+(carUp(id)*UP_GAIN*100).toFixed(0)+'%'],['Spent on upgrades',fmt(o.spent)],['Sale value',fmt(carSell(id))]])}<div class="btns"><button class="btn dng sm" data-act="sellcar" data-id="${id}">${ui.confirm==='sellcar:'+id?'Click again to sell for '+fmt(carSell(id)):'Sell car'}</button></div></div></section>`}).join('')}
+function tabCircuit(){const R=S.car.race;if(R&&!R.settled&&Date.now()>=R.start+R.dur*1000)raceSettle();
+ const head=pageHead('Circuit','Five laps against five rivals in your class. Everyone pays one sixth of the prize pool and the winner takes all of it. Each race costs '+RACE_ENERGY+' energy and '+RACE_EFFORT+' effort.');
+ const mine=Object.keys(S.car.own);const noCar=!mine.length?`<section class="panel"><div class="body"><p class="muted"><b>A car is required.</b> Buy one at the Dealership to race. Economy cars race in the cheapest event, mid-range cars in the mid events and sports cars in the top event.</p><div class="btns"><button class="btn pri" data-act="tab" data-tab="dealership">Open Dealership</button></div></div></section>`:'';
+ const live=R?`<section class="panel"><h2><span>${RACES.find(x=>x.id===R.rid).n}</span><span class="chip">${carOf(R.cid).n}</span></h2><div class="body">${raceTrack(R)}${R.settled||Date.now()>=R.start+R.dur*1000?raceResult(R):''}</div></section>`:'';
+ const busy=R&&!R.settled;
+ const rows=RACES.map(r=>{const fee=Math.round(r.pool/6),cars=mine.filter(id=>carOf(id).cl===r.cl),avg=(r.ai[0]+r.ai[1])/2;
+  const btn=cars.length?cars.map(id=>{const q=carSpd(id)/avg,lb=q>1.08?'Favourite':q>.98?'Even':q>.9?'Underdog':'Long shot';return `<button class="btn sm pri" data-act="racego" data-id="${r.id}" data-c="${id}" ${busy?'disabled':''}>${carOf(id).n} <small>(${lb})</small></button>`}).join(' '):`<span class="small muted">Needs a ${CLS[r.cl].toLowerCase()} car</span>`;
+  return `<tr><td>${r.n}<small>${CLS[r.cl]} class</small></td><td class="num">${fmt(r.pool)}</td><td class="num">${fmt(fee)}</td><td class="num">${btn}</td></tr>`}).join('');
+ return head+noCar+live+`<section class="panel"><h2>Races</h2><div class="tblwrap"><table class="tbl"><thead><tr><th>Race</th><th class="num">Prize pool</th><th class="num">Entry</th><th class="num">Enter</th></tr></thead><tbody>${rows}</tbody></table></div><div class="body"><p class="small muted">Races: ${S.car.races}, won: ${S.car.wins}. Upgrade your car in the Garage to improve your odds.</p></div></section>`}
+setInterval(()=>{try{const R=S&&S.car&&S.car.race;if(R&&!R.settled&&Date.now()>=R.start+R.dur*1000)raceSettle()}catch(e){}},2000);
 
 
 /* effects: counting cash, floating gains, flashes */
@@ -2606,7 +2712,7 @@ function homeCard(h){
 function tabHousing(){return pageHead('Housing','Better homes give more energy, faster regeneration and more storage. Each home unlocks at a player level, or after you live one full day in the home before it. Rent and upkeep are charged at midnight game time.')+
  `<div class="grid2">${HOMES.map(homeCard).join('')}</div><section class="panel"><h2>The small print</h2><div class="body"><p class="muted">If you cannot pay rent you move back to the shared room. If you cannot pay upkeep on a home you own, its bonuses pause until you pay. Homes sell for 90% of the price, minus market tax. Homes you own but do not live in can be let out in the Rentals tab.</p></div></section>`}
 
-const TABS={missions:tabMissions,home:()=>{const h=tabHome(),k=h.indexOf('<section');return k<0?h:h.slice(0,k)+dailyPanel()+h.slice(k)},guide:tabGuide,jobs:tabJobs,education:tabEducation,workshop:tabWorkshop,city:tabCity,market:tabMarket,inventory:tabInventory,gym:tabGym,loadout:tabLoadout,brawl:tabBrawl,housing:tabHousing,rentals:tabRentals,paths:tabPaths,crime:tabCrime,jail:tabJail,ach:tabAch,charity:tabCharity,hospital:tabHospital,settings:tabSettings,library:tabLibrary,profile:tabProfile,bounties:tabBounties};
+const TABS={dealership:tabDealership,garage:tabGarage,circuit:tabCircuit,missions:tabMissions,home:()=>{const h=tabHome(),k=h.indexOf('<section');return k<0?h:h.slice(0,k)+dailyPanel()+h.slice(k)},guide:tabGuide,jobs:tabJobs,education:tabEducation,workshop:tabWorkshop,city:tabCity,market:tabMarket,inventory:tabInventory,gym:tabGym,loadout:tabLoadout,brawl:tabBrawl,housing:tabHousing,rentals:tabRentals,paths:tabPaths,crime:tabCrime,jail:tabJail,ach:tabAch,charity:tabCharity,hospital:tabHospital,settings:tabSettings,library:tabLibrary,profile:tabProfile,bounties:tabBounties};
 function renderMain(){const m=$('#main');m.classList.remove('enter');m.innerHTML=TABS[ui.tab]();updateCd();if(ui.gymFx&&ui.tab==='gym')gymAnim();
  if(ui.enter){m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter');ui.enter=false}
  if(ui.popSel){try{const e=m.querySelector(ui.popSel);if(e){e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')}}catch(x){}ui.popSel=null}}
@@ -2627,7 +2733,7 @@ function act(a,d){
   case 'gopharm':ui.place='pharm';ui.tab='city';ui.enter=true;scrollTo(0,0);break;
   case 'place':ui.place=d.place||null;if(d.v){S.visits[d.v]=(S.visits[d.v]||0)+1}break;
   case 'csort':ui.citySort=d.s;break;
-  case 'tab':if(ui.tab!==d.tab||ui.place)window.scrollTo({top:0});ui.tab=d.tab;ui.place=null;if(d.v){S.visits[d.v]=(S.visits[d.v]||0)+1}ui.info=null;if(d.tab==='market')selectItem(ui.sel);break;
+  case 'tab':if(d.tab==='dealership')S.car.vd=1;if(d.tab==='circuit')S.car.vc=1;if(ui.tab!==d.tab||ui.place)window.scrollTo({top:0});ui.tab=d.tab;ui.place=null;if(d.v){S.visits[d.v]=(S.visits[d.v]||0)+1}ui.info=null;if(d.tab==='market')selectItem(ui.sel);break;
   case 'work':work(d.id,+d.n);break;
   case 'tool':buyTool(d.id);break;
   case 'pfv':ui.pfView=d.v;break;
@@ -2649,6 +2755,10 @@ function act(a,d){
   case 'fnew':fightNew(d.p,d.n);break;
   case 'bandload':equipBand();break;
   case 'bandunload':unequipBand();break;
+  case 'buycar':buyCar(d.id);break;
+  case 'upcar':upgradeCar(d.id,d.u);break;
+  case 'sellcar':if(!need('sellcar:'+d.id))return;sellCar(d.id);break;
+  case 'racego':raceGo(d.id,d.c);break;
   case 'bact':fightAct(d.k);break;
   case 'fend':ui.fight=null;break;
   case 'train':train(d.stat,+d.n);break;
