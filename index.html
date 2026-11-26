@@ -429,7 +429,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 .mtabs{margin-bottom:12px}
 #nav button[data-tab="missions"] .nl{color:var(--brass);font-weight:700}#nav button[data-tab="missions"] .ni{color:var(--brass)}
 .rtrack{position:relative;width:340px;max-width:100%;height:160px;margin:6px auto}.rtrack svg{position:absolute;inset:0;width:100%;height:100%}
-.rcar{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid var(--bg);offset-path:path('M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z');offset-rotate:0deg;offset-distance:0%}.rcar.me{width:15px;height:15px;margin:-7px 0 0 -7px;border-color:var(--fg)}
+.rcar{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid var(--bg);offset-rotate:0deg;offset-distance:0%}.rcar.me{width:15px;height:15px;margin:-7px 0 0 -7px;border-color:var(--fg)}
 .rleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin-top:6px}.rleg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
 </style>
 <div id="bg" aria-hidden="true"></div><header class="top"><div class="top-in">
@@ -475,7 +475,7 @@ html.tz-s{zoom:.9}html.tz-l{zoom:1.12}html.tz-x{zoom:1.25}
 <footer class="foot" id="foot"><span class="fl">Made by MK, solo developer</span><span class="fr"><button class="link" data-act="modal" data-m="backup">Save backup</button><button class="link" data-act="modal" data-m="feedback">Feedback</button><span class="ver" id="ver"></span></span></footer><div id="toasts" aria-live="polite"></div><button class="fbfab" data-act="modal" data-m="feedback" aria-label="Give feedback"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Feedback</span></button>
 <script>(function(){
 'use strict';
-const VERSION='67',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
+const VERSION='69',SOCIAL_URL='https://form.typeform.com/to/nPqTr07O',GAME_URL='https://ledgercity.co.uk',CREATOR='MK',SHOP_LIMIT=100;
 const KEY='ledger-city-v2',OLD='ledger-city-v1',COOL=30,BRAWL_COST=10,EFFORT_CAP=25;
 const $=(s,r=document)=>r.querySelector(s);
 const fmt=c=>'$'+(c/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1432,11 +1432,14 @@ const PLACES=[
  ['tab:library','Public Library','City Centre','Services','book','Books that make you smarter. Opens at level 10.'],
  ['tab:hospital','Hospital','City Centre','Services','cross','Recover and shorten your stay.'],
  ['shop:cloth','Clothing store','East Side','Shops','shirt','Armour and clothes, rotating discounts.'],
+ ['tab:dealership','Car dealership','Motor District','Cars','car','Buy economy, mid-range and sports cars.'],
+ ['tab:garage','Garage','Motor District','Cars','wrench','Upgrade and sell your cars.'],
+ ['tab:circuit','Circuit','Motor District','Cars','flag','Race for prize pools.'],
  ['tab:jail','City jail','Law and Order','Law','bars','Bail and inmates.'],
  ['tab:crime','Back alley','Law and Order','Law','skull','Criminal jobs.','criminal'],
  ['tab:bounties','Police station','Law and Order','Law','star','Bounties and patrols.','enf']];
-const AREAS=['West Side','City Centre','Residential','North Side','East Side','Law and Order'];
-const TYPES=['Shops','Work','Trade','Learning','Fitness','Fighting','Services','Law'];
+const AREAS=['West Side','City Centre','Residential','North Side','East Side','Motor District','Law and Order'];
+const TYPES=['Shops','Work','Trade','Learning','Fitness','Fighting','Cars','Services','Law'];
 function placeStat(k){if(k.startsWith('shop:')){const l=SHOP_LIMIT-shopUsed();return l<=0?'<em class="qs bad">Sold out</em>':`<em class="qs">${l} left</em>`}return ''}
 function placeTile(p,tgt){const [k,n,,,ic,bl,gate]=p,shop=k.startsWith('shop:'),id=k.split(':')[1],lock=gate&&!S.paths.unlocked[gate],hot=!shop&&tgt.includes(id)||(shop&&tgt.includes('city'));
  return `<button class="qt ${lock?'lk':''} ${hot?'hot':''}" ${lock?'disabled':''} title="${bl}${lock?' (locked)':''}" data-act="${shop?'place':'tab'}" data-${shop?'place':'tab'}="${id}" data-v="${k}"><span class="qi">${picon(ic)}</span><span class="qn">${n}</span>${lock?'<em class="qs">Locked</em>':placeStat(k)}</button>`}
@@ -1952,6 +1955,8 @@ const QR=(()=>{
 /* title screen, modal, backup, feedback */
 /* What is new: add one entry per update at the top. The title screen and the one-time pop-up read the entry for VERSION. */
 const CHANGES=[
+ ['69',['Garage upgrades cost far more and each one is priced differently: weight reduction and tires are cheap, aerodynamics costs more, engine tuning and driver training cost the most. Every level costs more than the last, and better cars cost more to upgrade','Circuit races now use different tracks: an L-shaped circuit for the economy race, a figure 8 for the mid-range races and a large G-shaped circuit for the sports race','Cars now finish exactly on the start and finish line'],'Garage prices and new tracks'],
+ ['68',['The City tab now has a Motor District with the Car dealership, Garage and Circuit']],
  ['67',['New Cars section: Dealership, Garage and Circuit','Dealership sells 5 cars: an economy hatch ($10,000, level 10), two mid-range cars ($22,000 and $45,000, level 15) and two sports cars ($85,000 and $130,000, level 20)','Garage has 5 upgrades per car (weight, tires, engine, aerodynamics, driver training), 3 levels each, adding up to 15% speed','Circuit: five-lap animated races against five rivals in your class. Prize pools are $1,000 (economy), $5,000 and $10,000 (mid-range) and $20,000 (sports). Everyone pays a sixth of the pool and the winner takes it. A race costs 15 energy and 2 effort','Sell a car back for 80% of its value, which counts half of what you spent on upgrades','New Cars mission track with 11 missions, opening at level 10. Early rewards are small and scale up to $2,000 and 30 energy'],'Cars and the Circuit'],
  ['66',['Enforcer patrol shifts now cost 2 effort and pay $300 to $800','Bounty hunts are now turn-based fights, the same as Brawl: Shoot, Rush, Dodge, Bandage and Reload. You get the bounty when you win','12 named bounty targets: 4 mid-level ($1,000 to $5,000, back every 2 hours), 4 high-level ($5,000 to $10,000, every 6 hours) and 4 crime bosses ($10,000 to $15,000, every 10 hours)','New Missions tab with three tracks: Main, Crime and Enforcer. Each keeps its own progress, so crime and enforcer missions no longer block the main ones','Home shows the main mission plus small circles for the side-mission tracks','More missions: 5 new main missions, 2 crime and 4 more enforcer missions. The bounty hunter mission now needs 10 bounties','Your mission progress carries over automatically'],'Missions and bounties'],
  ['65',['Jail chance on a failed crime is now 5% (Clean getaway lowers it by 10% of that per level)','Sealed stash now gives +15 energy and +15 effort. While it lasts (3 hours) your gym gains drop 15% and your battle stats count 15% weaker in fights. Both come back when it wears off','Ten missions now also give +10 effort']],
@@ -2458,7 +2463,8 @@ document.addEventListener('click',e=>{if(e.target&&e.target.id==='setFb'){const 
 applyLook();
 
 /* sidebar: grouped, collapsible, with icons and badges */
-Object.assign(PI,{cog:'<path fill-rule="evenodd" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM10.5 2h3l.5 2.6 1.9.8 2.2-1.5 2.1 2.1-1.5 2.2.8 1.9 2.6.4v3l-2.6.5-.8 1.9 1.5 2.2-2.1 2.1-2.2-1.5-1.9.8-.5 2.6h-3l-.5-2.6-1.9-.8-2.2 1.5-2.1-2.1 1.5-2.2-.8-1.9L2 13.5v-3l2.6-.5.8-1.9-1.5-2.2 2.1-2.1 2.2 1.5 1.9-.8z"/>',
+Object.assign(PICOL,{car:'#e0746a',flag:'#e9eef2',wrench:'#b8c2cc'});
+Object.assign(PI,{car:'<path d="M4 11l2-5h12l2 5h1.5v6H20v2h-3v-2H7v2H4v-2H2.5v-6zm3.2-3L6 11h12l-1.2-3zM6.5 13.5a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6zm11 0a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z"/>',flag:'<path d="M5 2h2v20H5zM8 3h12l-3 4.5L20 12H8z"/>',cog:'<path fill-rule="evenodd" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM10.5 2h3l.5 2.6 1.9.8 2.2-1.5 2.1 2.1-1.5 2.2.8 1.9 2.6.4v3l-2.6.5-.8 1.9 1.5 2.2-2.1 2.1-2.2-1.5-1.9.8-.5 2.6h-3l-.5-2.6-1.9-.8-2.2 1.5-2.1-2.1 1.5-2.2-.8-1.9L2 13.5v-3l2.6-.5.8-1.9-1.5-2.2 2.1-2.1 2.2 1.5 1.9-.8z"/>',
  wrench:'<path d="M21 6.5a5 5 0 0 1-6.6 4.7L6 19.6a2 2 0 0 1-2.8-2.8l8.4-8.4A5 5 0 0 1 17.5 3l-3 3 .5 3 3 .5z"/>',
  bag:'<path fill-rule="evenodd" d="M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2h-2V6a1 1 0 0 0-2 0v2z"/>',
  badge:'<path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8L2.2 9.1l6.9-.8z"/>',
@@ -2538,13 +2544,13 @@ const CARS=[
  {id:'c4',n:'Vector S',cl:'sport',price:8500000,lv:20,sp:76,bio:'A proper sports car. Stiff, low and quick.'},
  {id:'c5',n:'Apex R',cl:'sport',price:13000000,lv:20,sp:86,bio:'The fastest thing you can buy in the city.'}];
 const CLS={low:'Economy',mid:'Mid-range',sport:'Sports'};
-const UPG=[['wt','Weight reduction','Strip the panels and seats.'],['tr','Better tires','More grip in the corners.'],['en','Engine tuning','A little more power.'],['ae','Aerodynamics','Less drag on the straights.'],['dr','Driver training','You take better lines.']];
+const UPG=[['wt','Weight reduction','Strip the panels and seats.',.03],['tr','Better tires','More grip in the corners.',.035],['en','Engine tuning','A little more power.',.11],['ae','Aerodynamics','Less drag on the straights.',.075],['dr','Driver training','You take better lines.',.13]];
 const UP_MAX=3,UP_GAIN=.01,RACE_ENERGY=15,RACE_EFFORT=2,LAPS=5,RACE_SECS=15;
 const RACES=[
- {id:'r1',n:'Backstreet sprint',cl:'low',pool:100000,ai:[36,44]},
- {id:'r2',n:'Ring road cup',cl:'mid',pool:500000,ai:[52,60]},
- {id:'r3',n:'Harbor grand prix',cl:'mid',pool:1000000,ai:[58,68]},
- {id:'r4',n:'Skyline invitational',cl:'sport',pool:2000000,ai:[72,84]}];
+ {id:'r1',n:'Backstreet sprint',cl:'low',pool:100000,ai:[36,44],tk:'L'},
+ {id:'r2',n:'Ring road cup',cl:'mid',pool:500000,ai:[52,60],tk:'8'},
+ {id:'r3',n:'Harbor grand prix',cl:'mid',pool:1000000,ai:[58,68],tk:'8'},
+ {id:'r4',n:'Skyline invitational',cl:'sport',pool:2000000,ai:[72,84],tk:'G'}];
 const AINAMES=['Jay Rook','Mina Ford','Tobi Grant','Alma Cruz','Rex Dunn','Kit Aldous','Nell Ortiz','Hugo Pratt','Sam Vale','Ines Park'];
 const carOf=id=>CARS.find(c=>c.id===id);
 const carUp=id=>{const o=S.car.own[id];return o?Object.values(o.up).reduce((a,b)=>a+b,0):0};
@@ -2552,7 +2558,7 @@ const carUpTot=()=>Object.keys(S.car.own).reduce((a,id)=>a+carUp(id),0);
 const carSpd=id=>carOf(id).sp*(1+UP_GAIN*carUp(id));
 const carVal=id=>Math.round(carOf(id).price+.5*S.car.own[id].spent);
 const carSell=id=>Math.round(carVal(id)*.8);
-const upCost=(id,u)=>Math.round(carOf(id).price*.04*(S.car.own[id].up[u]+1)/10000)*100;
+const upCost=(id,u)=>{const c=carOf(id),r=UPG.find(x=>x[0]===u)[3],lv=S.car.own[id].up[u];return Math.round(c.price*r*Math.pow(1.25,lv)*Math.pow(c.price/1000000,.12)/5000)*5000};
 const hasCls=cl=>Object.keys(S.car.own).some(id=>carOf(id).cl===cl);
 function buyCar(id){const c=carOf(id);if(S.car.own[id])return;if(plevel(S.spent).L<c.lv)return toast('You need level '+c.lv+' to buy the '+c.n+'.','bad');if(S.money<c.price)return toast('The '+c.n+' costs '+fmt(c.price)+'.','bad');
  pay(c.price);S.car.own[id]={up:{wt:0,tr:0,en:0,ae:0,dr:0},spent:0};toast('You bought the '+c.n+'.','gold');addLog('Bought a car: '+c.n+' for '+fmt(c.price)+'.')}
@@ -2578,10 +2584,17 @@ function raceSettle(force){const R=S.car&&S.car.race;if(!R||R.settled)return fal
  levelCheck(L0);if(ui.tab==='circuit'||ui.tab==='garage'){commit()}else{save()}return true}
 const ordn=n=>n+(n===1?'st':n===2?'nd':n===3?'rd':'th');
 const CARCOL=['#e0ae4a','#74a4e0','#6fc08a','#e0746a','#b58ae0','#e8a064'];
-function raceTrack(R){const el=Math.max(0,(Date.now()-R.start)/1000),done=R.settled||el>=R.dur;
- const css=R.rs.map((x,i)=>{const pts=[[0,0]].concat(x.T.map((t,l)=>[t/R.dur*100,(l+1)*100]));if(x.tot<R.dur)pts.push([100,LAPS*100]);return `@keyframes kf${i}{${pts.map(p=>p[0].toFixed(2)+'%{offset-distance:'+p[1]+'%}').join('')}}.rc${i}{animation:kf${i} ${R.dur}s linear forwards;animation-delay:-${el.toFixed(2)}s;background:${CARCOL[i]}}`}).join('');
+function roundPoly(pts,r){const n=pts.length,u=(a,b)=>{const d=Math.hypot(b[0]-a[0],b[1]-a[1]);return[(b[0]-a[0])/d,(b[1]-a[1])/d]},f=x=>+x.toFixed(1);
+ const dir=u(pts[0],pts[1]),m=[(pts[0][0]+pts[1][0])/2,(pts[0][1]+pts[1][1])/2];let d='M'+f(m[0])+','+f(m[1]);
+ for(let k=1;k<=n;k++){const i=k%n,p0=pts[(i+n-1)%n],p1=pts[i],p2=pts[(i+1)%n],a=u(p1,p0),b=u(p1,p2);d+=' L'+f(p1[0]+a[0]*r)+','+f(p1[1]+a[1]*r)+' Q'+p1[0]+','+p1[1]+' '+f(p1[0]+b[0]*r)+','+f(p1[1]+b[1]*r)}
+ return{d:d+' Z',s:m,dir}}
+const RTRACKS=(()=>{const L=roundPoly([[40,25],[140,25],[140,95],[300,95],[300,145],[40,145]],12),G=roundPoly([[50,22],[290,22],[290,52],[200,52],[200,86],[290,86],[290,138],[50,138]],10);
+ return{L:Object.assign(L,{sw:24}),G:Object.assign(G,{sw:20}),'8':{d:'M100,22 C150,22 190,138 240,138 C285,138 310,110 310,80 C310,50 285,22 240,22 C190,22 150,138 100,138 C55,138 30,110 30,80 C30,50 55,22 100,22 Z',s:[100,22],dir:[1,0],sw:26}}})();
+function raceTrack(R){const el=Math.max(0,(Date.now()-R.start)/1000),done=R.settled||el>=R.dur,T=RTRACKS[RACES.find(x=>x.id===R.rid).tk||'L'],h=T.sw/2+3,nx=-T.dir[1],ny=T.dir[0];
+ const css=`.rcar{offset-path:path('${T.d}')}`+R.rs.map((x,i)=>{const pts=[[0,0]].concat(x.T.map((t,l)=>[t/R.dur*100,(l+1)*100]));if(x.tot<R.dur)pts.push([100,LAPS*100]);return `@keyframes kf${i}{${pts.map(p=>p[0].toFixed(2)+'%{offset-distance:'+p[1]+'%}').join('')}}.rc${i}{animation:kf${i} ${R.dur}s linear forwards;animation-delay:-${el.toFixed(2)}s;background:${CARCOL[i]}}`}).join('');
  const dots=R.rs.map((x,i)=>`<i class="rcar rc${i} ${x.me?'me':''}" title="${x.n}"></i>`).join('');
- return `<style>${css}</style><div class="rtrack"><svg viewBox="0 0 340 160" aria-hidden="true"><path d="M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z" fill="none" stroke="var(--line)" stroke-width="34" stroke-linejoin="round"/><path d="M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z" fill="none" stroke="var(--panel)" stroke-width="30"/><path d="M 50,40 H 290 A 40,40 0 0 1 290,120 H 50 A 40,40 0 0 1 50,40 Z" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="6 8"/><line x1="170" y1="23" x2="170" y2="57" stroke="var(--fg)" stroke-width="3"/></svg>${dots}</div>
+ const pa=(w,c,ex)=>`<path d="${T.d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round" ${ex||''}/>`;
+ return `<style>${css}</style><div class="rtrack"><svg viewBox="0 0 340 160" aria-hidden="true">${pa(T.sw+4,'var(--line)')}${pa(T.sw,'var(--panel)')}${pa(1,'var(--muted)','stroke-dasharray="6 8"')}<line x1="${T.s[0]+nx*h}" y1="${T.s[1]+ny*h}" x2="${T.s[0]-nx*h}" y2="${T.s[1]-ny*h}" stroke="var(--fg)" stroke-width="3"/></svg>${dots}</div>
  <div class="small muted">${done?'Race finished.':'Five laps. Results appear when the race ends.'}</div><div class="rleg">${R.rs.map((x,i)=>`<span><i style="background:${CARCOL[i]}"></i>${x.n}</span>`).join('')}</div>`}
 function raceResult(R){const r=RACES.find(x=>x.id===R.rid),me=R.rs.find(x=>x.me),rows=R.rs.slice().sort((a,b)=>a.pos-b.pos).map(x=>`<tr class="${x.me?'cur':''}"><td>${ordn(x.pos)}</td><td>${x.n}</td><td class="num">${x.tot.toFixed(1)} s</td></tr>`).join('');
  return `<div class="goal ${R.won?'ok':''}"><b>${R.won?'You won':'You finished '+ordn(me.pos)}</b><span>${R.won?'Prize pool '+fmt(r.pool)+' paid out.':'You paid '+fmt(R.fee)+' to enter.'}</span></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Place</th><th>Driver</th><th class="num">Time</th></tr></thead><tbody>${rows}</tbody></table></div>`}
