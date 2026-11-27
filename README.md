@@ -12,9 +12,14 @@ Ledger City is in beta. It is not public yet, it is updated often, and things ma
 - **Learn.** Education courses unlock better jobs. Reading books at the Public Library raises your Intelligence, which makes every course finish faster.
 - **Trade.** A market where prices follow supply and demand. Selling a lot pushes a price down, and a flood of sales from others keeps it down. Events and city orders shift it further.
 - **Pick a path.** Gatherer is the default. Criminal and Enforcer paths bring different loot, and players sell that loot to each other to get what they need.
-- **Fight.** Train at the gym, equip armour, and take on fights in the Brawl zone.
+  - **Criminal:** pick pockets, raid junkyards, rob shops and pull heists. Your criminal skill sets your odds, and you can end up in jail.
+  - **Enforcer:** take patrol shifts for steady pay, or hunt 12 named bounty targets in turn-based fights. Mid-level criminals, high-level criminals and crime bosses pay more each tier and come back after a cooldown.
+- **Fight.** Train at the gym, equip armour and weapons, and take on turn-based fights in the Brawl zone. Shoot, rush, dodge, bandage and reload.
+- **Race.** Buy a car at the Dealership, fit upgrades in the Garage and enter five-lap races at the Circuit. Each class races on its own track for a shared prize pool.
+- **Rent out property.** Buy homes, move in, or let them to tenants for daily income.
+- **Follow the missions.** A Missions tab with Main, Crime, Cars and Enforcer tracks guides you through the game. Each track keeps its own progress.
 - **Look after yourself.** Run out of life or overdose and you end up in hospital. Medkits and morphine from the pharmacy cut your stay.
-- **Build.** Rent better homes, join gyms, collect achievements and give to the Ledger Foundation.
+- **Build.** Join gyms, collect achievements and merits, claim the daily reward and give to the Ledger Foundation.
 - **Reach the end.** Hit level 25 with $1M to see the ending.
 
 ## Saving
